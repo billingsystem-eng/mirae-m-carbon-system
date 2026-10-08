@@ -525,8 +525,8 @@ function renderOverview(o) {
   ppChart.data.datasets[1].data = o.prePost.map((r) => r.after);
   ppChart.update();
 
-  const c = o.categories, total = c.lighting + c.ac + c.other || 1;
-  $('#cats').innerHTML = [['Lighting', c.lighting], ['Air conditioner', c.ac], ['Other', c.other]].map(([name, v]) =>
+  const c = o.categories, total = c.lighting || 1;
+  $('#cats').innerHTML = [['Lighting', c.lighting]].map(([name, v]) =>
     `<div class="cat"><span class="name">${name}</span><span class="share"><span><i style="width:${(v / total * 100).toFixed(1)}%"></i></span></span><span class="amt">${nf(v)} <small>kWh</small></span></div>`).join('');
 
   drawMap(o);
@@ -719,8 +719,8 @@ const dplot = (id, title) => `<section class="block"><div class="head"><h2>${tit
 function buildDetails(pid) {
   $('#siteDetails').innerHTML =
     dsec('Today', 'Compared with yesterday', [['uUsed', 'Usage today'], ['uTraffic', 'Total traffic today'], ['uParked', 'Vehicles parked today'], ['uSaved', 'Power savings today']])
-    + dsec('Since go-live', 'Cumulative', [['cRate', 'Power saving rate'], ['cSaved', 'Cumulative power savings'], ['cUsed', 'Cumulative power consumption'], ['cOther', 'Cumulative other power usage'], ['cRatio', 'Power ratio (used)'], ['cDays', 'Total energy-saving duration'], ['cBill', 'Cumulative power bill savings'], ['cCarbon', 'Cumulative carbon emission reduction'], ['cTrees', 'Tree planting comparison']])
-    + dsec('This month', 'Energy saving rate and power ratio', [['mRate', 'Energy saving rate'], ['mSaved', 'Saved'], ['mUsed', 'Actual usage'], ['mLamp', 'Lighting'], ['mAc', 'Air conditioner'], ['mOther', 'Others'], ['mCarbon', 'Carbon emission reduction'], ['mCost', 'Cost settlement'], ['mTariff', 'Tariff'], ['mUsage', 'Usage this month']])
+    + dsec('Since go-live', 'Cumulative', [['cRate', 'Power saving rate'], ['cSaved', 'Cumulative power savings'], ['cUsed', 'Cumulative power consumption'], ['cRatio', 'Power ratio (used)'], ['cDays', 'Total energy-saving duration'], ['cBill', 'Cumulative power bill savings'], ['cCarbon', 'Cumulative carbon emission reduction'], ['cTrees', 'Tree planting comparison']])
+    + dsec('This month', 'Energy saving rate and power ratio', [['mRate', 'Energy saving rate'], ['mSaved', 'Saved'], ['mUsed', 'Actual usage'], ['mLamp', 'Lighting'], ['mCarbon', 'Carbon emission reduction'], ['mCost', 'Cost settlement'], ['mTariff', 'Tariff'], ['mUsage', 'Usage this month']])
     + dsec('Equipment and meter', 'Current readings', [['eFix', 'Lighting fixtures'], ['eBefore', 'Before improvement'], ['eAfter', 'After improvement'], ['eMeters', 'Number of meters'], ['eStatus', 'Meter status'], ['eW', 'Power'], ['eV', 'Voltage'], ['eA', 'Current'], ['eRead', 'Total meter reading'], ['nLight', 'Current lighting power'], ['nTraffic', 'Current traffic'], ['nPark', 'Current parking occupied']])
     + '<div class="charts">' + dplot('dPowerDay', 'Power usage, this month (kWh per day)') + dplot('dShare', 'Power share trend, by month')
     + dplot('dTraffic24', 'Traffic flow, last 24 hours') + dplot('dTrafficDay', 'Traffic, this month') + '</div>';
@@ -753,12 +753,12 @@ async function loadDetails() {
   set('uParked', `${nf(t.parked)}${arrow(t.parkedVs)}`);
   set('uSaved', `${u(t.savedKwh)}<small>kWh</small>${arrow(t.savedVs)}`);
   set('cRate', `${nf(c.saveRate, 1)}<small>%</small>`); set('cSaved', `${u(c.savedKwh)}<small>kWh</small>`);
-  set('cUsed', `${u(c.usedKwh)}<small>kWh</small>`); set('cOther', `${u(c.otherKwh)}<small>kWh</small>`);
+  set('cUsed', `${u(c.usedKwh)}<small>kWh</small>`);
   set('cRatio', `${nf(c.usedRatio, 1)}<small>%</small>`); set('cDays', `${nf(c.durationDays, 1)}<small>days</small>`);
   set('cBill', `\u20B1${u(c.billSavings)}`); set('cCarbon', `${u(c.carbonKg)}<small>kg</small>`); set('cTrees', `${nf(c.trees)}<small>units</small>`);
   set('mRate', `${nf(m.saveRate, 0)}<small>% saved / ${nf(m.usedRatio, 0)}% used</small>`);
   set('mSaved', `${u(m.savedKwh)}<small>kWh</small>`); set('mUsed', `${u(m.usedKwh)}<small>kWh</small>`);
-  set('mLamp', `${u(m.lampKwh)}<small>kWh, ${nf(m.lampPct, 0)}%</small>`); set('mAc', `${u(m.acKwh)}<small>kWh, ${nf(m.acPct, 0)}%</small>`); set('mOther', `${u(m.otherKwh)}<small>kWh, ${nf(m.otherPct, 0)}%</small>`);
+  set('mLamp', `${u(m.lampKwh)}<small>kWh, ${nf(m.lampPct, 0)}%</small>`);
   set('mCarbon', `${u(m.carbonKg)}<small>kg</small>`); set('mCost', `\u20B1${u(m.costSaved)}`); set('mTariff', `\u20B1${u(m.tariff)}<small>/kWh</small>`);
   set('mUsage', `${u(m.usageKwh)}<small>kWh</small>${m.usageVsLast == null ? '' : `<small class="dl">${m.usageVsLast >= 0 ? '\u25B2' : '\u25BC'} ${nf(Math.abs(m.usageVsLast), 1)}% vs last month</small>`}`);
   set('eFix', `${nf(d.fixtures)}<small>pcs</small>`); set('eBefore', `${u(d.beforeKwh)}<small>kWh</small>`); set('eAfter', `${u(d.afterKwh)}<small>kWh</small>`);
@@ -768,9 +768,7 @@ async function loadDetails() {
   set('nLight', `${nf(no.lightingPct, 1)}<small>%</small>`); set('nTraffic', nf(no.traffic)); set('nPark', no.parkingPct == null ? '-' : `${nf(no.parkingPct, 1)}<small>%</small>`);
   setChart('dTraffic24', d.trafficHourly.map((r) => `${String(r.hour).padStart(2, '0')}:00`), [{ label: 'People and vehicles', data: d.trafficHourly.map((r) => r.value), borderColor: '#3f7421', backgroundColor: 'rgba(91,154,46,.18)', fill: true }]);
   setChart('dShare', d.powerShare.map((r) => `M${r.month}`), [
-    { label: 'Lighting', data: d.powerShare.map((r) => r.lamp), backgroundColor: '#e0b400' },
-    { label: 'Air conditioner', data: d.powerShare.map((r) => r.ac), backgroundColor: '#2f6fdd' },
-    { label: 'Others', data: d.powerShare.map((r) => r.other), backgroundColor: '#d64545' }]);
+    { label: 'Lighting', data: d.powerShare.map((r) => r.lamp), backgroundColor: '#e0b400' }]);
   setChart('dPowerDay', d.daily.power.map((r) => r.day), [
     { label: 'Actual usage', data: d.daily.power.map((r) => r.used), backgroundColor: '#4a62e8' },
     { label: 'Power saved', data: d.daily.power.map((r) => r.saved), backgroundColor: '#1fb88a' }]);
