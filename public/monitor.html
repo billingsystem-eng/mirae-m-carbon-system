@@ -11,136 +11,162 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="/js/ph-map.js"></script>
 <style>
-/* Live monitor. Everything is scoped under .ww so it cannot change the rest of the billing pages. */
+/* Live monitor, scoped under .ww so the other billing pages are untouched. */
 .ww {
-  --paper: #e6ecef;
-  --panel: #f7f9fa;
-  --ink: #14202b;
-  --muted: #5b6c7b;
-  --rule: #c4d0d8;
-  --line: #2b6b8c;
-  --line-soft: rgba(43, 107, 140, .14);
-  --meter: #1a1e22;
-  --digit: #f1f3f4;
-  --red: #d2321e;
-  --ok: #1c7d55;
-  --warn: #a36f00;
-  --bad: #b3372b;
+  --panel: #fff; --ink: #152322; --muted: #5d6f69; --rule: #d9e0db;
+  --line: #3f7421; --line-soft: rgba(91,154,46,.16); --leaf: #5b9a2e; --leaf-hi: #9fd36a;
+  --deep: #0f1f1d; --deep-2: #1a302c; --digit: #eef6e6;
+  --ok: #2f8f5b; --warn: #a36f00; --bad: #b3372b; --red: #3f7421;
   --sans: "Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
   --digits: "Chivo Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; margin: 0;
 }
 .ww * { box-sizing: border-box; }
-.ww { margin: 0; }
-.ww {  color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
 .ww [hidden] { display: none !important; }
 .ww button { font: inherit; color: inherit; cursor: pointer; }
-.ww :focus-visible { outline: 2px solid var(--line); outline-offset: 2px; }
-.ww .error { min-height: 22px; margin: 12px 0 0; color: var(--bad); font-size: 14px; }
-.ww .tabs { display: flex; gap: 4px; flex: 1; overflow-x: auto; scrollbar-width: none; }
-.ww .tabs::-webkit-scrollbar { display: none; }
-.ww .tab { border: 0; background: none; padding: 18px 14px 15px; border-bottom: 3px solid transparent; color: var(--muted); font-weight: 500; white-space: nowrap; }
-.ww .tab:hover { color: var(--ink); }
-.ww .tab[aria-selected="true"] { color: var(--ink); font-weight: 600; border-bottom-color: var(--red); }
-.ww .status { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); white-space: nowrap; }
+.ww :focus-visible { outline: 2px solid var(--leaf); outline-offset: 2px; }
+.ww .page-head { align-items: center; margin-bottom: 18px; }
+.ww .page-head h1 { letter-spacing: -.02em; }
+
+/* status chip */
+.ww .status { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border: 1px solid var(--rule); border-radius: 999px; background: var(--panel); font-size: 13px; font-weight: 500; color: var(--muted); white-space: nowrap; }
 .ww .status i { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+.ww .status[data-state="ok"] { color: var(--ok); border-color: #bfe0cd; background: #f0f9f4; }
 .ww .status[data-state="ok"] i { background: var(--ok); animation: pulse 2s ease-out infinite; }
 .ww .status[data-state="retry"] i, .ww .status[data-state="fault"] i { background: var(--warn); }
 .ww .status[data-state="down"] i { background: var(--bad); }
-@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(28,125,85,.45); } 70%, 100% { box-shadow: 0 0 0 8px rgba(28,125,85,0); } }
-.ww .hero { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 32px 56px; padding: 40px 0 36px; border-bottom: 1px solid var(--rule); }
-.ww .hero h1 { margin: 0; font-size: clamp(22px, 3vw, 30px); font-weight: 700; letter-spacing: -.02em; line-height: 1.15; }
-.ww .hero .where { margin: 2px 0 20px; color: var(--muted); }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(47,143,91,.45); } 70%, 100% { box-shadow: 0 0 0 8px rgba(47,143,91,0); } }
+
+/* site tabs as pills */
+.ww .tabs { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px 0 16px; }
+.ww .tabs::-webkit-scrollbar { display: none; }
+.ww .tab { border: 1px solid var(--rule); background: var(--panel); padding: 8px 16px; border-radius: 999px; color: var(--muted); font-weight: 500; white-space: nowrap; transition: background .15s, color .15s; }
+.ww .tab:hover { color: var(--ink); border-color: #b3c0b8; }
+.ww .tab[aria-selected="true"] { background: var(--deep); border-color: var(--deep); color: #fff; font-weight: 600; }
+.ww .error { min-height: 22px; margin: 12px 0 0; color: var(--bad); font-size: 14px; }
+
+/* hero: dark control-room panel */
+.ww .hero { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 28px 48px; padding: 30px 32px; border-radius: 12px; color: #fff; background: radial-gradient(900px 300px at 85% -20%, rgba(91,154,46,.28), transparent 60%), var(--deep); margin-bottom: 18px; }
+.ww .hero h1 { margin: 0; font-size: clamp(22px, 3vw, 30px); font-weight: 700; letter-spacing: -.02em; line-height: 1.15; color: #fff; }
+.ww .hero .where { margin: 2px 0 20px; color: #9db3ac; }
 .ww .readout { display: flex; align-items: flex-end; gap: 14px; }
-.ww .register { display: flex; align-items: center; background: var(--meter); padding: 10px 12px; border-radius: 5px; gap: 3px; font-family: var(--digits); font-weight: 600; font-size: clamp(44px, 9vw, 84px); line-height: 1.25; box-shadow: inset 0 2px 6px rgba(0,0,0,.55); }
-.ww .cell { width: .68em; height: 1.25em; overflow: hidden; background: linear-gradient(#0e1114, #24292e 50%, #0e1114); color: var(--digit); border-radius: 2px; text-align: center; }
-.ww .cell.tenth { background: linear-gradient(#5f150b, #a3230f 50%, #5f150b); }
-.ww .strip { display: block; transition: transform .45s cubic-bezier(.3, .7, .2, 1); }
+.ww .register { display: flex; align-items: center; background: #070f0e; padding: 10px 12px; border-radius: 8px; gap: 3px; font-family: var(--digits); font-weight: 600; font-size: clamp(44px, 9vw, 84px); line-height: 1.25; box-shadow: inset 0 2px 8px rgba(0,0,0,.7), 0 0 0 1px #28403b; }
+.ww .cell { width: .68em; height: 1.25em; overflow: hidden; background: linear-gradient(#0a1211, #1c2a28 50%, #0a1211); color: var(--digit); border-radius: 3px; text-align: center; }
+.ww .cell.tenth { background: linear-gradient(#1f3d12, #3f7421 50%, #1f3d12); }
+.ww .strip { display: block; transition: transform .45s cubic-bezier(.3,.7,.2,1); }
 .ww .strip b { display: block; height: 1.25em; font-weight: inherit; }
 .ww .register .dot { color: var(--digit); width: .3em; text-align: center; align-self: flex-end; line-height: 1.05; }
-.ww .unit { font-weight: 600; font-size: 20px; padding-bottom: 10px; color: var(--muted); }
-.ww .figures { display: flex; flex-wrap: wrap; }
-.ww .figure { padding: 0 32px; border-left: 1px solid var(--rule); }
-.ww .figure:first-child { padding-left: 0; border-left: 0; }
-.ww .figure .v { font-size: clamp(22px, 3vw, 30px); font-weight: 600; letter-spacing: -.02em; line-height: 1.2; font-variant-numeric: tabular-nums; }
-.ww .figure .v small { font-size: 14px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-left: 4px; }
-.ww .figure .l { color: var(--muted); font-size: 14px; }
-.ww .block { padding: 32px 0; border-bottom: 1px solid var(--rule); }
-.ww .block:last-child { border-bottom: 0; }
+.ww .unit { font-weight: 600; font-size: 18px; padding-bottom: 10px; color: var(--leaf-hi); }
+.ww .register.big { font-size: clamp(34px, 5.6vw, 66px); }
+
+/* figures: tiles */
+.ww .figures { display: flex; flex-wrap: wrap; gap: 12px; }
+.ww .figure { padding: 14px 18px; border-radius: 10px; background: var(--deep-2); border: 1px solid #28403b; min-width: 140px; }
+.ww .figure .v { font-size: clamp(20px, 2.6vw, 26px); font-weight: 600; letter-spacing: -.02em; line-height: 1.2; font-variant-numeric: tabular-nums; color: #fff; }
+.ww .figure .v small { font-size: 13px; font-weight: 500; color: #9db3ac; letter-spacing: 0; margin-left: 4px; }
+.ww .figure .l { color: #9db3ac; font-size: 13px; margin-top: 2px; }
+.ww .figures.grid { display: grid; grid-template-columns: repeat(3, minmax(150px, auto)); }
+.ww .block .figure { background: #f4f7f3; border-color: var(--rule); }
+.ww .block .figure .v { color: var(--ink); }
+.ww .block .figure .v small, .ww .block .figure .l { color: var(--muted); }
+
+/* cards */
+.ww .block { padding: 22px 24px; border: 1px solid var(--rule); border-radius: 12px; background: var(--panel); margin-bottom: 18px; box-shadow: 0 1px 2px rgba(21,35,34,.04); }
 .ww .head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; margin-bottom: 16px; }
-.ww .head h2 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -.01em; }
-.ww .head p { margin: 0; color: var(--muted); font-size: 14px; }
+.ww .head h2 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -.01em; }
+.ww .head p { margin: 0; color: var(--muted); font-size: 13px; }
 .ww .plot { position: relative; height: 250px; }
 .ww .plot.short { height: 300px; }
-.ww .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 56px; }
-.ww .split .block { border-bottom: 0; }
-.ww .seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; background: var(--panel); }
-.ww .seg button { border: 0; background: none; padding: 6px 12px; font-size: 14px; color: var(--muted); }
-.ww .seg button + button { border-left: 1px solid var(--rule); }
-.ww .seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.ww .split, .ww .ov { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 18px; }
+.ww .ov { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); margin-bottom: 0; }
+.ww .seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 8px; background: #edf1ec; }
+.ww .seg button { border: 0; background: none; padding: 5px 12px; font-size: 13px; color: var(--muted); border-radius: 6px; }
+.ww .seg button[aria-pressed="true"] { background: var(--panel); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgba(21,35,34,.15); }
+
+/* tables */
 .ww table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.ww th { text-align: left; font-weight: 500; color: var(--muted); padding: 0 8px 8px 0; border-bottom: 1px solid var(--rule); }
-.ww td { padding: 11px 8px 11px 0; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+.ww th { text-align: left; font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); padding: 0 8px 8px 0; border-bottom: 1px solid var(--rule); }
+.ww td { padding: 11px 8px 11px 0; border-bottom: 1px solid #edf1ec; vertical-align: middle; }
 .ww tr:last-child td { border-bottom: 0; }
 .ww td.num, .ww th.num { text-align: right; font-variant-numeric: tabular-nums; padding-right: 12px; }
 .ww .name { font-weight: 600; }
-.ww .type { display: block; color: var(--muted); font-weight: 400; }
-.ww .state { display: inline-flex; align-items: center; gap: 6px; }
-.ww .state::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
-.ww .state.off { color: var(--bad); }
-.ww .state.off::before { background: var(--bad); }
+.ww .type { display: block; color: var(--muted); font-weight: 400; font-size: 13px; }
+.ww .state { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #e8f5ee; color: var(--ok); }
+.ww .state::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.ww .state.off { background: #f8e6e3; color: var(--bad); }
 .ww .share { width: 30%; min-width: 70px; }
-.ww .share span { display: block; height: 8px; background: var(--line-soft); border-radius: 1px; }
-.ww .share span i { display: block; height: 100%; width: 0; background: var(--line); border-radius: 1px; transition: width .5s; }
-.ww .register.big { font-size: clamp(34px, 5.6vw, 66px); }
-.ww .figures.grid { display: grid; grid-template-columns: repeat(3, auto); gap: 22px 44px; }
-.ww .figures.grid .figure { padding: 0; border-left: 0; }
-.ww .ov { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 0 56px; border-bottom: 1px solid var(--rule); }
-.ww .ov .block { border-bottom: 0; }
-.ww .ov .right .block:first-child { padding-bottom: 8px; }
-.ww .mapwrap { position: relative; border-radius: 6px; border: 1px solid var(--rule); background: #d2e0e8; }
-.ww .mapwrap svg { display: block; width: 100%; height: auto; max-height: 760px; border-radius: 6px; }
-.ww .sea { fill: #d2e0e8; }
-.ww .land { fill: var(--panel); stroke: #8fa6b5; stroke-width: .6; stroke-linejoin: round; }
-.ww .pin { cursor: pointer; outline: none; }
-.ww .pin circle { fill: var(--red); fill-opacity: .88; stroke: #fff; stroke-width: 1.5; }
-.ww .pin.cluster circle { fill: var(--meter); fill-opacity: .93; }
-.ww .pin .count { fill: #fff; font: 600 15px var(--sans); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
-.ww .pin:focus-visible circle { stroke: var(--line); stroke-width: 3; }
-.ww .plabel { font: 500 14px var(--sans); fill: var(--ink); paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
-.ww .tip { position: absolute; z-index: 2; width: 340px; max-width: calc(100vw - 32px); padding: 10px 12px 12px; border-radius: 5px; background: var(--ink); color: #fff; font-size: 13px; transform: translate(-50%, -100%); pointer-events: none; box-shadow: 0 6px 18px rgba(20, 32, 43, .28); }
-.ww .tip.below { transform: translate(-50%, 0); }
-.ww .tip.sticky { pointer-events: auto; }
-.ww .tip strong { display: block; }
-.ww .tip > span { display: block; color: #b8c7d3; }
-.ww .tip button { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; width: 100%; margin-top: 8px; padding: 8px 0 0; border: 0; border-top: 1px solid rgba(255, 255, 255, .18); background: none; color: #fff; text-align: left; font-size: 13px; }
-.ww .tip button span:last-child { color: #b8c7d3; white-space: nowrap; }
-.ww .tip.sticky button:hover span:first-child { text-decoration: underline; }
-.ww .cat { display: grid; grid-template-columns: 150px minmax(0, 1fr) 140px; align-items: center; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--rule); }
+.ww .share span { display: block; height: 8px; background: var(--line-soft); border-radius: 99px; overflow: hidden; }
+.ww .share span i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--leaf), var(--line)); border-radius: 99px; transition: width .5s; }
+.ww .cat { display: grid; grid-template-columns: 130px minmax(0, 1fr) 130px; align-items: center; gap: 14px; padding: 13px 0; border-bottom: 1px solid #edf1ec; }
 .ww .cat:last-child { border-bottom: 0; }
 .ww .cat .share { width: auto; }
 .ww .cat .amt { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; }
 .ww .cat .amt small { font-weight: 400; color: var(--muted); }
+
+/* map */
+.ww .mapwrap { position: relative; border-radius: 10px; border: 1px solid var(--rule); background: #dfeae3; }
+.ww .mapwrap svg { display: block; width: 100%; height: auto; max-height: 760px; border-radius: 10px; }
+.ww .sea { fill: #dfeae3; }
+.ww .land { fill: #fff; stroke: #9db3a8; stroke-width: .6; stroke-linejoin: round; }
+.ww .pin { cursor: pointer; outline: none; }
+.ww .pin circle { fill: var(--leaf); fill-opacity: .9; stroke: #fff; stroke-width: 1.5; }
+.ww .pin.cluster circle { fill: var(--deep); fill-opacity: .93; }
+.ww .pin .count { fill: #fff; font: 600 15px var(--sans); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.ww .pin:focus-visible circle { stroke: var(--line); stroke-width: 3; }
+.ww .plabel { font: 500 14px var(--sans); fill: var(--ink); paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+.ww .tip { position: absolute; z-index: 2; width: 340px; max-width: calc(100vw - 32px); padding: 10px 12px 12px; border-radius: 8px; background: var(--deep); color: #fff; font-size: 13px; transform: translate(-50%, -100%); pointer-events: none; box-shadow: 0 8px 22px rgba(15,31,29,.3); }
+.ww .tip.below { transform: translate(-50%, 0); }
+.ww .tip.sticky { pointer-events: auto; }
+.ww .tip strong { display: block; }
+.ww .tip > span { display: block; color: #b4c8c1; }
+.ww .tip button { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; width: 100%; margin-top: 8px; padding: 8px 0 0; border: 0; border-top: 1px solid rgba(255,255,255,.18); background: none; color: #fff; text-align: left; font-size: 13px; }
+.ww .tip button span:last-child { color: #b4c8c1; white-space: nowrap; }
+.ww .tip.sticky button:hover span:first-child { text-decoration: underline; }
+
 @media (max-width: 900px) {
-.ww .ov { grid-template-columns: 1fr; }
-.ww .figures.grid { grid-template-columns: 1fr 1fr; gap: 18px 20px; }
-.ww .figures.grid .figure:nth-child(3) { grid-column: auto; }
-.ww .split { grid-template-columns: 1fr; }
-.ww .hero { padding: 28px 0; }
-.ww .figures { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 0; width: 100%; }
-.ww .figure { padding: 0 20px; }
-.ww .figure:nth-child(odd) { padding-left: 0; border-left: 0; }
-.ww .figure:nth-child(3) { grid-column: 1 / -1; padding: 0; border-left: 0; }
-.ww .tabs { order: 3; flex-basis: 100%; }
-.ww .status { padding-top: 14px; }
+  .ww .ov, .ww .split { grid-template-columns: 1fr; }
+  .ww .hero { padding: 22px 18px; }
+  .ww .figures, .ww .figures.grid { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .ww .block { padding: 18px 16px; }
+  .ww .cat { grid-template-columns: 100px minmax(0, 1fr) 100px; }
 }
 @media (prefers-reduced-motion: reduce) {
-.ww .strip, .ww .share span i { transition: none; }
-.ww .status[data-state="ok"] i { animation: none; }
+  .ww .strip, .ww .share span i { transition: none; }
+  .ww .status[data-state="ok"] i { animation: none; }
 }
-.ww .tabs { border-bottom: 1px solid var(--rule); margin-bottom: 4px; }
-.ww .page-head .status { padding-top: 6px; }
-.ww .page-head { border-bottom: 0; }
 
+/* ---- site detail sections ---- */
+.ww #siteDetails .block { padding: 20px 22px 22px; }
+.ww #siteDetails .head { padding-bottom: 12px; margin-bottom: 16px; border-bottom: 1px solid #edf1ec; }
+.ww #siteDetails .head h2 { display: flex; align-items: center; gap: 10px; }
+.ww #siteDetails .head h2::before { content: ""; width: 4px; height: 16px; border-radius: 2px; background: var(--leaf); }
+.ww #siteDetails .figures { display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: 12px; }
+.ww #siteDetails .figure { display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: 6px; min-width: 0; padding: 14px 16px; border-radius: 10px; background: #f6f8f5; border: 1px solid #e3e9e4; }
+.ww #siteDetails .figure .l { margin: 0; font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); line-height: 1.3; }
+.ww #siteDetails .figure .v { font-family: var(--digits); font-size: clamp(20px, 2.2vw, 25px); font-weight: 600; letter-spacing: -.02em; line-height: 1.15; overflow-wrap: anywhere; }
+.ww #siteDetails .figure .v small { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-left: 4px; }
+.ww #siteDetails .figure .v small.dl { display: inline-block; margin: 6px 0 0; padding: 1px 8px; border-radius: 999px; background: #e9eee8; font-size: 11px; font-weight: 600; color: var(--muted); }
+.ww #siteDetails .figure.key { background: linear-gradient(160deg, #f0f8e8, #e3f0d3); border-color: var(--leaf-line, #b9d49a); }
+.ww #siteDetails .figure.key .v { color: var(--line); font-size: clamp(24px, 2.8vw, 32px); }
+.ww .charts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 18px; }
+.ww .charts .block { margin-bottom: 18px; }
+@media (max-width: 900px) { .ww .charts { grid-template-columns: 1fr; } .ww #siteDetails .figures { grid-template-columns: 1fr 1fr; } }
+
+.ww .tabbar { position: relative; display: flex; align-items: center; gap: 8px; }
+.ww .tabbar .tabs { flex: 1; min-width: 0; cursor: grab; scroll-behavior: smooth; }
+.ww .tabbar .tabs.drag { cursor: grabbing; scroll-behavior: auto; user-select: none; }
+.ww .tabnav { flex: none; width: 34px; height: 34px; margin-bottom: 14px; border-radius: 50%; border: 1px solid var(--rule); background: var(--panel); font-size: 20px; line-height: 1; color: var(--ink); box-shadow: 0 1px 2px rgba(21,35,34,.1); }
+.ww .tabnav:hover { background: var(--deep); color: #fff; border-color: var(--deep); }
+.ww .tabnav[disabled] { opacity: .35; pointer-events: none; }
+@media (max-width: 900px) { .ww .tabnav { display: none; } }
+
+.ww #phMap { cursor: grab; touch-action: auto; }
+.ww #phMap.panning { cursor: grabbing; }
+.ww .land, .ww .pin circle { vector-effect: non-scaling-stroke; }
+.ww .pin:hover circle { stroke: var(--deep); stroke-width: 2.5; fill-opacity: 1; }
+.ww .mapctl { position: absolute; top: 10px; right: 10px; z-index: 3; display: flex; flex-direction: column; gap: 6px; }
+.ww .mapctl button { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--rule); background: #fff; font-size: 19px; line-height: 1; color: var(--ink); box-shadow: 0 1px 3px rgba(21,35,34,.18); }
+.ww .mapctl button:hover { background: var(--deep); border-color: var(--deep); color: #fff; }
 </style>
 <link rel="icon" type="image/png" href="/favicon.png">
 </head>
@@ -159,7 +185,7 @@
     <div class="notice warn" id="demoBanner" hidden>Sample data. This page is not reading from the M-Carbon Dashboard, so none of these figures are real. Set MONITOR_MODE=live on the server to use real readings.</div>
     <div class="notice bad" id="notice" role="alert" hidden></div>
 
-    <div class="tabs" id="tabs" role="tablist" aria-label="Sites"></div>
+    <div class="tabbar"><button type="button" class="tabnav" id="tabPrev" aria-label="Scroll sites left">&#8249;</button><div class="tabs" id="tabs" role="tablist" aria-label="Sites"></div><button type="button" class="tabnav" id="tabNext" aria-label="Scroll sites right">&#8250;</button></div>
 
     <div id="overviewView" hidden>
       <section class="hero">
@@ -177,15 +203,16 @@
           <div class="figure"><div class="v" id="oToday">-</div><div class="l">Saved today</div></div>
           <div class="figure"><div class="v" id="oCo2">-</div><div class="l">CO₂ avoided, all time</div></div>
           <div class="figure"><div class="v" id="oCo2Today">-</div><div class="l">CO₂ avoided today</div></div>
-          <div class="figure"><div class="v" id="oSites">-</div><div class="l">Sites</div></div>
+          <div class="figure"><div class="v" id="oSites">-</div><div class="l">Projects and equipments</div></div>
         </div>
       </section>
 
       <div class="ov">
         <section class="block">
-          <div class="head"><h2>Where the sites are</h2><p>Circle size shows energy saved. Dark circles group nearby sites.</p></div>
+          <div class="head"><h2>Where the sites are</h2><p>Scroll or pinch to zoom, drag to move. Dark circles group nearby sites; click one to zoom in.</p></div>
           <div class="mapwrap" id="mapWrap">
             <svg id="phMap" role="group" aria-label="Map of the Philippines with monitored sites"></svg>
+            <div class="mapctl" id="mapCtl"><button type="button" data-z="in" aria-label="Zoom in" title="Zoom in">+</button><button type="button" data-z="out" aria-label="Zoom out" title="Zoom out">&minus;</button><button type="button" data-z="fit" aria-label="Fit all sites" title="Fit all sites">&#9678;</button></div>
             <div class="tip" id="mapTip" hidden></div>
           </div>
         </section>
@@ -210,7 +237,7 @@
           <div class="plot short"><canvas id="ppChart"></canvas></div>
         </section>
         <section class="block">
-          <div class="head"><h2>Where the savings come from</h2><p>Since go-live</p></div>
+          <div class="head"><h2>Power used after improvement</h2><p>Since go-live</p></div>
           <div id="cats"></div>
         </section>
       </div>
@@ -259,6 +286,7 @@
         </table>
       </section>
     </div>
+    <div id="siteDetails"></div>
     </div>
   </main>
 </div>
@@ -290,7 +318,8 @@ function buildRegister(el, intDigits, decDigits = 1) {
 }
 function setRegister(el, value, label) {
   const strips = el.querySelectorAll('.strip');
-  const v = String(Math.max(0, Math.min(10 ** strips.length - 1, Math.round(value * 10)))).padStart(strips.length, '0');
+  const dec = el.querySelectorAll('.cell.tenth').length || 1;
+  const v = String(Math.max(0, Math.min(10 ** strips.length - 1, Math.round(value * 10 ** dec)))).padStart(strips.length, '0');
   strips.forEach((s, i) => { s.style.transform = `translateY(${-Number(v[i]) * 10}%)`; });
   if (label) el.setAttribute('aria-label', label);
 }
@@ -298,17 +327,17 @@ function setRegister(el, value, label) {
 /* ---------- charts ---------- */
 function makeCharts() {
   Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
-  Chart.defaults.color = '#5b6c7b';
-  const grid = { color: '#d3dde3' };
+  Chart.defaults.color = '#5d6f69';
+  const grid = { color: '#e3e9e4' };
   liveChart = new Chart($('#liveChart'), {
     type: 'line',
-    data: { labels: [], datasets: [{ data: [], borderColor: '#2b6b8c', backgroundColor: 'rgba(43,107,140,.14)', fill: true, borderWidth: 2, pointRadius: 0, tension: .25 }] },
+    data: { labels: [], datasets: [{ data: [], borderColor: '#3f7421', backgroundColor: 'rgba(91,154,46,.18)', fill: true, borderWidth: 2, pointRadius: 0, tension: .25 }] },
     options: { maintainAspectRatio: false, animation: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${c.parsed.y.toFixed(1)} kW` } } },
       scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: window.innerWidth < 600 ? 3 : 6, maxRotation: 0 } }, y: { beginAtZero: true, grid, title: { display: true, text: 'kW' } } } },
   });
   histChart = new Chart($('#histChart'), {
     type: 'bar',
-    data: { labels: [], datasets: [{ data: [], backgroundColor: '#2b6b8c', borderRadius: 2, maxBarThickness: 28 }] },
+    data: { labels: [], datasets: [{ data: [], backgroundColor: '#3f7421', borderRadius: 2, maxBarThickness: 28 }] },
     options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${nf(c.parsed.y, 1)} kWh` } } },
       scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: 8, maxRotation: 0 } }, y: { beginAtZero: true, grid, title: { display: true, text: 'kWh' } } } },
   });
@@ -400,7 +429,7 @@ setInterval(() => {
   }
 }, 1000);
 setInterval(() => { if (state.view === 'project') loadSummary().catch(() => {}); }, 60000);
-setInterval(() => { if (state.view === 'overview') loadOverview().catch(() => {}); }, 30000);
+setInterval(() => { if (state.view === 'overview') loadOverview().catch(() => {}); }, 2000);
 
 /* ---------- views ---------- */
 function showFault(err) { setStatus('fault', 'Data source problem'); $('#notice').textContent = err.message; $('#notice').hidden = false; }
@@ -424,7 +453,7 @@ async function openOverview() {
   closeStream();
   state.pid = null;
   setView('overview');
-  setStatus('ok', 'Refreshes every 30 s');
+  setStatus('ok', 'Live, refreshes every 2 s');
   try { await loadOverview(); } catch (err) { showFault(err); }
 }
 
@@ -436,38 +465,52 @@ async function loadOverview() {
 }
 
 function makeOverviewCharts() {
-  const grid = { color: '#d3dde3' };
+  const grid = { color: '#e3e9e4' };
   h24Chart = new Chart($('#h24Chart'), {
     type: 'line',
-    data: { labels: [], datasets: [{ data: [], borderColor: '#2b6b8c', backgroundColor: 'rgba(43,107,140,.14)', fill: true, borderWidth: 2, pointRadius: 0, tension: .3 }] },
+    data: { labels: [], datasets: [{ data: [], borderColor: '#3f7421', backgroundColor: 'rgba(91,154,46,.18)', fill: true, borderWidth: 2, pointRadius: 0, tension: .3 }] },
     options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${nf(c.parsed.y, 1)} kWh` } } },
       scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: window.innerWidth < 600 ? 4 : 6, maxRotation: 0 } }, y: { beginAtZero: true, grid, title: { display: true, text: 'kWh per hour' } } } },
   });
   ppChart = new Chart($('#ppChart'), {
     type: 'bar',
     data: { labels: [], datasets: [
-      { label: 'Before improvement', data: [], backgroundColor: '#a9bcc9', borderRadius: 2, maxBarThickness: 22 },
-      { label: 'After improvement', data: [], backgroundColor: '#2b6b8c', borderRadius: 2, maxBarThickness: 22 },
+      { label: 'Before improvement', data: [], backgroundColor: '#b9c6bf', borderRadius: 2, maxBarThickness: 22 },
+      { label: 'After improvement', data: [], backgroundColor: '#3f7421', borderRadius: 2, maxBarThickness: 22 },
     ] },
     options: { maintainAspectRatio: false, plugins: { legend: { position: 'top', align: 'end', labels: { boxWidth: 12, boxHeight: 12 } }, tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${nf(c.parsed.y)} kWh` } } },
       scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid, title: { display: true, text: 'kWh per day' } } } },
   });
 }
 
+const roll = {}; // key -> { cur, to, apply }
+function rollTo(key, to, apply) {
+  let r = roll[key];
+  if (!r) { r = roll[key] = { cur: to, to, apply }; apply(to); return; } // first value is drawn straight away
+  r.apply = apply; r.to = to;
+}
+setInterval(() => { // ~4 steps a second, so the numbers roll instead of jumping every few seconds
+  for (const r of Object.values(roll)) {
+    if (r.cur === r.to) continue;
+    r.cur = Math.abs(r.to - r.cur) < 0.005 ? r.to : r.cur + (r.to - r.cur) * 0.2;
+    r.apply(r.cur);
+  }
+}, 250);
+
 function renderOverview(o) {
   const t = o.totals;
   if (!h24Chart) makeOverviewCharts();
 
-  const digits = Math.max(6, String(Math.floor(t.savedKwh)).length);
-  if (state.regDigits !== digits) { buildRegister($('#regTotal'), digits, 1); state.regDigits = digits; }
-  setRegister($('#regTotal'), t.savedKwh, `Total energy saved ${nf(t.savedKwh)} kilowatt-hours`);
+  const digits = String(Math.floor(t.savedKwh)).length;
+  if (state.regDigits !== digits) { buildRegister($('#regTotal'), digits, 2); state.regDigits = digits; delete roll.total; }
+  rollTo('total', t.savedKwh, (v) => setRegister($('#regTotal'), v, `Total energy saved ${nf(v, 2)} kilowatt-hours`));
 
   $('#oRate').innerHTML = `${nf(t.savingRate, 1)}<small>%</small>`;
   $('#oRateToday').innerHTML = `${nf(t.todaySavingRate, 1)}<small>%</small>`;
-  $('#oToday').innerHTML = `${nf(t.todaySavedKwh)}<small>kWh</small>`;
-  $('#oCo2').innerHTML = `${nf(t.co2Kg)}<small>kg</small>`;
-  $('#oCo2Today').innerHTML = `${nf(t.todayCo2Kg)}<small>kg</small>`;
-  $('#oSites').innerHTML = `${nf(t.projects)}<small>${nf(t.meters)} meters</small>`;
+  rollTo('today', t.todaySavedKwh, (v) => { $('#oToday').innerHTML = `${nf(v, 2)}<small>kWh</small>`; });
+  rollTo('co2', t.co2Kg, (v) => { $('#oCo2').innerHTML = `${nf(v, 2)}<small>kg</small>`; });
+  rollTo('co2t', t.todayCo2Kg, (v) => { $('#oCo2Today').innerHTML = `${nf(v, 2)}<small>kg</small>`; });
+  $('#oSites').innerHTML = `${nf(t.projects)}<small>${nf(t.equipments || t.meters)} equipments</small>`;
 
   $('#areas').innerHTML = o.areas.map((a) => `<tr><td class="name">${esc(a.area)}</td><td class="num">${nf(a.savedKwh)}</td><td class="num">${nf(a.projects)}</td></tr>`).join('');
 
@@ -475,7 +518,7 @@ function renderOverview(o) {
   h24Chart.data.datasets[0].data = o.hourly.map((h) => h.kwh);
   h24Chart.update();
   const peak = o.hourly.reduce((a, b) => (b.kwh > a.kwh ? b : a));
-  $('#peak').textContent = `Peak ${nf(peak.kwh)} kWh at ${hhmm(peak.t)}`;
+  $('#peak').textContent = `Peak ${nf(o.maxHourly || peak.kwh, 2)} kWh`;
 
   ppChart.data.labels = o.prePost.map((r) => new Date(r.t).toLocaleDateString(LOCALE(), { month: 'short', day: 'numeric' }));
   ppChart.data.datasets[0].data = o.prePost.map((r) => r.before);
@@ -483,7 +526,7 @@ function renderOverview(o) {
   ppChart.update();
 
   const c = o.categories, total = c.lighting + c.ac + c.other || 1;
-  $('#cats').innerHTML = [['Lighting', c.lighting] /* Air conditioning (c.ac) and Everything else (c.other) hidden for now: lighting-only offering */].map(([name, v]) =>
+  $('#cats').innerHTML = [['Lighting', c.lighting], ['Air conditioner', c.ac], ['Other', c.other]].map(([name, v]) =>
     `<div class="cat"><span class="name">${name}</span><span class="share"><span><i style="width:${(v / total * 100).toFixed(1)}%"></i></span></span><span class="amt">${nf(v)} <small>kWh</small></span></div>`).join('');
 
   drawMap(o);
@@ -495,18 +538,95 @@ function mapXY(lon, lat) {
   return [P.tx + P.k * l, P.ty - P.k * Math.log(Math.tan(Math.PI / 4 + f / 2))];
 }
 
+/* ---------- map view: zoom, pan, fit ---------- */
+const MAXK = 10, mv = { k: 1, cx: 0, cy: 0, init: false }, mapDrag = { moved: false };
+function vbox() { const P = window.PH_MAP; return { x: mv.cx - P.w / (2 * mv.k), y: mv.cy - P.h / (2 * mv.k), w: P.w / mv.k, h: P.h / mv.k }; }
+function applyView() {
+  const P = window.PH_MAP, svg = $('#phMap');
+  mv.k = Math.min(MAXK, Math.max(1, mv.k));
+  const hw = P.w / (2 * mv.k), hh = P.h / (2 * mv.k);
+  mv.cx = Math.min(P.w - hw, Math.max(hw, mv.cx)); mv.cy = Math.min(P.h - hh, Math.max(hh, mv.cy));
+  const b = vbox();
+  svg.setAttribute('viewBox', `${b.x.toFixed(2)} ${b.y.toFixed(2)} ${b.w.toFixed(2)} ${b.h.toFixed(2)}`);
+  svg.style.touchAction = mv.k > 1.01 ? 'none' : 'auto'; // let a phone scroll the page until the map is zoomed in
+}
+let redrawQueued = false;
+function redrawMap() { if (redrawQueued) return; redrawQueued = true; requestAnimationFrame(() => { redrawQueued = false; if (state.overview && state.view === 'overview') drawMap(state.overview); }); }
+function fitSites(o) {
+  const P = window.PH_MAP, pts = o.projects.map((p) => mapXY(p.lon, p.lat));
+  if (!pts.length) { mv.k = 1; mv.cx = P.w / 2; mv.cy = P.h / 2; return; }
+  const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
+  const x1 = Math.min(...xs), x2 = Math.max(...xs), y1 = Math.min(...ys), y2 = Math.max(...ys);
+  mv.k = Math.min(MAXK, Math.max(1, 0.8 * Math.min(P.w / Math.max(x2 - x1, 90), P.h / Math.max(y2 - y1, 90))));
+  mv.cx = (x1 + x2) / 2; mv.cy = (y1 + y2) / 2;
+}
+function zoomAt(f, px, py) {
+  const P = window.PH_MAP, b = vbox(), mx = b.x + px * b.w, my = b.y + py * b.h;
+  mv.k = Math.min(MAXK, Math.max(1, mv.k * f));
+  const w = P.w / mv.k, h = P.h / mv.k;
+  mv.cx = mx - px * w + w / 2; mv.cy = my - py * h + h / 2;
+  applyView(); redrawMap();
+}
+function flyTo(k, cx, cy) {
+  k = Math.min(MAXK, Math.max(1, k));
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { Object.assign(mv, { k, cx, cy }); applyView(); redrawMap(); return; }
+  const a = { k: mv.k, cx: mv.cx, cy: mv.cy }, t0 = performance.now();
+  const step = (t) => {
+    const u = Math.min(1, (t - t0) / 300), e = 1 - Math.pow(1 - u, 3);
+    mv.k = a.k * Math.pow(k / a.k, e); mv.cx = a.cx + (cx - a.cx) * e; mv.cy = a.cy + (cy - a.cy) * e;
+    applyView();
+    if (u < 1) requestAnimationFrame(step); else redrawMap();
+  };
+  requestAnimationFrame(step);
+}
+(function () {
+  const svg = $('#phMap'), pts = new Map();
+  let start = null, pinch = 0;
+  const frac = (x, y) => { const r = svg.getBoundingClientRect(); return [(x - r.left) / r.width, (y - r.top) / r.height]; };
+  const two = () => { const [a, b] = [...pts.values()]; return { d: Math.hypot(a.x - b.x, a.y - b.y), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; };
+  svg.addEventListener('wheel', (e) => { e.preventDefault(); const [px, py] = frac(e.clientX, e.clientY); zoomAt(Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0018)), px, py); hideTip(); }, { passive: false });
+  svg.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); mapDrag.moved = false;
+    if (pts.size === 1) start = { x: e.clientX, y: e.clientY, cx: mv.cx, cy: mv.cy };
+    else if (pts.size === 2) { start = null; pinch = two().d; }
+  });
+  window.addEventListener('pointermove', (e) => {
+    if (!pts.has(e.pointerId)) return;
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size === 2) { const t = two(); if (pinch) { const [px, py] = frac(t.x, t.y); zoomAt(t.d / pinch, px, py); mapDrag.moved = true; } pinch = t.d; return; }
+    if (!start || mv.k <= 1.01) return;
+    const dx = e.clientX - start.x, dy = e.clientY - start.y;
+    if (!mapDrag.moved && Math.hypot(dx, dy) < 5) return;
+    mapDrag.moved = true; svg.classList.add('panning');
+    const r = svg.getBoundingClientRect(), b = vbox();
+    mv.cx = start.cx - dx / r.width * b.w; mv.cy = start.cy - dy / r.height * b.h;
+    applyView(); if (!tipSticky) hideTip();
+  });
+  const up = (e) => { pts.delete(e.pointerId); if (pts.size < 2) pinch = 0; if (!pts.size) { start = null; svg.classList.remove('panning'); redrawMap(); } };
+  window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  svg.addEventListener('dblclick', (e) => { if (e.target.closest('.pin')) return; const [px, py] = frac(e.clientX, e.clientY); zoomAt(2, px, py); });
+  $('#mapCtl').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-z]'); if (!b) return;
+    if (b.dataset.z === 'fit') { const keep = { k: mv.k, cx: mv.cx, cy: mv.cy }; fitSites(state.overview || { projects: [] }); const t = { k: mv.k, cx: mv.cx, cy: mv.cy }; Object.assign(mv, keep); flyTo(t.k, t.cx, t.cy); }
+    else zoomAt(b.dataset.z === 'in' ? 1.8 : 1 / 1.8, 0.5, 0.5);
+  });
+})();
+
 let mapClusters = [], tipSticky = false;
 function drawMap(o) {
   const P = window.PH_MAP, svg = $('#phMap');
   if (!P) { svg.outerHTML = '<p class="error">ph-map.js did not load.</p>'; return; }
-  svg.setAttribute('viewBox', `0 0 ${P.w} ${P.h}`);
+  if (!mv.init) { fitSites(o); mv.init = true; }
+  applyView();
+  const s = 1 / mv.k; // keeps pins and labels the same size on screen at any zoom
   const maxSaved = Math.max(...o.projects.map((p) => p.savedKwh), 1);
 
   // Group sites that would sit on top of each other at country scale
   mapClusters = [];
   for (const p of [...o.projects].sort((a, b) => b.savedKwh - a.savedKwh)) {
     const [x, y] = mapXY(p.lon, p.lat);
-    let c = null, best = 28; // sites closer than this many map units share one pin
+    let c = null, best = 28 * s; // sites closer than this many map units share one pin
     for (const k of mapClusters) { const d = Math.hypot(k.x - x, k.y - y); if (d < best) { best = d; c = k; } }
     if (c) { c.items.push(p); c.x = (c.x * (c.items.length - 1) + x) / c.items.length; c.y = (c.y * (c.items.length - 1) + y) / c.items.length; }
     else mapClusters.push({ x, y, items: [p] });
@@ -517,17 +637,17 @@ function drawMap(o) {
     c.items.forEach((p) => { counts[p.area] = (counts[p.area] || 0) + 1; });
     const main = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
     c.label = c.items.length === 1 ? top.city : (Object.keys(counts).length === 1 ? main : `${main} and nearby`);
-    c.r = c.items.length === 1 ? 5 + 7 * Math.sqrt(top.savedKwh / maxSaved) : 13 + 2 * Math.sqrt(c.items.length);
+    c.r = (c.items.length === 1 ? 5 + 7 * Math.sqrt(top.savedKwh / maxSaved) : 13 + 2 * Math.sqrt(c.items.length)) * s;
   }
 
   // Put each label beside its pin, trying right, left, below, above until it clears the others
   const boxes = mapClusters.map((c) => ({ x1: c.x - c.r, x2: c.x + c.r, y1: c.y - c.r, y2: c.y + c.r }));
   const hit = (a, b) => a.x1 < b.x2 && a.x2 > b.x1 && a.y1 < b.y2 && a.y2 > b.y1;
   [...mapClusters.keys()].sort((a, b) => mapClusters[b].r - mapClusters[a].r).forEach((i) => {
-    const c = mapClusters[i], w = c.label.length * 7.4, h = 14;
+    const c = mapClusters[i], w = c.label.length * 7.4 * s, h = 14 * s;
     const tries = [
-      { anchor: 'start', x: c.x + c.r + 5, y: c.y + 5 }, { anchor: 'end', x: c.x - c.r - 5, y: c.y + 5 },
-      { anchor: 'middle', x: c.x, y: c.y + c.r + 15 }, { anchor: 'middle', x: c.x, y: c.y - c.r - 6 },
+      { anchor: 'start', x: c.x + c.r + 5 * s, y: c.y + 5 * s }, { anchor: 'end', x: c.x - c.r - 5 * s, y: c.y + 5 * s },
+      { anchor: 'middle', x: c.x, y: c.y + c.r + 15 * s }, { anchor: 'middle', x: c.x, y: c.y - c.r - 6 * s },
     ];
     const fits = (t) => {
       const x1 = t.anchor === 'start' ? t.x : t.anchor === 'end' ? t.x - w : t.x - w / 2;
@@ -543,8 +663,8 @@ function drawMap(o) {
     const name = c.items.length === 1 ? `${c.items[0].name}, ${nf(c.items[0].savedKwh)} kilowatt-hours saved` : `${c.label}, ${c.items.length} sites`;
     return `<g class="pin${c.items.length > 1 ? ' cluster' : ''}" data-i="${i}" tabindex="0" role="button" aria-label="${esc(name)}">
       <circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="${c.r.toFixed(1)}"/>
-      ${c.items.length > 1 ? `<text class="count" x="${c.x.toFixed(1)}" y="${c.y.toFixed(1)}">${c.items.length}</text>` : ''}
-      <text class="plabel" x="${c.lab.x.toFixed(1)}" y="${c.lab.y.toFixed(1)}" text-anchor="${c.lab.anchor}">${esc(c.label)}</text>
+      ${c.items.length > 1 ? `<text class="count" style="font-size:${15 * s}px" x="${c.x.toFixed(1)}" y="${c.y.toFixed(1)}">${c.items.length}</text>` : ''}
+      <text class="plabel" style="font-size:${14 * s}px;stroke-width:${4 * s}px" x="${c.lab.x.toFixed(1)}" y="${c.lab.y.toFixed(1)}" text-anchor="${c.lab.anchor}">${esc(c.label)}</text>
     </g>`;
   }).join('');
 
@@ -556,7 +676,9 @@ function drawMap(o) {
     g.addEventListener('blur', () => { if (!tipSticky) hideTip(); });
     g.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (mapDrag.moved) return;
       if (c.items.length === 1) { select(c.items[0].id); return; }
+      if (mv.k < MAXK * 0.9) { hideTip(); flyTo(Math.min(MAXK, mv.k * 3), c.x, c.y); return; }
       tipSticky = true;
       showTip(g, c);
     });
@@ -587,6 +709,75 @@ document.addEventListener('click', (e) => { if (tipSticky && !e.target.closest('
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideTip(); });
 
 /* ---------- one site ---------- */
+/* ---------- dashboard figures for one site ---------- */
+const dCharts = {};
+const arrow = (v) => (v == null ? '' : `<small class="dl">${v > 0 ? '\u25B2' : v < 0 ? '\u25BC' : ''} ${nf(Math.abs(v), 2)}% vs yesterday</small>`);
+const KEY = new Set(['uUsed','uSaved','cRate','cSaved','mRate','mSaved','eStatus','eW']);
+const dfig = (k, l) => `<div class="figure${KEY.has(k) ? ' key' : ''}"><div class="v" data-k="${k}">-</div><div class="l">${l}</div></div>`;
+const dsec = (title, note, figs, extra = '') => `<section class="block"><div class="head"><h2>${title}</h2><p>${note}</p></div><div class="figures">${figs.map((f) => dfig(f[0], f[1])).join('')}</div>${extra}</section>`;
+const dplot = (id, title) => `<section class="block"><div class="head"><h2>${title}</h2></div><div class="plot short"><canvas id="${id}"></canvas></div></section>`;
+function buildDetails(pid) {
+  $('#siteDetails').innerHTML =
+    dsec('Today', 'Compared with yesterday', [['uUsed', 'Usage today'], ['uTraffic', 'Total traffic today'], ['uParked', 'Vehicles parked today'], ['uSaved', 'Power savings today']])
+    + dsec('Since go-live', 'Cumulative', [['cRate', 'Power saving rate'], ['cSaved', 'Cumulative power savings'], ['cUsed', 'Cumulative power consumption'], ['cOther', 'Cumulative other power usage'], ['cRatio', 'Power ratio (used)'], ['cDays', 'Total energy-saving duration'], ['cBill', 'Cumulative power bill savings'], ['cCarbon', 'Cumulative carbon emission reduction'], ['cTrees', 'Tree planting comparison']])
+    + dsec('This month', 'Energy saving rate and power ratio', [['mRate', 'Energy saving rate'], ['mSaved', 'Saved'], ['mUsed', 'Actual usage'], ['mLamp', 'Lighting'], ['mAc', 'Air conditioner'], ['mOther', 'Others'], ['mCarbon', 'Carbon emission reduction'], ['mCost', 'Cost settlement'], ['mTariff', 'Tariff'], ['mUsage', 'Usage this month']])
+    + dsec('Equipment and meter', 'Current readings', [['eFix', 'Lighting fixtures'], ['eBefore', 'Before improvement'], ['eAfter', 'After improvement'], ['eMeters', 'Number of meters'], ['eStatus', 'Meter status'], ['eW', 'Power'], ['eV', 'Voltage'], ['eA', 'Current'], ['eRead', 'Total meter reading'], ['nLight', 'Current lighting power'], ['nTraffic', 'Current traffic'], ['nPark', 'Current parking occupied']])
+    + '<div class="charts">' + dplot('dPowerDay', 'Power usage, this month (kWh per day)') + dplot('dShare', 'Power share trend, by month')
+    + dplot('dTraffic24', 'Traffic flow, last 24 hours') + dplot('dTrafficDay', 'Traffic, this month') + '</div>';
+  Object.values(dCharts).forEach((c) => c.destroy());
+  for (const k of Object.keys(dCharts)) delete dCharts[k];
+  const base = { maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom' } }, scales: { y: { beginAtZero: true } } };
+  const mk = (id, type, extra = {}) => { dCharts[id] = new Chart($('#' + id), { type, data: { labels: [], datasets: [] }, options: { ...base, ...extra } }); };
+  mk('dTraffic24', 'line'); mk('dTrafficDay', 'line');
+  mk('dShare', 'bar', { scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } });
+  mk('dPowerDay', 'bar', { scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } });
+  state.dBuilt = pid;
+}
+function setChart(id, labels, sets) {
+  const c = dCharts[id]; if (!c) return;
+  c.data.labels = labels;
+  c.data.datasets = sets.map((s) => ({ borderWidth: 2, tension: 0.3, pointRadius: 2, ...s }));
+  c.update();
+}
+async function loadDetails() {
+  const pid = state.pid;
+  const d = await get(`/projects/${pid}/details`);
+  if (pid !== state.pid) return;
+  if (!d) { $('#siteDetails').innerHTML = ''; return; }
+  if (state.dBuilt !== pid) buildDetails(pid);
+  const set = (k, v) => { const e = document.querySelector(`#siteDetails [data-k="${k}"]`); if (e) e.innerHTML = v; };
+  const u = (x) => (x == null ? '-' : nf(x, 2));
+  const t = d.today, c = d.cumulative, m = d.month, e = d.meter, no = d.now;
+  set('uUsed', `${u(t.usedKwh)}<small>kWh</small>${arrow(t.usedVs)}`);
+  set('uTraffic', `${nf(t.traffic)}${arrow(t.trafficVs)}`);
+  set('uParked', `${nf(t.parked)}${arrow(t.parkedVs)}`);
+  set('uSaved', `${u(t.savedKwh)}<small>kWh</small>${arrow(t.savedVs)}`);
+  set('cRate', `${nf(c.saveRate, 1)}<small>%</small>`); set('cSaved', `${u(c.savedKwh)}<small>kWh</small>`);
+  set('cUsed', `${u(c.usedKwh)}<small>kWh</small>`); set('cOther', `${u(c.otherKwh)}<small>kWh</small>`);
+  set('cRatio', `${nf(c.usedRatio, 1)}<small>%</small>`); set('cDays', `${nf(c.durationDays, 1)}<small>days</small>`);
+  set('cBill', `\u20B1${u(c.billSavings)}`); set('cCarbon', `${u(c.carbonKg)}<small>kg</small>`); set('cTrees', `${nf(c.trees)}<small>units</small>`);
+  set('mRate', `${nf(m.saveRate, 0)}<small>% saved / ${nf(m.usedRatio, 0)}% used</small>`);
+  set('mSaved', `${u(m.savedKwh)}<small>kWh</small>`); set('mUsed', `${u(m.usedKwh)}<small>kWh</small>`);
+  set('mLamp', `${u(m.lampKwh)}<small>kWh, ${nf(m.lampPct, 0)}%</small>`); set('mAc', `${u(m.acKwh)}<small>kWh, ${nf(m.acPct, 0)}%</small>`); set('mOther', `${u(m.otherKwh)}<small>kWh, ${nf(m.otherPct, 0)}%</small>`);
+  set('mCarbon', `${u(m.carbonKg)}<small>kg</small>`); set('mCost', `\u20B1${u(m.costSaved)}`); set('mTariff', `\u20B1${u(m.tariff)}<small>/kWh</small>`);
+  set('mUsage', `${u(m.usageKwh)}<small>kWh</small>${m.usageVsLast == null ? '' : `<small class="dl">${m.usageVsLast >= 0 ? '\u25B2' : '\u25BC'} ${nf(Math.abs(m.usageVsLast), 1)}% vs last month</small>`}`);
+  set('eFix', `${nf(d.fixtures)}<small>pcs</small>`); set('eBefore', `${u(d.beforeKwh)}<small>kWh</small>`); set('eAfter', `${u(d.afterKwh)}<small>kWh</small>`);
+  set('eMeters', nf(e.count)); set('eStatus', e.online == null ? '-' : e.online ? 'Normal' : 'Offline');
+  set('eW', e.watts == null ? '-' : `${nf(e.watts)}<small>W</small>`); set('eV', e.volts == null ? '-' : `${nf(e.volts, 1)}<small>V</small>`); set('eA', e.amps == null ? '-' : `${nf(e.amps, 2)}<small>A</small>`);
+  set('eRead', e.totalReadingKwh == null ? '-' : `${u(e.totalReadingKwh)}<small>kWh</small>`);
+  set('nLight', `${nf(no.lightingPct, 1)}<small>%</small>`); set('nTraffic', nf(no.traffic)); set('nPark', no.parkingPct == null ? '-' : `${nf(no.parkingPct, 1)}<small>%</small>`);
+  setChart('dTraffic24', d.trafficHourly.map((r) => `${String(r.hour).padStart(2, '0')}:00`), [{ label: 'People and vehicles', data: d.trafficHourly.map((r) => r.value), borderColor: '#3f7421', backgroundColor: 'rgba(91,154,46,.18)', fill: true }]);
+  setChart('dShare', d.powerShare.map((r) => `M${r.month}`), [
+    { label: 'Lighting', data: d.powerShare.map((r) => r.lamp), backgroundColor: '#e0b400' },
+    { label: 'Air conditioner', data: d.powerShare.map((r) => r.ac), backgroundColor: '#2f6fdd' },
+    { label: 'Others', data: d.powerShare.map((r) => r.other), backgroundColor: '#d64545' }]);
+  setChart('dPowerDay', d.daily.power.map((r) => r.day), [
+    { label: 'Actual usage', data: d.daily.power.map((r) => r.used), backgroundColor: '#4a62e8' },
+    { label: 'Power saved', data: d.daily.power.map((r) => r.saved), backgroundColor: '#1fb88a' }]);
+  setChart('dTrafficDay', d.daily.traffic.map((r) => r.day), [{ label: 'People and vehicles', data: d.daily.traffic.map((r) => r.value), borderColor: '#1d9a6c', backgroundColor: 'rgba(29,154,108,.15)', fill: true }]);
+}
+setInterval(() => { if (state.pid && !$('#projectView').hidden) loadDetails().catch(() => {}); }, 10000);
+
 async function openProject(id) {
   state.pid = id;
   markTabs(id);
@@ -600,12 +791,14 @@ async function openProject(id) {
   $('#pName').textContent = p.name;
   $('#pLoc').textContent = p.location;
   $('#kToday').textContent = $('#k30').textContent = $('#kCost').textContent = '-';
+  $('#siteDetails').innerHTML = ''; state.dBuilt = null;
   try {
     const meters = await get(`/projects/${id}/meters`);
     if (id !== state.pid) return;
     state.meters = meters;
     renderMeters();
     openStream();
+    loadDetails().catch(() => {});
     await Promise.all([loadSummary(), loadHistory()]);
   } catch (err) { showFault(err); }
 }
@@ -625,11 +818,31 @@ async function boot(me) {
     else if (state.projects.length) select(state.projects[0].id);
     else {
       $('#overviewView').hidden = true; $('#projectView').hidden = true;
-      $('#notice').textContent = 'No monitored site is linked to your account yet. Please contact INES Solutions.';
+      $('#notice').textContent = 'No monitored site is linked to your account yet. Please contact Mirae ESP.';
       $('#notice').hidden = false;
     }
   } catch (err) { showFault(err); }
 }
+
+
+/* ---------- site tabs: arrows, mouse wheel and drag scrolling ---------- */
+(function () {
+  const tabs = $('#tabs'), prev = $('#tabPrev'), next = $('#tabNext');
+  const sync = () => { prev.disabled = tabs.scrollLeft <= 2; next.disabled = tabs.scrollLeft + tabs.clientWidth >= tabs.scrollWidth - 2; };
+  const by = (dir) => tabs.scrollBy({ left: dir * Math.max(200, tabs.clientWidth * 0.7) });
+  prev.addEventListener('click', () => by(-1));
+  next.addEventListener('click', () => by(1));
+  tabs.addEventListener('scroll', sync);
+  window.addEventListener('resize', sync);
+  new MutationObserver(() => { sync(); const on = tabs.querySelector('[aria-selected="true"]'); if (on) on.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }).observe(tabs, { childList: true, attributes: true, subtree: true, attributeFilter: ['aria-selected'] });
+  tabs.addEventListener('wheel', (e) => { if (tabs.scrollWidth <= tabs.clientWidth || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return; e.preventDefault(); tabs.scrollLeft += e.deltaY; }, { passive: false });
+  let down = null, moved = false;
+  tabs.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') return; down = { x: e.clientX, left: tabs.scrollLeft }; moved = false; });
+  window.addEventListener('pointermove', (e) => { if (!down) return; const dx = e.clientX - down.x; if (Math.abs(dx) > 4) { moved = true; tabs.classList.add('drag'); } if (moved) tabs.scrollLeft = down.left - dx; });
+  window.addEventListener('pointerup', () => { down = null; tabs.classList.remove('drag'); });
+  tabs.addEventListener('click', (e) => { if (moved) { e.stopPropagation(); e.preventDefault(); moved = false; } }, true);
+  sync();
+})();
 
 (async () => { let me; try { me = await shell(); } catch (_) { return; } boot(me); })();
 })();

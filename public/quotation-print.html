@@ -90,12 +90,11 @@ function inWords(amount) {
     ? `If you have any questions about this quote, please contact ${esc(q.contact_name)}${q.contact_phone ? ' at ' + esc(q.contact_phone) : ''}${q.contact_email ? ' or ' + esc(q.contact_email) : ''}. Thank you!`
     : 'Thank you for your business!';
   document.getElementById('doc').innerHTML = `
-    <img class="logo" src="/img/ines-logo.jpg" alt="INES Solutions Inc">
+    <img class="logo" src="/img/mirae-esp-logo.png" alt="Mirae ESP Inc">
     <div class="head">
       <div class="addr"><table>
         <tr><td colspan="2">Unit C, 12F, Strata 2000 Building</td></tr><tr><td colspan="2">F. Ortigas Jr., Ortigas Center</td></tr>
         <tr><td colspan="2">San Antonio, Pasig City</td></tr>
-        <tr><td>Website:</td><td>ines-solutions.co.kr/</td></tr>
         <tr><td>Submitted by:</td><td>${esc(q.submitted_by)}</td></tr><tr><td>Contact No.:</td><td>${esc(q.contact_no)}</td></tr></table></div>
       <div class="meta"><div class="bar big">QUOTATION</div><table>
         <tr><td>Quotation No.:</td><td>${esc(q.quote_no)}</td></tr><tr><td>Date:</td><td>${mdy(q.quote_date)}</td></tr>

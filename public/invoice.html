@@ -103,7 +103,7 @@ function render() {
   // Client (viewer) logins can't change the invoice number or VAT treatment: fixed values, controls removed.
   const mode = locked ? 'none' : document.getElementById('o-vat').value;
   const invNo = locked ? b.statement_no : (document.getElementById('o-no').value.trim() || b.statement_no);
-  const charge = Number(b.amount_billed || 0);          // INES share for the period
+  const charge = Number(b.amount_billed || 0);          // Mirae ESP share for the period
   const other = Number(b.adjustments_total || 0) + Number(b.interest_charged || 0);
   const base = r2(charge + other);                      // this period's charges
   let net, vat, total;
@@ -115,7 +115,7 @@ function render() {
   const isDraft = ['draft', 'for_review', 'approved', 'void'].includes(b.status);
   const items = [{
     d: `Energy savings share — ${b.project.name}`,
-    sub: `Period ${longDate(b.period_start)} – ${longDate(b.period_end)} (${b.days} days) · Savings ${kwhs(b.energy_savings_kwh)} · Gross savings ${P(b.gross_savings)} × ${+Number(b.ines_pct).toFixed(2)}% INES share`,
+    sub: `Period ${longDate(b.period_start)} – ${longDate(b.period_end)} (${b.days} days) · Savings ${kwhs(b.energy_savings_kwh)} · Gross savings ${P(b.gross_savings)} × ${+Number(b.ines_pct).toFixed(2)}% Mirae ESP share`,
     amt: charge
   }];
   if (other) items.push({ d: 'Billing adjustments' + (Number(b.interest_charged) ? ' (incl. late payment interest)' : ''), sub: '', amt: other });
@@ -128,12 +128,12 @@ function render() {
     : `<tr><td>Sub Total (VAT Ex)</td><td>${P(net)}</td></tr><tr><td>Add: 12% VAT</td><td>${P(vat)}</td></tr>`;
 
   document.getElementById('doc').innerHTML = `
-    <img class="logo" src="/img/ines-logo.jpg" alt="INES Solutions Inc">
+    <img class="logo" src="/img/mirae-esp-logo.png" alt="Mirae ESP Inc">
     <div class="head">
       <div class="addr"><table>
         <tr><td colspan="2">Unit C, 12F, Strata 2000 Building</td></tr><tr><td colspan="2">F. Ortigas Jr., Ortigas Center</td></tr>
         <tr><td colspan="2">San Antonio, Pasig City</td></tr>
-        <tr><td>Website:</td><td>ines-solutions.co.kr/</td></tr></table></div>
+        </table></div>
       <div class="meta"><div class="bar big">SALES INVOICE</div><table>
         <tr><td>Invoice No.:</td><td>${esc(invNo)}</td></tr>
         <tr><td>Date:</td><td>${mdy(b.bill_date)}</td></tr>

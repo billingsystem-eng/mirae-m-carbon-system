@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS audit_log (
   detail TEXT
 );
 
--- Ways a client can pay INES. Active ones print on every billing statement.
+-- Ways a client can pay Mirae ESP. Active ones print on every billing statement.
 CREATE TABLE IF NOT EXISTS payment_methods (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,                         -- e.g. "Bank transfer — BDO"
@@ -280,7 +280,7 @@ CREATE TABLE IF NOT EXISTS webhook_events (
   received_at TEXT NOT NULL DEFAULT (datetime('now'))
 );`);
 
-// Payment chat between ONE client login and INES staff. A conversation is identified by
+// Payment chat between ONE client login and Mirae ESP staff. A conversation is identified by
 // (bill, client login): client_user_id is the viewer who owns it. Two logins of the same client
 // never see each other's messages; staff see every conversation.
 //   side = 'client' (the viewer wrote it) or 'staff' (admin / billing officer / finance-HR wrote it).

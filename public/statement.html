@@ -207,7 +207,7 @@ function barChart(rows, key, color) {
         <div class="meta">Statement No: ${esc(b.statement_no)}<br>Statement Date: ${esc(longDate(b.bill_date))}
           ${isDraft ? `<div class="draft-flag">${esc(b.status_label).toUpperCase()} — NOT FOR RELEASE</div>` : ''}</div>
       </div>
-      <img class="logo" src="/img/ines-logo.jpg" alt="INES Solutions Inc">
+      <img class="logo" src="/img/mirae-esp-logo.png" alt="Mirae ESP Inc">
     </div>
 
     <div class="grid">
@@ -277,7 +277,7 @@ function barChart(rows, key, color) {
             <tr><td class="part" colspan="2">Part II - Electricity Rates</td></tr>
             ${rateRows}
             <tr><td>Gross energy cost savings</td><td class="v">${peso(b.gross_savings)}</td></tr>
-            <tr><td>INES share (${+Number(b.ines_pct).toFixed(2)}%)</td><td class="v">${peso(b.amount_billed)}</td></tr>
+            <tr><td>Mirae ESP share (${+Number(b.ines_pct).toFixed(2)}%)</td><td class="v">${peso(b.amount_billed)}</td></tr>
             <tr><td>Client retained savings (${+Number(b.client_pct).toFixed(2)}%)</td><td class="v">${peso(b.client_retained)}</td></tr>
           </table>
         </div>

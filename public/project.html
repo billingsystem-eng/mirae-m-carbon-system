@@ -109,7 +109,7 @@
                 <div class="field"><label for="s-label">Label</label><input id="s-label" placeholder="Year 1" data-edit></div>
                 <div class="field"><label for="s-from">Effective from</label><input id="s-from" type="date" required data-edit></div>
                 <div class="field"><label for="s-to">Effective to</label><input id="s-to" type="date" data-edit></div>
-                <div class="field"><label for="s-ines">INES share (%)</label><input id="s-ines" type="number" step="0.01" required data-edit></div>
+                <div class="field"><label for="s-ines">Mirae ESP share (%)</label><input id="s-ines" type="number" step="0.01" required data-edit></div>
                 <div class="field"><label for="s-client">Client share (%)</label><input id="s-client" type="number" step="0.01" required data-edit></div>
               </div>
               <button type="submit" data-edit>Add ratio</button>
@@ -171,7 +171,7 @@ async function load() {
     : '<div class="empty">No rates yet. Add at least one before billing.</div>';
 
   document.getElementById('sharing').innerHTML = (c.sharing_ratios || []).length ? `<div class="table-wrap"><table>
-      <thead><tr><th>Period</th><th class="num">INES</th><th class="num">Client</th><th></th></tr></thead>
+      <thead><tr><th>Period</th><th class="num">Mirae ESP</th><th class="num">Client</th><th></th></tr></thead>
       <tbody>${c.sharing_ratios.map((s) => `<tr>
         <td>${esc(s.label || '')}<br><span style="color:var(--ink-soft);font-size:.83rem">${dateText(s.effective_from)} – ${s.effective_to ? dateText(s.effective_to) : 'open'}</span></td>
         <td class="num">${dec(s.ines_pct)}%</td><td class="num">${dec(s.client_pct)}%</td>

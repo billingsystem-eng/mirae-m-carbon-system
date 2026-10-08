@@ -87,7 +87,7 @@ async function shell() {
   const here = location.pathname;
   const roleText = { admin: 'Administrator', billing_officer: 'Billing officer', finance_hr: 'Finance / HR', viewer: 'Viewer' }[me.role] || me.role;
   rail.innerHTML = `
-    <div class="mark"><b>M-Carbon System</b><span>INES Solutions</span></div>
+    <div class="mark"><b>M-Carbon System</b><span>Mirae ESP</span></div>
     <nav>${NAV.filter((n) => (!n.adminOnly || me.role === 'admin') && (me.role !== 'viewer' || VIEWER_PAGES.includes(n.href)))
       .map((n) => `<a href="${n.href}" class="${here === n.href || (n.also || []).includes(here) ? 'on' : ''}">${navIcon(n.icon)}<span>${n.label}</span></a>`)
       .join('')}</nav>

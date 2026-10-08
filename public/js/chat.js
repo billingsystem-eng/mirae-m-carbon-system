@@ -1,4 +1,4 @@
-/* Payment chat between a client and INES finance, one thread per bill.
+/* Payment chat between a client and Mirae ESP finance, one thread per bill.
  * BillChat.mount(hostElement, { billId, threadUserId, isClient, onChange }) renders the thread and keeps it fresh by polling.
  * Mounting again (the bill page reloads after each action) replaces the previous instance. */
 const BillChat = (() => {
@@ -36,8 +36,8 @@ const BillChat = (() => {
       <p class="chat-closed" id="chat-closed" hidden>This bill is no longer open for messages.</p>`;
 
     host.querySelector('#chat-note').textContent = isClient
-      ? 'Ask INES finance about this statement, or send your payment reference after you have paid.'
-      : 'Only this client login and INES staff can see this conversation. Keep internal discussion elsewhere.';
+      ? 'Ask Mirae ESP finance about this statement, or send your payment reference after you have paid.'
+      : 'Only this client login and Mirae ESP staff can see this conversation. Keep internal discussion elsewhere.';
 
     const log = host.querySelector('#chat-log');
     const form = host.querySelector('#chat-form');
@@ -58,7 +58,7 @@ const BillChat = (() => {
       el.className = 'chat-msg ' + (m.mine ? 'mine' : 'theirs') + ' ' + m.side;
       const who = document.createElement('div');
       who.className = 'chat-meta';
-      who.textContent = (m.mine ? 'You' : m.sender_name) + (m.side === 'staff' ? ' · INES Solutions' : '') + ' · ' + when(m.created_at);
+      who.textContent = (m.mine ? 'You' : m.sender_name) + (m.side === 'staff' ? ' · Mirae ESP' : '') + ' · ' + when(m.created_at);
       const text = document.createElement('div');
       text.className = 'chat-text';
       text.textContent = m.body;            // textContent, never innerHTML: messages are untrusted input

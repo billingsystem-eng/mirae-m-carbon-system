@@ -1,4 +1,4 @@
-// Payment chat: a private conversation between ONE client login (viewer) and INES staff
+// Payment chat: a private conversation between ONE client login (viewer) and Mirae ESP staff
 // (admin, billing officer, finance / HR), per issued bill.
 //
 //   GET  /api/messages/threads                 -> the conversations the signed-in user can open

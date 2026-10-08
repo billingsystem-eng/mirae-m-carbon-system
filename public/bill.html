@@ -106,7 +106,7 @@
           <div class="body">
             <div class="grid2">
               <div class="field">
-                <label for="ines_pct">INES share (%)</label>
+                <label for="ines_pct">Mirae ESP share (%)</label>
                 <input id="ines_pct" type="number" step="0.01" data-edit>
                 <select class="no-print" id="use-ratio" data-edit hidden style="margin-top:4px"></select>
               </div>
@@ -328,7 +328,7 @@ function renderTape(r) {
       <div class="line total"><span>Gross cost savings</span><span>${money(r.gross_savings)}</span></div>
     </div>
     <div class="step"><h4>Step 4 — Sharing</h4>
-      <div class="line"><span>INES share ${dec(val('ines_pct'))}%</span><span>${money(r.amount_billed)}</span></div>
+      <div class="line"><span>Mirae ESP share ${dec(val('ines_pct'))}%</span><span>${money(r.amount_billed)}</span></div>
       <div class="line"><span>Client retained ${dec(val('client_pct'))}%</span><span>${money(r.client_retained)}</span></div>
     </div>
     <div class="step"><h4>Statement summary</h4>

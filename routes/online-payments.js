@@ -57,7 +57,7 @@ router.post('/bills/:id/checkout', async (req, res) => {
           quantity: 1
         }],
         payment_method_types: methods(),
-        description: `INES Solutions - statement ${bill.statement_no}`,
+        description: `Mirae ESP - statement ${bill.statement_no}`,
         reference_number: reference,
         success_url: `${base}/bill.html?id=${bill.id}&paid=1`,
         cancel_url: `${base}/bill.html?id=${bill.id}`,

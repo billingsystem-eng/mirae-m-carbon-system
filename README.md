@@ -1,6 +1,6 @@
 # M-Carbon LED Billing System
 
-Savings-based billing for INES Solutions' M-Carbon LED retrofit projects, built to the
+Savings-based billing for Mirae ESP' M-Carbon LED retrofit projects, built to the
 scope document. This build covers the **standalone / manual mode**: consumption is entered
 by hand, the engine computes the baseline, savings and sharing split, and the system
 produces a traceable utility-style statement.
@@ -62,8 +62,8 @@ PayMongo's hosted checkout (GCash, cards, QR Ph — whatever you enable in PayMo
 | 2 — Agreed savings percentage | usage rate = 1 − agreed savings %; baseline = actual ÷ usage rate |
 | 3 — Actual operating hours | per day: (daily baseline ÷ 24) × hours; summed over the period |
 
-Then: savings = baseline − actual; gross savings = Σ (savings kWh × rate); INES charge =
-gross × INES share; client retained = gross × client share.
+Then: savings = baseline − actual; gross savings = Σ (savings kWh × rate); Mirae ESP charge =
+gross × Mirae ESP share; client retained = gross × client share.
 
 ## Structure
 
@@ -86,7 +86,7 @@ public/              login, dashboard, clients, client, project, bills,
 
 ## Still to do
 
-- **Fill in the provider block.** `public/statement.html` has INES address, TIN, contact and
+- **Fill in the provider block.** `public/statement.html` has Mirae ESP address, TIN, contact and
   logo as placeholders in the `PROVIDER` constant.
 - **Dashboard integration is wired up** (Section 5 of the scope). `lib/dashboard.js` logs
   into the M-Carbon Dashboard's private API and pulls per-day actual consumption plus a

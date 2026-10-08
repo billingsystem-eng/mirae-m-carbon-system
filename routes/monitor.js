@@ -59,6 +59,9 @@ router.get('/overview', wrap(async (req, res) => {
   res.json(await provider.overview());
 }));
 
+// Everything the dashboard's own site screen shows. Null when the provider (sample data) has no such figures.
+router.get('/projects/:id/details', wrap(async (req, res) => res.json(provider.details ? await provider.details(req.params.id) : null)));
+
 router.get('/projects/:id/meters', wrap(async (req, res) => res.json(await provider.listMeters(req.params.id))));
 
 router.get('/projects/:id/history', wrap(async (req, res) => {
