@@ -167,16 +167,28 @@ function barChart(monthly) {
   ].map(([label, value, sub]) => `<div class="stat"><b>${value}</b><span>${label} — ${sub}</span></div>`).join('');
 
   const pending = document.getElementById('pending');
-  document.getElementById('pending-count').textContent = d.pending.length ? `${d.pending.length} open` : '';
-  pending.innerHTML = d.pending.length ? `<div class="table-wrap"><table>
+  const qp = d.quotes_pending || [];
+  const QL = { for_review: 'For review', approved: 'Accepted', declined: 'Declined' };
+  const QPILL = { for_review: 'for_review', approved: 'approved', declined: 'void' };
+  const QNOTE = { for_review: 'Waiting for Finance / HR', approved: 'Finance / HR to send to client', declined: 'Billing officer to fix' };
+  document.getElementById('pending-count').textContent = d.pending.length + qp.length ? `${d.pending.length + qp.length} open` : '';
+  const billsHtml = d.pending.length ? `<div class="table-wrap"><table>
       <thead><tr><th>Statement</th><th>Client</th><th>Period</th><th>Stage</th><th class="num">Amount</th></tr></thead>
       <tbody>${d.pending.map((b) => `<tr>
         <td><a href="/bill.html?id=${b.id}">${esc(b.statement_no)}</a></td>
         <td>${esc(b.client_name)}<br><span style="color:var(--ink-soft);font-size:.82rem">${esc(b.project_name)}</span></td>
         <td>${dateText(b.period_start)} – ${dateText(b.period_end)}</td>
         <td><span class="pill ${b.status}">${esc(b.status.replace('_', ' '))}</span></td>
-        <td class="num">${money(b.amount_billed)}</td></tr>`).join('')}</tbody></table></div>`
-    : '<div class="empty">Nothing waiting. Start a billing period when this month’s readings are in.</div>';
+        <td class="num">${money(b.amount_billed)}</td></tr>`).join('')}</tbody></table></div>` : '';
+  const quotesHtml = qp.length ? `<div class="table-wrap"><table>
+      <thead><tr><th>Quotation</th><th>Customer</th><th>Stage</th><th class="num">Total (VAT inc)</th></tr></thead>
+      <tbody>${qp.map((r) => `<tr>
+        <td><a href="/quotation.html?id=${r.id}">${esc(r.quote_no)}</a></td>
+        <td>${esc(r.customer_name)}</td>
+        <td><span class="pill ${QPILL[r.status]}">${QL[r.status]}</span><br><span style="color:var(--ink-soft);font-size:.82rem">${QNOTE[r.status]}</span></td>
+        <td class="num">${money(r.total)}</td></tr>`).join('')}</tbody></table></div>` : '';
+  pending.innerHTML = billsHtml + quotesHtml
+    || '<div class="empty">Nothing waiting. Start a billing period when this month’s readings are in.</div>';
 
   document.getElementById('overdue').innerHTML = d.overdue.length ? `<div class="table-wrap"><table>
       <thead><tr><th>Client</th><th>Due</th><th class="num">Balance</th></tr></thead>

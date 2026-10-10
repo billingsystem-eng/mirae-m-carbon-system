@@ -56,12 +56,14 @@ router.post('/password', requireAuth, (req, res) => {
 // --- User management (administrators only) ---
 
 router.get('/users', requireRole('admin'), (req, res) => {
-  res.json(db.prepare(`SELECT u.id, u.username, u.full_name, u.role, u.active, u.created_at, u.client_id, c.name AS client_name
+  res.json(db.prepare(`SELECT u.id, u.username, u.full_name, u.role, u.active, u.created_at, u.client_id, u.email, c.name AS client_name
     FROM users u LEFT JOIN clients c ON c.id = u.client_id ORDER BY u.username`).all());
 });
 
 router.post('/users', requireRole('admin'), (req, res) => {
-  const { username, full_name, role, password, client_id } = req.body || {};
+  const { username, full_name, role, password, client_id, email } = req.body || {};
+  const mail = String(email || '').trim();
+  if (mail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) return res.status(400).json({ error: 'Enter a valid email address.' });
   if (!username || !full_name || !password) {
     return res.status(400).json({ error: 'Username, full name and password are required.' });
   }
@@ -78,8 +80,8 @@ router.post('/users', requireRole('admin'), (req, res) => {
   }
   try {
     const info = db
-      .prepare('INSERT INTO users (username, password_hash, full_name, role, client_id) VALUES (?,?,?,?,?)')
-      .run(username.trim(), bcrypt.hashSync(password, 10), full_name.trim(), role, clientId);
+      .prepare('INSERT INTO users (username, password_hash, full_name, role, client_id, email) VALUES (?,?,?,?,?,?)')
+      .run(username.trim(), bcrypt.hashSync(password, 10), full_name.trim(), role, clientId, mail || null);
     audit.log(req, 'user', info.lastInsertRowid, 'create', `Created user ${username} (${role})`);
     res.json({ id: info.lastInsertRowid });
   } catch (e) {
@@ -89,11 +91,16 @@ router.post('/users', requireRole('admin'), (req, res) => {
 
 router.patch('/users/:id', requireRole('admin'), (req, res) => {
   const id = Number(req.params.id);
-  const { full_name, role, active, password, client_id } = req.body || {};
+  const { full_name, role, active, password, client_id, email } = req.body || {};
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
   if (!user) return res.status(404).json({ error: 'User not found.' });
   if (id === req.session.userId && active === 0) {
     return res.status(400).json({ error: 'You cannot deactivate your own account.' });
+  }
+  let mail = user.email;
+  if (email !== undefined) {
+    mail = String(email || '').trim() || null;
+    if (mail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) return res.status(400).json({ error: 'Enter a valid email address.' });
   }
   let clientId = user.client_id;
   if (client_id !== undefined) {
@@ -105,11 +112,12 @@ router.patch('/users/:id', requireRole('admin'), (req, res) => {
   if (role !== undefined && !['admin', 'billing_officer', 'finance_hr', 'viewer'].includes(role)) {
     return res.status(400).json({ error: 'Pick a valid role.' });
   }
-  db.prepare('UPDATE users SET full_name = ?, role = ?, active = ?, client_id = ? WHERE id = ?').run(
+  db.prepare('UPDATE users SET full_name = ?, role = ?, active = ?, client_id = ?, email = ? WHERE id = ?').run(
     full_name ?? user.full_name,
     role ?? user.role,
     active === undefined ? user.active : active ? 1 : 0,
     clientId,
+    mail,
     id
   );
   if (password) {

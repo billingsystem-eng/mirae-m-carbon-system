@@ -5,6 +5,7 @@ const db = require('../db');
 const { requireRole, viewerScope, notViewer } = require('../middleware/auth');
 const canEdit = requireRole('admin');
 const audit = require('../lib/audit');
+const notify = require('../lib/notify');
 
 const router = express.Router();
 
@@ -19,6 +20,7 @@ const STATUSES = [
 ];
 
 router.get('/', (req, res) => {
+  try { notify.syncClientStatus(); } catch (e) { console.error('[status]', e); } // never show a stale Billed/Overdue
   const q = (req.query.q || '').trim();
   const status = (req.query.status || '').trim();
   let sql = `SELECT c.*,

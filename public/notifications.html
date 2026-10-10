@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Notifications — M-Carbon System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/app.css">
+<link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail"></aside>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>Notifications</h1>
+        <p>Reminders appear here, and by email, when a statement is about to be due or is overdue.</p>
+      </div>
+      <button class="quiet danger" id="clear-all" type="button" hidden>Delete all</button>
+    </div>
+
+    <div class="nt-filters" id="filters" role="group" aria-label="Filter notifications" hidden></div>
+    <div id="mine" aria-live="polite"></div>
+
+    <div id="staff" hidden>
+      <div class="page-head nt-log-head">
+        <div>
+          <h2>Reminder log</h2>
+          <p>Every reminder sent, who was emailed, and whether the emails went through.</p>
+        </div>
+        <button class="primary" id="check" type="button">Check for overdue bills now</button>
+      </div>
+      <div class="notice warn" id="mailnote" hidden>Email is not set up yet, so reminders only appear inside the system. Add the SMTP settings to <code>.env</code> (see NOTIFICATIONS.md); held emails are sent automatically once email works.</div>
+      <div class="panel"><div class="table-wrap" id="log"></div></div>
+    </div>
+  </main>
+</div>
+<style>
+/* Filters: one segmented row, counts beside each label. */
+.nt-filters { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule-strong); border-radius: var(--radius); overflow: hidden; background: var(--surface); margin-bottom: 18px; box-shadow: var(--btn-shadow); }
+.nt-filters[hidden] { display: none; }
+.nt-filters button { border: 0; border-radius: 0; background: var(--surface); color: var(--ink); padding: 7px 14px; box-shadow: none; transform: none; display: inline-flex; align-items: center; gap: 7px; }
+.nt-filters button + button { border-left: 1px solid var(--rule-strong); }
+.nt-filters button:hover:not(:disabled) { background: var(--leaf-tint); box-shadow: none; transform: none; }
+.nt-filters button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.nt-filters button .n { font-size: .76rem; font-weight: 600; padding: 0 6px; border-radius: 999px; background: var(--paper); color: var(--ink-soft); }
+.nt-filters button[aria-pressed="true"] .n { background: #2a403c; color: #cfe3ae; }
+
+/* Day groups */
+.nt-day { margin: 0 0 8px; padding: 0; font-size: .86rem; font-weight: 600; color: var(--ink-soft); letter-spacing: 0; }
+.nt-group { margin-bottom: 22px; }
+.nt-list { display: flex; flex-direction: column; gap: 10px; }
+
+/* One notification. The coloured edge says what kind it is; the dot says it is new. */
+.nt { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; padding: 16px 18px 14px 16px; background: var(--surface); border: 1px solid var(--rule); border-left: 4px solid var(--rule-strong); border-radius: var(--radius); transition: opacity .18s, transform .18s; }
+.nt.overdue { border-left-color: var(--alert); }
+.nt.due_soon { border-left-color: #c58a1c; }
+.nt.quotation { border-left-color: var(--signal); }
+.nt.unread { background: #f8fbf3; }
+.nt.out { opacity: 0; transform: translateX(10px); }
+.nt-ico { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--paper); color: var(--ink-soft); }
+.nt.overdue .nt-ico { background: var(--alert-tint); color: var(--alert); }
+.nt.due_soon .nt-ico { background: var(--amber-tint); color: var(--amber); }
+.nt.quotation .nt-ico { background: var(--signal-tint); color: var(--signal); }
+.nt-ico svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.nt-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.nt-title { margin: 0; font-size: 1rem; color: var(--ink); font-weight: 600; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.nt-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--leaf); flex: none; }
+.nt-time { color: var(--ink-soft); font-size: .84rem; white-space: nowrap; }
+.nt-sum { margin: 4px 0 0; max-width: 70ch; }
+.nt-facts { display: flex; flex-wrap: wrap; gap: 6px 28px; margin: 12px 0 0; padding: 10px 0 0; border-top: 1px solid var(--rule); }
+.nt-facts div { min-width: 0; }
+.nt-facts dt { font-size: .8rem; color: var(--ink-soft); }
+.nt-facts dd { margin: 0; font-weight: 600; font-size: .98rem; overflow-wrap: anywhere; }
+.nt-facts .big { font-size: 1.2rem; letter-spacing: -0.015em; }
+.nt-note { margin: 10px 0 0; color: var(--ink-soft); font-size: .88rem; max-width: 70ch; }
+.nt-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.nt-actions .btn { display: inline-block; text-decoration: none; padding: 6px 13px; }
+.nt-actions .btn:hover { text-decoration: none; }
+.nt-actions .del-notice { margin-left: auto; }
+
+/* Empty state */
+.nt-empty { padding: 44px 20px; text-align: center; background: var(--surface); border: 1px dashed var(--rule-strong); border-radius: var(--radius); }
+.nt-empty svg { width: 34px; height: 34px; fill: none; stroke: var(--ink-soft); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 8px; }
+.nt-empty b { display: block; font-size: 1.02rem; }
+.nt-empty p { margin: 4px auto 0; color: var(--ink-soft); max-width: 46ch; font-size: .9rem; }
+
+/* Reminder log */
+.nt-log-head { margin-top: 34px; }
+.nt-log-head h2 { font-size: 1.15rem; }
+.nt-stage, .nt-chip { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: .76rem; font-weight: 600; border: 1px solid transparent; white-space: nowrap; }
+.nt-stage.overdue { background: var(--alert-tint); color: var(--alert); border-color: #e3c4c0; }
+.nt-stage.soon { background: var(--amber-tint); color: var(--amber); border-color: #e2cf9f; }
+.nt-chip.ok { background: var(--signal-tint); color: var(--signal); border-color: #b6d5cc; }
+.nt-chip.bad { background: var(--alert-tint); color: var(--alert); border-color: #e3c4c0; }
+.nt-chip.wait { background: #eef0ee; color: var(--ink-soft); border-color: var(--rule-strong); }
+.nt-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.nt-when b { display: block; font-weight: 500; }
+.nt-when span { color: var(--ink-soft); font-size: .82rem; }
+
+@media (max-width: 640px) {
+  .nt { grid-template-columns: minmax(0, 1fr); padding: 14px; }
+  .nt-ico { display: none; }
+  .nt-top { flex-direction: column; gap: 2px; }
+  .nt-filters { display: flex; }
+  .nt-filters button { flex: 1 1 auto; justify-content: center; padding: 7px 8px; }
+}
+</style>
+<script src="/js/i18n.js"></script>
+<script src="/js/app.js"></script>
+<script>
+let ME = null;   // set once the page shell has loaded
+let LIST = [];   // my notifications, newest first
+let FILTER = 'all';
+
+const parseAt = (s) => new Date(String(s).replace(' ', 'T') + 'Z');
+const timeOf = (s) => parseAt(s).toLocaleTimeString(LOCALE(), { hour: 'numeric', minute: '2-digit' });
+const dayKey = (d) => d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+function dayLabel(d) {
+  const now = new Date(), yest = new Date(now.getTime() - 864e5);
+  if (dayKey(d) === dayKey(now)) return 'Today';
+  if (dayKey(d) === dayKey(yest)) return 'Yesterday';
+  return d.toLocaleDateString(LOCALE(), { weekday: 'long', month: 'long', day: 'numeric', ...(d.getFullYear() !== now.getFullYear() ? { year: 'numeric' } : {}) });
+}
+const stageText = (s) => s === 'due_soon' ? 'Due soon' : s === 'due_today' ? 'Due today' : 'Overdue (day ' + s.replace('overdue_', '') + ')';
+
+const ICON = {
+  overdue: '<path d="M12 7v5l3 2"/><circle cx="12" cy="12" r="8.5"/><path d="M12 2.5v1M21.5 12h-1"/>',
+  due_soon: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/>',
+  quotation: '<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h4"/>',
+  bell: '<path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>'
+};
+const svg = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k] || ICON.bell}</svg>`;
+const kindOf = (n) => n.kind === 'overdue' ? 'overdue' : n.kind === 'quotation' || n.quotation_id ? 'quotation' : 'due_soon';
+
+/* The server writes one body for both email and screen. On screen, split it into
+   a summary sentence, key facts, and a closing note, and drop the raw link line. */
+function splitBody(body) {
+  const lines = String(body || '').split('\n').map((l) => l.trim()).filter(Boolean);
+  const out = { sum: lines.shift() || '', facts: [], notes: [] };
+  for (const l of lines) {
+    if (/^Open the statement:/i.test(l)) continue;
+    const m = l.match(/^(Balance|Amount still due|Due date|Client contact):\s*(.+)$/i);
+    if (m) out.facts.push([m[1], m[2]]); else out.notes.push(l);
+  }
+  return out;
+}
+
+function noticeHtml(n) {
+  const kind = kindOf(n), b = splitBody(n.body);
+  const money = b.facts.find((f) => /^(Balance|Amount still due)$/i.test(f[0]));
+  const facts = b.facts.length
+    ? `<dl class="nt-facts">${b.facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd${f_is(k, money) ? ' class="big"' : ''}>${esc(v)}</dd></div>`).join('')}</dl>` : '';
+  const link = n.bill_id
+    ? `<a class="btn" href="/bill.html?id=${n.bill_id}">Open statement ${esc(n.statement_no || '')}</a>`
+    : n.quotation_id
+      ? `<a class="btn" href="/quotation${ME && ME.role === 'viewer' ? '-print' : ''}.html?id=${n.quotation_id}">Open quotation ${esc(n.quote_no || '')}</a>` : '';
+  return `<article class="nt ${kind}${n.read_at ? '' : ' unread'}" data-id="${n.id}">
+    <div class="nt-ico">${svg(kind)}</div>
+    <div class="nt-main">
+      <div class="nt-top">
+        <h3 class="nt-title">${n.read_at ? '' : '<span class="nt-dot" aria-hidden="true"></span><span class="sr-only">New</span>'}${esc(n.title)}</h3>
+        <time class="nt-time" datetime="${esc(n.created_at)}">${esc(timeOf(n.created_at))}</time>
+      </div>
+      <p class="nt-sum">${esc(b.sum)}</p>
+      ${facts}
+      ${b.notes.map((t) => `<p class="nt-note">${esc(t)}</p>`).join('')}
+      <div class="nt-actions">${link}<button type="button" class="quiet danger del-notice" data-id="${n.id}">Delete</button></div>
+    </div>
+  </article>`;
+}
+const f_is = (k, money) => !!money && money[0] === k;
+
+function renderFilters() {
+  const count = (f) => f === 'all' ? LIST.length : LIST.filter((n) => kindOf(n) === f).length;
+  const defs = [['all', 'All'], ['overdue', 'Overdue'], ['due_soon', 'Due soon'], ['quotation', 'Quotations']];
+  const box = document.getElementById('filters');
+  box.hidden = !LIST.length;
+  box.innerHTML = defs.filter(([f]) => f === 'all' || count(f) || FILTER === f)
+    .map(([f, label]) => `<button type="button" data-f="${f}" aria-pressed="${FILTER === f}">${label}<span class="n">${count(f)}</span></button>`).join('');
+}
+
+function renderList() {
+  const rows = LIST.filter((n) => FILTER === 'all' || kindOf(n) === FILTER);
+  const box = document.getElementById('mine');
+  document.getElementById('clear-all').hidden = !LIST.length;
+  if (!rows.length) {
+    box.innerHTML = `<div class="nt-empty">${svg('bell')}<b>${LIST.length ? 'Nothing in this view' : 'You’re all caught up'}</b>
+      <p>${LIST.length ? 'Choose All to see every notification.' : 'When a statement is about to be due or goes overdue, the reminder shows up here.'}</p></div>`;
+    return;
+  }
+  const groups = [];
+  rows.forEach((n) => {
+    const d = parseAt(n.created_at), k = dayKey(d);
+    const g = groups[groups.length - 1];
+    if (g && g.k === k) g.items.push(n); else groups.push({ k, label: dayLabel(d), items: [n] });
+  });
+  box.innerHTML = groups.map((g) => `<section class="nt-group"><h2 class="nt-day">${esc(g.label)}</h2>
+    <div class="nt-list">${g.items.map(noticeHtml).join('')}</div></section>`).join('');
+}
+
+async function loadMine() {
+  LIST = await api('/api/notifications');
+  if (FILTER !== 'all' && !LIST.some((n) => kindOf(n) === FILTER)) FILTER = 'all';
+  renderFilters();
+  renderList();
+}
+
+async function loadLog() {
+  const d = await api('/api/notifications/log');
+  document.getElementById('mailnote').hidden = d.email_configured;
+  document.getElementById('log').innerHTML = d.rows.length
+    ? `<table><thead><tr><th>Sent</th><th>Client</th><th>Statement</th><th>Due date</th><th>Stage</th><th>Emails</th></tr></thead><tbody>${d.rows.map((r) => {
+      const late = String(r.stage).startsWith('overdue');
+      const chips = [
+        r.sent ? `<span class="nt-chip ok">${r.sent} sent</span>` : '',
+        r.failed ? `<span class="nt-chip bad">${r.failed} failed</span>` : '',
+        r.held ? `<span class="nt-chip wait">${r.held} waiting for email setup</span>` : ''
+      ].join('') || '<span style="color:var(--ink-soft)">No emails</span>';
+      return `<tr>
+        <td class="nt-when"><b>${esc(dayLabel(parseAt(r.created_at)))}</b><span>${esc(timeOf(r.created_at))}</span></td>
+        <td>${esc(r.client_name)}</td>
+        <td><a href="/bill.html?id=${r.bill_id}">${esc(r.statement_no)}</a></td>
+        <td>${esc(dateText(r.due_date))}</td>
+        <td><span class="nt-stage ${late ? 'overdue' : 'soon'}">${esc(stageText(r.stage))}</span></td>
+        <td><div class="nt-chips">${chips}</div></td></tr>`;
+    }).join('')}</tbody></table>`
+    : '<div class="empty">No reminders have been sent yet. Choose “Check for overdue bills now” to run a check.</div>';
+}
+
+document.getElementById('filters').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-f]');
+  if (!b) return;
+  FILTER = b.dataset.f;
+  renderFilters();
+  renderList();
+});
+
+document.getElementById('mine').addEventListener('click', async (e) => {
+  const b = e.target.closest('.del-notice');
+  if (!b) return;
+  const card = b.closest('.nt');
+  try {
+    await api('/api/notifications/' + b.dataset.id, { method: 'DELETE' });
+    card.classList.add('out');
+    setTimeout(loadMine, 180);
+  } catch (err) { toast(err.message, true); }
+});
+
+document.getElementById('clear-all').onclick = async () => {
+  if (!confirm('Delete all your notifications? This can’t be undone.')) return;
+  try { await api('/api/notifications', { method: 'DELETE' }); await loadMine(); toast('Notifications deleted'); }
+  catch (err) { toast(err.message, true); }
+};
+
+(async () => {
+  const me = ME = await shell();
+  await loadMine();
+  await api('/api/notifications/read', { method: 'POST', body: {} });
+  setNotifBadge(0);
+  if (['admin', 'finance_hr'].includes(me.role)) {
+    document.getElementById('staff').hidden = false;
+    document.getElementById('check').onclick = async () => {
+      try {
+        const r = await api('/api/notifications/run', { method: 'POST', body: {} });
+        toast(r.created ? r.created + ' new reminder(s) sent' : 'Nothing new to send');
+        await loadMine(); await loadLog();
+      } catch (e) { toast(e.message, true); }
+    };
+    await loadLog();
+  }
+})().catch((e) => toast(e.message, true));
+</script>
+</body>
+</html>

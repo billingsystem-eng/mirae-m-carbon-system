@@ -48,9 +48,18 @@ router.param('id', (req, res, next, id) => {
 
 router.get('/config', (req, res) => res.json({ mode: MODE, rate: RATE, pollMs: POLL_MS }));
 
+// Each site also carries the name of the billing client it is linked to (projects.family_id),
+// so the page can search by site or by client.
+const clientBySite = () => new Map(
+  db.prepare('SELECT p.family_id AS fid, c.name AS client FROM projects p JOIN clients c ON c.id = p.client_id WHERE p.family_id IS NOT NULL')
+    .all().map((r) => [String(r.fid), r.client]));
+
 router.get('/projects', wrap(async (req, res) => {
   const list = await provider.listProjects();
-  res.json(req.allowedSites ? list.filter((p) => req.allowedSites.has(String(p.id))) : list);
+  const clients = clientBySite();
+  const rows = (req.allowedSites ? list.filter((p) => req.allowedSites.has(String(p.id))) : list)
+    .map((p) => ({ ...p, client: clients.get(String(p.id)) || '' }));
+  res.json(rows);
 }));
 
 // The national overview mixes every client's sites, so it is staff-only.

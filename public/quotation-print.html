@@ -52,6 +52,7 @@
       <div><div class="crumb"><a href="/quotations.html">Quotations</a></div><h1>Quotation</h1></div>
       <div class="actions"><a class="btn" id="edit" href="#">Edit</a><button class="primary" onclick="window.print()">Print or save as PDF</button></div>
     </div>
+    <p id="state" class="no-print" style="margin:0 0 10px;color:var(--ink-soft)" hidden></p>
     <div id="doc" class="qt"></div>
   </main>
 </div>
@@ -81,7 +82,13 @@ function inWords(amount) {
   const q = await api('/api/quotations/' + id);
   document.title = q.quote_no + ' — M-Carbon';
   document.getElementById('edit').href = '/quotation.html?id=' + id;
-  if (readOnly(me)) document.getElementById('edit').hidden = true;
+  const edit = document.getElementById('edit');
+  if (me.role === 'viewer') edit.hidden = true;
+  else if (readOnly(me)) edit.textContent = 'Review / send'; // Finance / HR opens the workflow page
+  if (me.role !== 'viewer' && !['sent', 'accepted', 'paid'].includes(q.status)) {
+    const st = document.getElementById('state');
+    st.textContent = `Status: ${q.status_label}. The client can't see this quotation until Finance / HR sends it.`; st.hidden = false;
+  }
   const fills = Math.max(0, 8 - q.items.length - 1);
   const rows = q.items.map((i, n) => `<tr><td class="c">${n + 1}</td><td class="desc">${esc(i.description)}</td>
       <td class="c">${esc(i.unit)}</td><td class="c">${Number(i.quantity)}</td><td class="r">${P(i.unit_material)}</td><td class="r">${P(i.unit_labor)}</td><td class="r">${P(i.line_total)}</td></tr>`).join('');

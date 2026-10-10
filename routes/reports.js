@@ -9,6 +9,7 @@ const router = express.Router();
 router.use(notViewer);
 
 router.get('/overview', (req, res) => {
+  try { require('../lib/notify').syncClientStatus(); } catch (e) { console.error('[status]', e); }
   const one = (sql, ...a) => db.prepare(sql).get(...a);
 
   const clients = one('SELECT COUNT(*) c FROM clients').c;
@@ -31,6 +32,13 @@ router.get('/overview', (req, res) => {
     FROM bills b JOIN clients c ON c.id = b.client_id JOIN projects p ON p.id = b.project_id
     WHERE b.status IN ('draft','for_review','approved')
     ORDER BY b.period_end DESC LIMIT 12`).all();
+
+  // Quotations that need someone: Finance to review / send, or the billing officer to fix.
+  const quotes_pending = db.prepare(`
+    SELECT q.id, q.quote_no, q.status, q.customer_name, q.quote_date,
+           ROUND(COALESCE((SELECT SUM(quantity * unit_price) FROM quotation_items WHERE quotation_id = q.id), 0) * (1 + q.vat_rate / 100.0), 2) AS total
+    FROM quotations q WHERE q.status IN ('for_review','approved','declined')
+    ORDER BY q.updated_at DESC, q.id DESC LIMIT 12`).all();
 
   const overdue = db.prepare(`
     SELECT b.id, b.statement_no, b.due_date, b.total_due, c.name AS client_name
@@ -67,19 +75,22 @@ router.get('/overview', (req, res) => {
     outstanding,
     by_status: byStatus,
     by_method: byMethod,
-    pending, overdue,
+    pending, quotes_pending, overdue,
     monthly,
     clients_by_status: clientsByStatus
   });
 });
 
 router.get('/audit', (req, res) => {
-  const { entity, q } = req.query;
+  const { entity, q, before } = req.query;
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 300, 1), 500);
   let sql = 'SELECT * FROM audit_log WHERE 1=1';
   const args = [];
   if (entity) { sql += ' AND entity = ?'; args.push(entity); }
+  if (before) { sql += ' AND id < ?'; args.push(Number(before) || 0); } // "show older": rows before this id
   if (q) { sql += ' AND (detail LIKE ? OR username LIKE ? OR action LIKE ?)'; args.push(`%${q}%`, `%${q}%`, `%${q}%`); }
-  sql += ' ORDER BY id DESC LIMIT 300';
+  sql += ' ORDER BY id DESC LIMIT ?';
+  args.push(limit);
   res.json(db.prepare(sql).all(...args));
 });
 

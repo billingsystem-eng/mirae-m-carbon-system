@@ -178,11 +178,11 @@ button:disabled { box-shadow: none; }
   font-size: 0.76rem; font-weight: 600; border: 1px solid transparent; white-space: nowrap;
 }
 .pill.draft { background: #eef0ee; color: var(--ink-soft); border-color: var(--rule-strong); }
-.pill.for_review, .pill.Overdue { background: var(--amber-tint); color: var(--amber); border-color: #e2cf9f; }
+.pill.for_review { background: var(--amber-tint); color: var(--amber); border-color: #e2cf9f; }
 .pill.approved { background: var(--signal-tint); color: var(--signal); border-color: #b6d5cc; }
 .pill.final { background: #e6ebf6; color: #2d4479; border-color: #c0cbe4; }
 .pill.issued, .pill.Paid { background: var(--signal); color: #fff; }
-.pill.void { background: var(--alert-tint); color: var(--alert); border-color: #e3c4c0; }
+.pill.void, .pill.Overdue, .pill.overdue { background: var(--alert-tint); color: var(--alert); border-color: #e3c4c0; }
 
 /* ---------- Notices ---------- */
 

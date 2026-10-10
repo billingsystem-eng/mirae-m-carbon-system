@@ -1,10 +1,11 @@
 const express = require('express');
-const { v4: uuid } = require('uuid');
+const { randomUUID: uuid } = require('crypto'); // built in; the uuid package is ESM-only in v12+ and can't be require()d on Node 18
 const db = require('../db');
 const { canEdit, requireRole, viewerScope } = require('../middleware/auth');
 const { balanceDue, fullyPaid, invoiceReady } = require('../lib/invoice-ready');
 const onlinePayments = require('./online-payments');
 const audit = require('../lib/audit');
+const { daysOverdue } = require('../lib/notify');
 const { computeBill, daysBetween, dateRange, ratioFor, round } = require('../lib/billing');
 const dashboard = require('../lib/dashboard');
 
@@ -150,7 +151,11 @@ router.get('/', (req, res) => {
   if (from) { sql += ' AND b.period_end >= ?'; args.push(from); }
   if (to) { sql += ' AND b.period_start <= ?'; args.push(to); }
   sql += ' ORDER BY b.period_start DESC, b.id DESC';
-  const bills = db.prepare(sql).all(...args).map((b) => ({ ...b, status_label: LABELS[b.status] }));
+  const bills = db.prepare(sql).all(...args).map((b) => ({
+    ...b, status_label: LABELS[b.status],
+    // issued, still owing, past the due date -> days late (0 otherwise)
+    days_late: b.status === 'issued' && balanceDue(b.id) > 0 ? daysOverdue(b.due_date) : 0
+  }));
   res.json({ bills, labels: LABELS });
 });
 

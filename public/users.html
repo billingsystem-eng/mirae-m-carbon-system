@@ -9,117 +9,347 @@
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/app.css">
 <link rel="icon" type="image/png" href="/favicon.png">
+<style>
+/* Users page. Scoped under .um so the other pages are untouched. */
+.um .page-head { align-items: center; }
+.um .page-head button { white-space: nowrap; flex: none; }
+.um .soft { color: var(--ink-soft); }
+
+/* role strip: filters the list, and says what each role can do */
+.um .roles { display: grid; grid-template-columns: .75fr repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule-strong); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+.um .rcell { display: block; width: 100%; text-align: left; padding: 13px 16px 14px; border: 0; border-radius: 0; background: var(--surface); color: var(--ink); font-weight: 400; cursor: pointer; box-shadow: none !important; transform: none !important; }
+.um .rcell:hover { background: #f4f7f3; border-color: transparent; }
+.um .rcell:focus-visible { outline-offset: -3px; }
+.um .rcell .rc { display: block; font-family: var(--serif); font-size: 1.7rem; font-weight: 600; line-height: 1.1; letter-spacing: -.02em; }
+.um .rcell .rn { display: block; margin-top: 2px; font-weight: 600; font-size: .92rem; }
+.um .rcell .rd { display: block; margin-top: 3px; font-size: .8rem; line-height: 1.4; color: var(--ink-soft); }
+.um .rcell[aria-pressed="true"], .um .rcell[aria-pressed="true"]:hover { background: var(--ink); color: #fff; }
+.um .rcell[aria-pressed="true"] .rc { color: #9fd36a; }
+.um .rcell[aria-pressed="true"] .rd { color: #a9bdb7; }
+
+/* search */
+.um .bar { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.um .bar input { max-width: 380px; }
+.um .bar .meta { margin-left: auto; color: var(--ink-soft); font-size: .86rem; white-space: nowrap; }
+
+/* list */
+.um .urow { border-bottom: 1px solid var(--rule); }
+.um .urow:last-child { border-bottom: 0; }
+.um .usum { display: grid; grid-template-columns: 40px minmax(0, 1.15fr) 150px minmax(0, 1.3fr) 176px; grid-template-areas: "av name role con act"; gap: 4px 16px; align-items: center; padding: 12px 16px; }
+.um .av { grid-area: av; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: .85rem; letter-spacing: .02em; }
+.um .av.admin { background: var(--ink); color: #fff; }
+.um .av.billing_officer { background: var(--leaf-tint); color: var(--leaf-dark); }
+.um .av.finance_hr { background: var(--amber-tint); color: var(--amber); }
+.um .av.viewer { background: var(--signal-tint); color: var(--signal); }
+.um .uname { grid-area: name; min-width: 0; }
+.um .uname b { display: block; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.um .uname b .pill { display: inline-block; margin-left: 6px; vertical-align: 1px; }
+.um .uname > span { display: block; color: var(--ink-soft); font-size: .85rem; }
+.um .urole { grid-area: role; font-size: .9rem; }
+.um .ucon { grid-area: con; min-width: 0; font-size: .9rem; }
+.um .ucon div { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.um .ucon .sub { color: var(--ink-soft); font-size: .84rem; }
+.um .ucon .warn { color: var(--amber); font-weight: 500; }
+.um .uact { grid-area: act; display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+.um .urow.off .av, .um .urow.off .uname, .um .urow.off .urole, .um .urow.off .ucon { opacity: .55; }
+.um .urow:has(.edit:not([hidden])) { background: #f7f9f6; }
+
+/* the editor opens inside the row */
+.um .edit { padding: 2px 16px 18px 72px; border-top: 1px dashed var(--rule); }
+.um .edit form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; max-width: 720px; padding-top: 14px; }
+.um .edit .field { margin: 0; }
+.um .edit .full { grid-column: 1 / -1; }
+.um .edit .hint { margin: 4px 0 0; font-size: .82rem; color: var(--ink-soft); }
+.um .edit .row-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; }
+.um .edit .row-actions .spacer { margin-left: auto; }
+.um .empty b { display: block; color: var(--ink); margin-bottom: 4px; }
+.um .empty button { margin-top: 10px; }
+
+/* new user dialog */
+#ndlg { border: 1px solid var(--rule-strong); border-radius: var(--radius); padding: 0; width: min(470px, 94vw); max-height: 92vh; color: var(--ink); background: #fff; }
+#ndlg::backdrop { background: rgba(10, 24, 21, .45); }
+#ndlg form { padding: 22px 24px 20px; }
+#ndlg h2 { margin-bottom: 14px; }
+#ndlg .hint { margin: 4px 0 0; font-size: .82rem; color: var(--ink-soft); }
+#ndlg .pwrow { display: flex; gap: 8px; }
+#ndlg .pwrow input { flex: 1; min-width: 0; }
+#ndlg .acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
+@media (max-width: 900px) {
+  .um .roles { grid-template-columns: 1fr 1fr; }
+  .um .rcell[data-r="all"] { grid-column: 1 / -1; }
+  .um .usum { grid-template-columns: 40px minmax(0, 1fr) auto; grid-template-areas: "av name act" ". role role" ". con con"; }
+  .um .edit { padding-left: 16px; }
+  .um .edit form { grid-template-columns: 1fr; }
+  .um .bar { flex-wrap: wrap; }
+  .um .bar input { max-width: none; }
+  .um .bar .meta { margin-left: 0; }
+}
+</style>
 </head>
 <body>
 <div class="shell">
   <aside class="rail"></aside>
-  <main>
+  <main class="um">
     <div class="page-head">
-      <div><h1>Users</h1>
-      <p>Administrators configure and finalise. Billing officers compute and generate. Viewers are client logins: read-only, and limited to the client assigned to them (issued bills, quotations and live monitor for that client only).</p></div>
-    </div>
-    <div class="panel"><div class="table-wrap" id="list"></div></div>
-    <div class="grid2">
-      <div class="panel">
-        <header><h2>Add a user</h2></header>
-        <div class="body"><form id="uform">
-          <div class="field"><label for="u-username">Username</label><input id="u-username" required></div>
-          <div class="field"><label for="u-name">Full name</label><input id="u-name" required></div>
-          <div class="field"><label for="u-role">Role</label><select id="u-role">
-            <option value="billing_officer">Billing officer</option>
-            <option value="finance_hr">Finance / HR</option>
-            <option value="admin">Administrator</option>
-            <option value="viewer">Viewer</option></select></div>
-          <div class="field" id="u-client-wrap" hidden><label for="u-client">Client (what this viewer can see)</label><select id="u-client"></select></div>
-          <div class="field"><label for="u-pass">Temporary password</label><input id="u-pass" type="password" required minlength="8"></div>
-          <button class="primary" type="submit">Create user</button>
-        </form></div>
+      <div>
+        <h1>Users</h1>
+        <p>Everyone who can sign in, and what each login can see.</p>
       </div>
-      <div class="panel">
-        <header><h2>Change your password</h2></header>
-        <div class="body"><form id="pform">
-          <div class="field"><label for="p-old">Current password</label><input id="p-old" type="password" required></div>
-          <div class="field"><label for="p-new">New password</label><input id="p-new" type="password" required minlength="8"></div>
-          <button type="submit">Update password</button>
-        </form></div>
-      </div>
+      <button class="primary" type="button" id="newBtn">New user</button>
     </div>
+
+    <div class="roles" id="roles" role="group" aria-label="Filter users by role"></div>
+
+    <div class="bar">
+      <input type="search" id="q" placeholder="Search name, username, email or client" aria-label="Search users" autocomplete="off">
+      <span class="meta" id="meta" aria-live="polite"></span>
+    </div>
+
+    <div class="panel" id="list"></div>
+
+    <dialog id="ndlg" aria-labelledby="ndlgTitle">
+      <form id="nform" autocomplete="off">
+        <h2 id="ndlgTitle">New user</h2>
+        <div class="field"><label for="n-username">Username</label><input id="n-username" required autocapitalize="none" spellcheck="false"></div>
+        <div class="field"><label for="n-name">Full name</label><input id="n-name" required></div>
+        <div class="field"><label for="n-email">Email (used for payment reminders)</label><input id="n-email" type="email"></div>
+        <div class="field">
+          <label for="n-role">Role</label>
+          <select id="n-role"></select>
+          <p class="hint" id="n-role-hint"></p>
+        </div>
+        <div class="field" id="n-client-wrap" hidden><label for="n-client">Client this login can see</label><select id="n-client"></select></div>
+        <div class="field">
+          <label for="n-pass">Temporary password</label>
+          <div class="pwrow"><input id="n-pass" required minlength="8" autocapitalize="none" spellcheck="false"><button type="button" id="n-gen">Generate</button></div>
+          <p class="hint">At least 8 characters. Share it with them; they can change it after signing in.</p>
+        </div>
+        <div class="acts"><button type="button" id="n-cancel">Cancel</button><button type="submit" class="primary">Create user</button></div>
+      </form>
+    </dialog>
   </main>
 </div>
 <script src="/js/i18n.js"></script>
 <script src="/js/app.js"></script>
 <script>
-const ROLES = { admin: 'Administrator', billing_officer: 'Billing officer', finance_hr: 'Finance / HR', viewer: 'Viewer' };
-let CLIENTS = [];
-const clientOptions = (sel) => '<option value="">— No client (sees nothing) —</option>' +
+(function () {
+'use strict';
+const byId = (id) => document.getElementById(id);
+
+const ROLES = {
+  admin:          { label: 'Administrator',  plural: 'Administrators',  desc: 'Configure the system, manage users and finalise bills.' },
+  billing_officer:{ label: 'Billing officer', plural: 'Billing officers', desc: 'Compute and generate bills.' },
+  finance_hr:     { label: 'Finance / HR',   plural: 'Finance / HR',    desc: 'Approve bills and quotations, and receive payment reminders.' },
+  viewer:         { label: 'Viewer',         plural: 'Viewers',         desc: 'Client logins. Read-only, limited to one client.' },
+};
+const ORDER = ['admin', 'billing_officer', 'finance_hr', 'viewer'];
+
+let ME = null, CLIENTS = [], USERS = [];
+let ROLE = 'all', QUERY = '';
+const OPEN = new Set(); // ids of rows whose editor is open
+
+const initials = (name) => (String(name).trim().split(/\s+/).slice(0, 2).map((w) => w[0] || '').join('') || '?').toUpperCase();
+const clientOptions = (sel) => '<option value="">No client assigned (sees nothing)</option>' +
   CLIENTS.map((c) => `<option value="${c.id}"${String(c.id) === String(sel) ? ' selected' : ''}>${esc(c.name)}</option>`).join('');
+const roleOptions = (sel) => ORDER.map((r) => `<option value="${r}"${r === sel ? ' selected' : ''}>${ROLES[r].label}</option>`).join('');
+
+/* ---------- role strip ---------- */
+function renderRoles() {
+  const cell = (key, count, name, desc) => `<button type="button" class="rcell" data-r="${key}" aria-pressed="${ROLE === key}">
+    <span class="rc">${count}</span><span class="rn">${name}</span><span class="rd">${desc}</span></button>`;
+  byId('roles').innerHTML = cell('all', USERS.length, 'Everyone', 'All logins')
+    + ORDER.map((r) => cell(r, USERS.filter((u) => u.role === r).length, ROLES[r].plural, ROLES[r].desc)).join('');
+}
+function markRoles() {
+  byId('roles').querySelectorAll('.rcell').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.r === ROLE)));
+}
+
+/* ---------- list ---------- */
+function visible() {
+  const words = QUERY.toLowerCase().split(/\s+/).filter(Boolean);
+  return USERS.filter((u) => {
+    if (ROLE !== 'all' && u.role !== ROLE) return false;
+    const hay = [u.full_name, u.username, u.email, u.client_name, (ROLES[u.role] || {}).label].filter(Boolean).join(' ').toLowerCase();
+    return words.every((w) => hay.includes(w));
+  });
+}
+
+function editHtml(u, mine) {
+  const id = u.id;
+  return `<form data-id="${id}" autocomplete="off">
+    <div class="field"><label for="en${id}">Full name</label><input id="en${id}" name="full_name" value="${esc(u.full_name)}" required></div>
+    <div class="field"><label for="em${id}">Email</label><input id="em${id}" name="email" type="email" value="${esc(u.email || '')}" placeholder="name@company.com"></div>
+    <div class="field"><label for="er${id}">Role</label><select id="er${id}" name="role"${mine ? ' disabled' : ''}>${roleOptions(u.role)}</select>${mine ? '<p class="hint">You can’t change your own role.</p>' : ''}</div>
+    <div class="field" data-clientwrap${u.role === 'viewer' ? '' : ' hidden'}><label for="ec${id}">Client this login can see</label><select id="ec${id}" name="client_id">${clientOptions(u.client_id)}</select></div>
+    <div class="field full"><label for="ep${id}">New password</label><input id="ep${id}" name="password" type="password" minlength="8" placeholder="Leave blank to keep the current password" autocomplete="new-password"></div>
+    <div class="full row-actions">
+      <button class="primary" type="submit">Save changes</button>
+      <button type="button" data-act="toggle"${mine ? ' disabled title="You can’t deactivate your own account."' : ''}>${u.active ? 'Deactivate' : 'Reactivate'}</button>
+      <button type="button" class="quiet danger spacer" data-act="delete"${mine ? ' disabled title="You can’t delete your own account."' : ''}>Delete user</button>
+    </div>
+  </form>`;
+}
+
+function rowHtml(u) {
+  const mine = u.id === ME.id, open = OPEN.has(u.id), role = ROLES[u.role] || { label: u.role };
+  const con = u.role === 'viewer'
+    ? (u.client_name ? `<div>${esc(u.client_name)}</div>` : '<div class="warn">No client assigned</div>')
+      + `<div class="sub">${u.email ? esc(u.email) : 'No email'}</div>`
+    : `<div>${u.email ? esc(u.email) : '<span class="soft">No email</span>'}</div><div class="sub">Sees every client</div>`;
+  return `<article class="urow${u.active ? '' : ' off'}" data-id="${u.id}">
+    <div class="usum">
+      <span class="av ${esc(u.role)}" aria-hidden="true">${esc(initials(u.full_name))}</span>
+      <div class="uname"><b>${esc(u.full_name)}${mine ? '<span class="pill draft">You</span>' : ''}</b><span>@${esc(u.username)}</span></div>
+      <div class="urole">${esc(role.label)}</div>
+      <div class="ucon">${con}</div>
+      <div class="uact">${u.active ? '' : '<span class="pill void">Deactivated</span>'}<button type="button" class="quiet" data-act="edit" aria-expanded="${open}" aria-controls="e${u.id}">${open ? 'Close' : 'Manage'}</button></div>
+    </div>
+    <div class="edit" id="e${u.id}"${open ? '' : ' hidden'}>${editHtml(u, mine)}</div>
+  </article>`;
+}
+
+function renderList() {
+  const rows = visible();
+  byId('meta').textContent = rows.length === USERS.length ? `${USERS.length} ${USERS.length === 1 ? 'user' : 'users'}` : `${rows.length} of ${USERS.length} users`;
+  if (!rows.length) {
+    const filtered = QUERY || ROLE !== 'all';
+    byId('list').innerHTML = !filtered
+      ? '<div class="empty"><b>No users yet</b>Create the first login to get started.<br><button class="primary" type="button" data-act="new">New user</button></div>'
+      : ROLE !== 'all' && !QUERY
+        ? `<div class="empty"><b>No ${esc(ROLES[ROLE].plural.toLowerCase())} yet</b><button class="primary" type="button" data-act="new">New user</button></div>`
+        : '<div class="empty"><b>No users match</b>Check the spelling, clear the search, or pick another role.</div>';
+    return;
+  }
+  byId('list').innerHTML = rows.map(rowHtml).join('');
+}
 
 async function load() {
-  const users = await api('/api/auth/users');
-  document.getElementById('list').innerHTML = `<table>
-    <thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Client access</th><th>Status</th><th></th></tr></thead>
-    <tbody>${users.map((u) => `<tr><td>${esc(u.username)}</td><td>${esc(u.full_name)}</td>
-      <td>${ROLES[u.role] || u.role}</td>
-      <td>${u.role === 'viewer'
-        ? `<select onchange="assign(${u.id}, this.value)">${clientOptions(u.client_id)}</select>`
-        : '<span style="color:var(--ink-soft)">All</span>'}</td>
-      <td><span class="pill ${u.active ? 'issued' : 'void'}">${u.active ? 'Active' : 'Deactivated'}</span></td>
-      <td class="num"><button class="quiet" onclick="toggle(${u.id}, ${u.active ? 0 : 1})">${u.active ? 'Deactivate' : 'Reactivate'}</button>
-        <button class="quiet danger" onclick="removeUser(${u.id}, '${esc(u.username).replace(/'/g, "\\'")}')">Delete</button></td>
-      </tr>`).join('')}</tbody></table>`;
+  USERS = await api('/api/auth/users');
+  renderRoles();
+  renderList();
 }
 
-async function assign(id, client_id) {
-  try { await api('/api/auth/users/' + id, { method: 'PATCH', body: { client_id: client_id ? Number(client_id) : null } }); toast('Client access updated'); await load(); }
-  catch (e) { toast(e.message, true); }
-}
+/* ---------- row actions ---------- */
+byId('list').addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-act]');
+  if (!btn || btn.disabled) return;
+  if (btn.dataset.act === 'new') return openNew(ROLE === 'all' ? undefined : ROLE);
+  const row = btn.closest('.urow');
+  const id = Number(row.dataset.id), u = USERS.find((x) => x.id === id);
+  if (!u) return;
 
-async function removeUser(id, username) {
-  if (!confirm(`Delete user "${username}"? This can’t be undone. Their past activity stays in the activity log.`)) return;
-  try { await api('/api/auth/users/' + id, { method: 'DELETE' }); toast('User deleted'); await load(); }
-  catch (e) { toast(e.message, true); }
-}
+  if (btn.dataset.act === 'edit') {
+    const box = row.querySelector('.edit'), opening = box.hidden;
+    box.hidden = !opening;
+    opening ? OPEN.add(id) : OPEN.delete(id);
+    btn.setAttribute('aria-expanded', String(opening));
+    btn.textContent = opening ? 'Close' : 'Manage';
+    if (opening) box.querySelector('input').focus();
+    return;
+  }
+  if (btn.dataset.act === 'toggle') {
+    try {
+      await api('/api/auth/users/' + id, { method: 'PATCH', body: { active: u.active ? 0 : 1 } });
+      toast(u.active ? 'User deactivated' : 'User reactivated');
+      await load();
+    } catch (err) { toast(err.message, true); }
+    return;
+  }
+  if (btn.dataset.act === 'delete') {
+    if (!confirm(`Delete user "${u.username}"? This can’t be undone. Their past activity stays in the activity log.`)) return;
+    try {
+      await api('/api/auth/users/' + id, { method: 'DELETE' });
+      OPEN.delete(id);
+      toast('User deleted');
+      await load();
+    } catch (err) { toast(err.message, true); }
+  }
+});
 
-async function toggle(id, active) {
-  try { await api('/api/auth/users/' + id, { method: 'PATCH', body: { active } }); await load(); }
-  catch (e) { toast(e.message, true); }
-}
+// Switching a user to or from Viewer shows or hides the client picker.
+byId('list').addEventListener('change', (e) => {
+  if (e.target.name !== 'role') return;
+  const wrap = e.target.closest('form').querySelector('[data-clientwrap]');
+  wrap.hidden = e.target.value !== 'viewer';
+});
 
-document.getElementById('uform').onsubmit = async (e) => {
+byId('list').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const form = e.target, id = Number(form.dataset.id), f = form.elements;
+  const body = { full_name: f.full_name.value.trim(), email: f.email.value.trim() };
+  if (!f.role.disabled) {
+    body.role = f.role.value;
+    body.client_id = body.role === 'viewer' && f.client_id.value ? Number(f.client_id.value) : null;
+  }
+  if (f.password.value) body.password = f.password.value;
+  try {
+    await api('/api/auth/users/' + id, { method: 'PATCH', body });
+    toast('Changes saved');
+    OPEN.delete(id);
+    await load();
+  } catch (err) { toast(err.message, true); }
+});
+
+/* ---------- filters ---------- */
+byId('roles').addEventListener('click', (e) => {
+  const b = e.target.closest('.rcell'); if (!b) return;
+  ROLE = b.dataset.r;
+  markRoles(); renderList();
+});
+byId('q').addEventListener('input', (e) => { QUERY = e.target.value.trim(); renderList(); });
+byId('q').addEventListener('keydown', (e) => { if (e.key === 'Escape' && e.target.value) { e.target.value = ''; QUERY = ''; renderList(); } });
+
+/* ---------- new user dialog ---------- */
+const dlg = byId('ndlg');
+function syncNewRole() {
+  const r = byId('n-role').value;
+  byId('n-role-hint').textContent = ROLES[r].desc;
+  byId('n-client-wrap').hidden = r !== 'viewer';
+}
+function openNew(role) {
+  byId('nform').reset();
+  byId('n-role').innerHTML = roleOptions(role || 'billing_officer');
+  byId('n-client').innerHTML = clientOptions('');
+  syncNewRole();
+  dlg.showModal();
+  byId('n-username').focus();
+}
+byId('newBtn').addEventListener('click', () => openNew());
+byId('n-role').addEventListener('change', syncNewRole);
+byId('n-cancel').addEventListener('click', () => dlg.close());
+dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); }); // click on the backdrop
+byId('n-gen').addEventListener('click', () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  const rnd = crypto.getRandomValues(new Uint32Array(12));
+  byId('n-pass').value = Array.from(rnd, (n) => chars[n % chars.length]).join('');
+  byId('n-pass').focus(); byId('n-pass').select();
+});
+byId('nform').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const role = byId('n-role').value;
   try {
     await api('/api/auth/users', { method: 'POST', body: {
-      username: document.getElementById('u-username').value.trim(),
-      full_name: document.getElementById('u-name').value.trim(),
-      role: document.getElementById('u-role').value,
-      client_id: document.getElementById('u-role').value === 'viewer' ? document.getElementById('u-client').value || null : null,
-      password: document.getElementById('u-pass').value
-    }});
-    e.target.reset(); toast('User created'); await load();
+      username: byId('n-username').value.trim(),
+      full_name: byId('n-name').value.trim(),
+      email: byId('n-email').value.trim() || null,
+      role,
+      client_id: role === 'viewer' ? byId('n-client').value || null : null,
+      password: byId('n-pass').value,
+    } });
+    dlg.close();
+    ROLE = 'all'; QUERY = ''; byId('q').value = ''; // so the new user is in view
+    toast('User created');
+    await load();
   } catch (err) { toast(err.message, true); }
-};
-
-document.getElementById('pform').onsubmit = async (e) => {
-  e.preventDefault();
-  try {
-    await api('/api/auth/password', { method: 'POST', body: {
-      current_password: document.getElementById('p-old').value,
-      new_password: document.getElementById('p-new').value
-    }});
-    e.target.reset(); toast('Password updated');
-  } catch (err) { toast(err.message, true); }
-};
-
-document.getElementById('u-role').onchange = (e) => {
-  document.getElementById('u-client-wrap').hidden = e.target.value !== 'viewer';
-};
+});
 
 (async () => {
-  await shell();
+  ME = await shell();
   CLIENTS = (await api('/api/clients')).clients;
-  document.getElementById('u-client').innerHTML = clientOptions('');
   await load();
 })().catch((e) => toast(e.message, true));
+})();
 </script>
 </body>
 </html>

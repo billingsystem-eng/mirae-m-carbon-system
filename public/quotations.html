@@ -13,7 +13,7 @@
   <main>
     <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
       <div><h1>Quotations</h1>
-      <p>Quotes for clients who buy outright, with no contract or monthly billing.</p></div>
+      <p>Quotes for clients who buy outright, with no contract or monthly billing. A billing officer prepares each one, Finance / HR accepts or declines it, then sends it to the client.</p></div>
       <a class="btn primary" id="new-btn" href="/quotation.html" data-edit>New quotation</a>
     </div>
     <div class="panel">
@@ -29,27 +29,28 @@
 <script src="/js/app.js"></script>
 <script>
 const g = (id) => document.getElementById(id);
-const PILL = { draft: 'draft', sent: 'for_review', accepted: 'approved', paid: 'issued', declined: 'void' };
-const LABEL = { draft: 'Draft', sent: 'Sent', accepted: 'Accepted', paid: 'Paid', declined: 'Declined' };
+const PILL = { draft: 'draft', for_review: 'for_review', approved: 'approved', declined: 'void', sent: 'final', accepted: 'final', paid: 'issued' };
+let LABEL = {};
 let me;
 async function load() {
   const p = new URLSearchParams({ q: g('q').value, status: g('status').value });
   const d = await api('/api/quotations?' + p);
+  LABEL = d.labels;
   if (g('status').options.length === 1) d.statuses.forEach((s) => g('status').add(new Option(LABEL[s], s)));
   g('list').innerHTML = d.quotations.length ? `<table><thead><tr>
       <th>Quote no.</th><th>Date</th><th>Customer</th><th>Valid until</th><th class="num">Total (VAT inc)</th><th>Status</th><th></th></tr></thead><tbody>` +
     d.quotations.map((r) => `<tr>
-      <td><a href="${readOnly(me) ? '/quotation-print.html' : '/quotation.html'}?id=${r.id}">${esc(r.quote_no)}</a></td><td>${dateText(r.quote_date)}</td>
+      <td><a href="${me.role === 'viewer' ? '/quotation-print.html' : '/quotation.html'}?id=${r.id}">${esc(r.quote_no)}</a></td><td>${dateText(r.quote_date)}</td>
       <td>${esc(r.customer_name)}${r.client_ref_id ? `<div style="font-size:.82rem;color:var(--ink-soft)">${esc(r.client_ref_id)}</div>` : ''}</td>
       <td>${dateText(r.valid_until)}</td><td class="num">${money(r.total)}</td>
-      <td><span class="pill ${PILL[r.status]}">${LABEL[r.status]}</span></td>
+      <td><span class="pill ${PILL[r.status]}">${esc(LABEL[r.status] || r.status)}</span></td>
       <td class="actions"><a class="btn" href="/quotation-print.html?id=${r.id}">View quotation</a></td></tr>`).join('') + '</tbody></table>'
-    : `<div class="empty">${readOnly(me) ? 'No quotations have been sent to you yet.' : 'No quotations yet. Create one to get started.'}</div>`;
+    : `<div class="empty">${me.role === 'viewer' ? 'No quotations have been sent to you yet.' : 'No quotations yet. Create one to get started.'}</div>`;
 }
 (async () => {
   me = await shell();
-  if (readOnly(me)) {
-    g('new-btn').hidden = true;
+  if (readOnly(me)) g('new-btn').hidden = true; // only a billing officer or administrator prepares quotations
+  if (me.role === 'viewer') {
     document.querySelector('.page-head p').textContent = 'Quotations prepared for you.';
   }
   g('q').oninput = () => { clearTimeout(g('q')._t); g('q')._t = setTimeout(load, 250); };

@@ -9,41 +9,222 @@
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/app.css">
 <link rel="icon" type="image/png" href="/favicon.png">
+<style>
+/* Activity log. Scoped under .al so the other pages are untouched. */
+.al .page-head { align-items: center; }
+
+/* area filter chips */
+.al .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.al .chip { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--surface); color: var(--ink-soft); font-weight: 500; font-size: .88rem; cursor: pointer; box-shadow: none !important; transform: none !important; }
+.al .chip:hover { background: #f4f7f3; color: var(--ink); border-color: var(--rule-strong); }
+.al .chip[aria-pressed="true"], .al .chip[aria-pressed="true"]:hover { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+.al .bar { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.al .bar input { max-width: 380px; }
+.al .bar .meta { margin-left: auto; color: var(--ink-soft); font-size: .86rem; white-space: nowrap; }
+
+/* the feed */
+.al .day { position: sticky; top: 0; z-index: 1; padding: 8px 16px; background: #f3f6f2; border-bottom: 1px solid var(--rule); font-weight: 600; font-size: .86rem; color: var(--ink-soft); }
+.al .day:not(:first-child) { border-top: 1px solid var(--rule); }
+.al .ev { display: grid; grid-template-columns: 52px 30px minmax(0, 1fr) auto; gap: 0 14px; align-items: start; padding: 11px 16px; border-bottom: 1px solid var(--rule); }
+.al .ev:last-child { border-bottom: 0; }
+.al .ev time { padding-top: 2px; font-size: .84rem; color: var(--ink-soft); }
+.al .who { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--signal-tint); color: var(--signal); font-size: .72rem; font-weight: 600; }
+.al .who.sys { background: #eef0ee; color: var(--ink-soft); }
+.al .what { min-width: 0; }
+.al .what .line { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 6px; }
+.al .what .line b { font-weight: 600; }
+.al .act { display: inline-flex; align-items: baseline; gap: 7px; }
+.al .act i { width: 8px; height: 8px; border-radius: 50%; background: var(--rule-strong); align-self: center; flex: none; }
+.al .act.add i { background: var(--leaf); }
+.al .act.warn i { background: var(--alert); }
+.al .act.info i { background: var(--signal); }
+.al .what a { font-weight: 500; }
+.al .detail { margin: 2px 0 0; font-size: .88rem; color: var(--ink-soft); overflow-wrap: anywhere; }
+.al .area { align-self: start; padding-top: 2px; font-size: .82rem; color: var(--ink-soft); white-space: nowrap; }
+.al .more { padding: 14px 16px; text-align: center; border-top: 1px solid var(--rule); }
+.al .empty b { display: block; color: var(--ink); margin-bottom: 4px; }
+
+@media (max-width: 900px) {
+  .al .ev { grid-template-columns: 30px minmax(0, 1fr); grid-template-areas: "who time" "who what" "who area"; gap: 1px 12px; }
+  .al .ev time { grid-area: time; padding-top: 0; }
+  .al .ev .who { grid-area: who; }
+  .al .what { grid-area: what; }
+  .al .area { grid-area: area; padding-top: 0; }
+  .al .bar { flex-wrap: wrap; }
+  .al .bar input { max-width: none; }
+  .al .bar .meta { margin-left: 0; }
+}
+</style>
 </head>
 <body>
 <div class="shell">
   <aside class="rail"></aside>
-  <main>
+  <main class="al">
     <div class="page-head">
-      <div><h1>Activity log</h1>
-      <p>What changed, when, by whom, and why — across clients, projects and billing.</p></div>
+      <div>
+        <h1>Activity log</h1>
+        <p>What changed, when, and who did it, across clients, projects and billing.</p>
+      </div>
     </div>
-    <div class="panel"><div class="body"><div class="inline-form">
-      <div><label for="entity">Area</label><select id="entity">
-        <option value="">Everything</option><option value="bill">Billing</option>
-        <option value="client">Clients</option><option value="project">Projects</option>
-        <option value="contract">Billing configuration</option><option value="user">Users</option></select></div>
-      <div><label for="q">Search</label><input id="q" placeholder="User, action or detail"></div>
-    </div></div></div>
-    <div class="panel"><div class="table-wrap" id="list"></div></div>
+
+    <div class="chips" id="chips" role="group" aria-label="Filter by area"></div>
+
+    <div class="bar">
+      <input type="search" id="q" placeholder="Search by person, action or detail" aria-label="Search the activity log" autocomplete="off">
+      <span class="meta" id="meta" aria-live="polite"></span>
+    </div>
+
+    <div class="panel" id="list"></div>
   </main>
 </div>
 <script src="/js/i18n.js"></script>
 <script src="/js/app.js"></script>
 <script>
-async function load() {
-  const p = new URLSearchParams({ entity: entity.value, q: q.value });
-  const rows = await api('/api/reports/audit?' + p);
-  document.getElementById('list').innerHTML = rows.length ? `<table>
-    <thead><tr><th>When</th><th>Who</th><th>Area</th><th>Action</th><th>Detail</th></tr></thead>
-    <tbody>${rows.map((r) => `<tr><td>${esc(r.at)}</td><td>${esc(r.username || '')}</td>
-      <td>${esc(r.entity)} ${r.entity_id ?? ''}</td><td>${esc(r.action)}</td><td>${esc(r.detail || '')}</td></tr>`).join('')}
-    </tbody></table>` : '<div class="empty">Nothing recorded yet.</div>';
+(function () {
+'use strict';
+const byId = (id) => document.getElementById(id);
+const PAGE = 100;
+
+const AREAS = [
+  { key: '', label: 'Everything' },
+  { key: 'bill', label: 'Billing', noun: 'bill', href: (id) => `/bill.html?id=${id}` },
+  { key: 'client', label: 'Clients', noun: 'client', href: (id) => `/client.html?id=${id}` },
+  { key: 'project', label: 'Projects', noun: 'project', href: (id) => `/project.html?id=${id}` },
+  { key: 'quotation', label: 'Quotations', noun: 'quotation', href: (id) => `/quotation.html?id=${id}` },
+  { key: 'contract', label: 'Billing configuration', noun: 'billing configuration' },
+  { key: 'payment_method', label: 'Payment methods', noun: 'payment method' },
+  { key: 'user', label: 'Users', noun: 'user' },
+];
+const AREA = Object.fromEntries(AREAS.map((a) => [a.key, a]));
+
+// kind: add (something new or approved), warn (removed or voided), info (access and sign-in), else neutral
+const ACTIONS = {
+  create: ['Created', 'add'], update: ['Updated'], delete: ['Deleted', 'warn'], status: ['Changed the status of'],
+  void: ['Voided', 'warn'], revise: ['Revised'], payment: ['Recorded a payment on'], message: ['Sent a message on'],
+  compute: ['Computed'], adjustment: ['Added an adjustment to', 'add'],
+  dashboard_sync: ['Synced from the dashboard'], dashboard_link: ['Linked to the dashboard'],
+  device_add: ['Added a device to', 'add'], device_remove: ['Removed a device from', 'warn'],
+  contact_add: ['Added a contact to', 'add'], contact_remove: ['Removed a contact from', 'warn'],
+  sharing_add: ['Added a sharing ratio to', 'add'], sharing_remove: ['Removed a sharing ratio from', 'warn'],
+  rate_add: ['Added a rate to', 'add'], rate_remove: ['Removed a rate from', 'warn'],
+  approve: ['Approved', 'add'], approval_reset: ['Reset the approval of'], revoke: ['Revoked', 'warn'],
+  login: ['Signed in', 'info'], password_change: ['Changed a password', 'info'],
+};
+const humanize = (s) => String(s).replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
+
+let AREA_KEY = '', QUERY = '', ROWS = [], MORE = false, BUSY = false;
+
+// The database stores UTC ("2026-10-10 05:06:00"); show it in the viewer's own time zone.
+const when = (s) => new Date(String(s).replace(' ', 'T') + 'Z');
+const dayKey = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+function dayLabel(d) {
+  const now = new Date(), y = new Date(); y.setDate(now.getDate() - 1);
+  if (dayKey(d) === dayKey(now)) return 'Today';
+  if (dayKey(d) === dayKey(y)) return 'Yesterday';
+  return d.toLocaleDateString(LOCALE(), { weekday: 'long', day: 'numeric', month: 'long', year: d.getFullYear() === now.getFullYear() ? undefined : 'numeric' });
 }
-let t;
-q.oninput = () => { clearTimeout(t); t = setTimeout(load, 250); };
-entity.onchange = load;
+const clock = (d) => d.toLocaleTimeString(LOCALE(), { hour: '2-digit', minute: '2-digit', hour12: false });
+
+// Some entries store their detail as JSON; show it as plain "key: value" text.
+function detailText(raw) {
+  if (!raw) return '';
+  const t = String(raw).trim();
+  if (t[0] === '{' && t.endsWith('}')) {
+    try {
+      const o = JSON.parse(t), keys = Object.keys(o);
+      if (!keys.length) return '';
+      return keys.map((k) => `${humanize(k).toLowerCase()}: ${typeof o[k] === 'object' ? JSON.stringify(o[k]) : o[k]}`).join(', ');
+    } catch (_) { /* fall through to the raw text */ }
+  }
+  return t;
+}
+
+function eventHtml(r) {
+  const d = when(r.at), area = AREA[r.entity], [verb, kind] = ACTIONS[r.action] || [humanize(r.action)];
+  const noun = area && area.noun ? area.noun : String(r.entity).replace(/_/g, ' ');
+  const who = r.username || 'system', sys = who === 'system';
+  const standalone = ['login', 'password_change', 'dashboard_sync', 'dashboard_link'].includes(r.action);
+  const target = standalone ? '' : (r.entity_id != null && area && area.href
+    ? `the ${esc(noun)} <a href="${area.href(r.entity_id)}">#${esc(r.entity_id)}</a>`
+    : `the ${esc(noun)}${r.entity_id != null ? ' #' + esc(r.entity_id) : ''}`);
+  let det = detailText(r.detail);
+  if (det.toLowerCase() === verb.toLowerCase()) det = ''; // "Signed in" under "admin signed in" adds nothing
+  return `<div class="ev">
+    <time datetime="${d.toISOString()}" title="${esc(d.toLocaleString(LOCALE()))}">${clock(d)}</time>
+    <span class="who${sys ? ' sys' : ''}" aria-hidden="true">${esc(who.slice(0, 2).toUpperCase())}</span>
+    <div class="what">
+      <div class="line"><b>${esc(who)}</b><span class="act ${kind || ''}"><i aria-hidden="true"></i>${esc(verb.charAt(0).toLowerCase() + verb.slice(1))}</span>${target ? `<span>${target}</span>` : ''}</div>
+      ${det ? `<p class="detail">${esc(det)}</p>` : ''}
+    </div>
+    <span class="area">${esc(area ? area.label : humanize(r.entity))}</span>
+  </div>`;
+}
+
+function render() {
+  const list = byId('list');
+  byId('meta').textContent = ROWS.length ? `${ROWS.length}${MORE ? '+' : ''} ${ROWS.length === 1 ? 'entry' : 'entries'}` : '';
+  if (!ROWS.length) {
+    list.innerHTML = AREA_KEY || QUERY
+      ? '<div class="empty"><b>No activity matches</b>Clear the search or pick another area.</div>'
+      : '<div class="empty"><b>Nothing recorded yet</b>Changes to clients, projects, bills and users will show up here.</div>';
+    return;
+  }
+  let html = '', last = '';
+  for (const r of ROWS) {
+    const d = when(r.at), k = dayKey(d);
+    if (k !== last) { html += `<div class="day">${esc(dayLabel(d))}</div>`; last = k; }
+    html += eventHtml(r);
+  }
+  if (MORE) html += '<div class="more"><button type="button" id="moreBtn">Show older activity</button></div>';
+  list.innerHTML = html;
+}
+
+async function fetchRows(before) {
+  const p = new URLSearchParams({ entity: AREA_KEY, q: QUERY, limit: PAGE });
+  if (before) p.set('before', before);
+  return api('/api/reports/audit?' + p);
+}
+
+let seq = 0;
+async function load() {
+  const mine = ++seq;
+  const rows = await fetchRows();
+  if (mine !== seq) return; // a newer search is already running
+  ROWS = rows; MORE = rows.length === PAGE;
+  render();
+}
+
+byId('list').addEventListener('click', async (e) => {
+  if (!e.target.closest('#moreBtn') || BUSY) return;
+  BUSY = true;
+  try {
+    const rows = await fetchRows(ROWS[ROWS.length - 1].id);
+    ROWS = ROWS.concat(rows); MORE = rows.length === PAGE;
+    render();
+  } catch (err) { toast(err.message, true); }
+  BUSY = false;
+});
+
+byId('chips').innerHTML = AREAS.map((a) => `<button type="button" class="chip" data-k="${a.key}" aria-pressed="${a.key === ''}">${a.label}</button>`).join('');
+byId('chips').addEventListener('click', (e) => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  AREA_KEY = b.dataset.k;
+  byId('chips').querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', String(c === b)));
+  load().catch((err) => toast(err.message, true));
+});
+
+let timer;
+byId('q').addEventListener('input', (e) => {
+  clearTimeout(timer);
+  timer = setTimeout(() => { QUERY = e.target.value.trim(); load().catch((err) => toast(err.message, true)); }, 250);
+});
+byId('q').addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && e.target.value) { e.target.value = ''; QUERY = ''; load().catch((err) => toast(err.message, true)); }
+});
+
 (async () => { await shell(); await load(); })().catch((e) => toast(e.message, true));
+})();
 </script>
 </body>
 </html>

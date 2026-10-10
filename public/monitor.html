@@ -45,6 +45,24 @@
 .ww .tab[aria-selected="true"] { background: var(--deep); border-color: var(--deep); color: #fff; font-weight: 600; }
 .ww .error { min-height: 22px; margin: 12px 0 0; color: var(--bad); font-size: 14px; }
 
+/* site / client search */
+.ww .finder { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; }
+.ww .finder form { position: relative; flex: 1; max-width: 420px; display: flex; }
+.ww .finder input { -webkit-appearance: none; appearance: none; width: 100%; height: 40px; padding: 0 84px 0 16px; border: 1px solid var(--rule); border-radius: 999px; background: var(--panel); font: inherit; font-size: 14px; color: var(--ink); }
+.ww .finder input::-webkit-search-cancel-button, .ww .finder input::-webkit-search-decoration { -webkit-appearance: none; display: none; }
+.ww .finder input::placeholder { color: var(--muted); }
+.ww .finder input:focus-visible { outline: 2px solid var(--leaf); outline-offset: 1px; border-color: var(--leaf); }
+/* the billing app styles every <button> as a raised pill; reset that for these two round icon buttons */
+.ww .finder button { position: absolute; top: 50%; margin: 0; padding: 0; border: 0; border-radius: 50%; display: grid; place-items: center; box-shadow: none !important; transform: translateY(-50%) !important; }
+.ww .finder .fbtn { right: 4px; height: 32px; width: 32px; background: var(--deep); color: #fff; }
+.ww .finder .fbtn:hover { background: var(--line); }
+.ww .finder .fbtn svg { display: block; width: 16px; height: 16px; }
+.ww .finder .fclear { right: 40px; height: 28px; width: 28px; background: none; color: var(--muted); font-size: 20px; line-height: 1; }
+.ww .finder .fclear:hover { background: #edf1ec; color: var(--ink); }
+.ww .finder .fcount { color: var(--muted); font-size: 13px; white-space: nowrap; }
+.ww .tabs .nomatch { padding: 8px 4px; color: var(--muted); font-size: 14px; white-space: nowrap; }
+@media (max-width: 900px) { .ww .finder form { max-width: none; } }
+
 /* hero: dark control-room panel */
 .ww .hero { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 28px 48px; padding: 30px 32px; border-radius: 12px; color: #fff; background: radial-gradient(900px 300px at 85% -20%, rgba(91,154,46,.28), transparent 60%), var(--deep); margin-bottom: 18px; }
 .ww .hero h1 { margin: 0; font-size: clamp(22px, 3vw, 30px); font-weight: 700; letter-spacing: -.02em; line-height: 1.15; color: #fff; }
@@ -123,6 +141,26 @@
 .ww .tip button span:last-child { color: #b4c8c1; white-space: nowrap; }
 .ww .tip.sticky button:hover span:first-child { text-decoration: underline; }
 
+.ww .hero.ov-hero { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: stretch; gap: 28px 40px; }
+.ww .ov-hero .hero-main { display: flex; flex-direction: column; gap: 26px; min-width: 0; }
+
+/* carbon emission panel in the overview hero */
+.ww .carbon { display: flex; flex-direction: column; min-width: 0; padding: 20px 22px 18px; border-radius: 10px; background: var(--deep-2); border: 1px solid #28403b; }
+.ww .carbon h2 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -.01em; color: #fff; }
+.ww .carbon .cb-sub { margin: 2px 0 0; color: #9db3ac; font-size: 13px; }
+.ww .cb-bars { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; flex: 1; min-height: 150px; margin-top: 16px; }
+.ww .cb-col { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
+.ww .cb-v { font-size: 12px; color: #cfe3ae; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ww .cb-bar { flex: 1; width: 100%; display: flex; align-items: flex-end; border-bottom: 1px solid #5c7770; }
+.ww .cb-bar i { display: block; width: 100%; min-height: 2px; border-radius: 3px 3px 0 0; background: linear-gradient(#9fd36a, #5b9a2e); }
+.ww .cb-d { font-size: 12px; color: #9db3ac; }
+.ww .cb-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 16px; margin: 16px 0 0; padding-top: 14px; border-top: 1px solid #28403b; }
+.ww .cb-facts dt { font-size: 12.5px; color: #9db3ac; line-height: 1.3; }
+.ww .cb-facts dd { margin: 3px 0 0; font-size: 20px; font-weight: 600; letter-spacing: -.02em; color: #fff; font-variant-numeric: tabular-nums; }
+.ww .cb-facts dd small { font-size: 12.5px; font-weight: 500; color: #9db3ac; letter-spacing: 0; margin-left: 3px; }
+@media (max-width: 1280px) { .ww .hero.ov-hero { grid-template-columns: minmax(0, 1fr); } .ww .cb-bars { flex: none; height: 170px; } }
+@media (max-width: 520px) { .ww .cb-facts { grid-template-columns: 1fr 1fr; } }
+
 @media (max-width: 900px) {
   .ww .ov, .ww .split { grid-template-columns: 1fr; }
   .ww .hero { padding: 22px 18px; }
@@ -185,10 +223,20 @@
     <div class="notice warn" id="demoBanner" hidden>Sample data. This page is not reading from the M-Carbon Dashboard, so none of these figures are real. Set MONITOR_MODE=live on the server to use real readings.</div>
     <div class="notice bad" id="notice" role="alert" hidden></div>
 
+    <div class="finder">
+      <form id="finder" role="search" autocomplete="off">
+        <input type="search" id="finderInput" placeholder="Search site or client" aria-label="Search site or client" enterkeyhint="search">
+        <button type="button" class="fclear" id="finderClear" aria-label="Clear search" hidden>&times;</button>
+        <button type="submit" class="fbtn" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
+      </form>
+      <span class="fcount" id="finderCount" aria-live="polite"></span>
+    </div>
+
     <div class="tabbar"><button type="button" class="tabnav" id="tabPrev" aria-label="Scroll sites left">&#8249;</button><div class="tabs" id="tabs" role="tablist" aria-label="Sites"></div><button type="button" class="tabnav" id="tabNext" aria-label="Scroll sites right">&#8250;</button></div>
 
     <div id="overviewView" hidden>
-      <section class="hero">
+      <section class="hero ov-hero">
+        <div class="hero-main">
         <div>
           <h1>Philippines</h1>
           <p class="where">All monitored sites</p>
@@ -205,6 +253,17 @@
           <div class="figure"><div class="v" id="oCo2Today">-</div><div class="l">CO₂ avoided today</div></div>
           <div class="figure"><div class="v" id="oSites">-</div><div class="l">Projects and equipments</div></div>
         </div>
+        </div>
+        <aside class="carbon" aria-labelledby="cbTitle">
+          <h2 id="cbTitle">Carbon emission</h2>
+          <p class="cb-sub">CO₂ avoided each day, last 7 days, all sites (kg)</p>
+          <div class="cb-bars" id="cbBars" role="img" aria-label="CO₂ avoided each day for the last 7 days"></div>
+          <dl class="cb-facts">
+            <div><dt>Avoided, last 7 days</dt><dd id="cbWeek">-</dd></div>
+            <div><dt>Same as trees growing for a year</dt><dd id="cbTrees">-</dd></div>
+            <div><dt>Emission factor</dt><dd id="cbFactor">-</dd></div>
+          </dl>
+        </aside>
       </section>
 
       <div class="ov">
@@ -299,8 +358,43 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const nf = (n, d = 0) => Number(n).toLocaleString(LOCALE(), { minimumFractionDigits: d, maximumFractionDigits: d });
 
-const state = { view: null, pid: null, projects: [], meters: [], es: null, live: [], lastTs: 0, range: 'day', rate: 11.5, regDigits: 0, overview: null };
+const state = { baselineDaily: null, histRows: [], histLabels: [], view: null, pid: null, projects: [], meters: [], es: null, live: [], lastTs: 0, range: 'day', rate: 11.5, regDigits: 0, overview: null };
 let liveChart, histChart, h24Chart, ppChart;
+
+/* Baseline = the average daily usage before the improvement, drawn as a red "Pre" bar at the start of
+   the chart (as on the M-Carbon Dashboard). It is the median of used + saved over this month's days. */
+const BASELINE_LABEL = 'Baseline (average daily usage before)';
+const BASELINE_COLOR = '#e5483b';
+const AXIS = { display: true, color: '#8fa39e', width: 1 };
+const baselineDaily = (d) => {
+  // The dashboard's used + saved is the same figure every full day; the day in progress is pro-rated and lower.
+  // The median ignores that one low day.
+  const v = ((d.daily && d.daily.power) || []).map((r) => r.used + r.saved).filter((x) => x > 0).sort((a, b) => a - b);
+  return v.length ? v[Math.floor((v.length - 1) / 2)] : null;
+};
+// Writes the value above the Pre bar.
+const preLabel = { id: 'preLabel', afterDatasetsDraw(chart) {
+  const ctx = chart.ctx;
+  chart.data.datasets.forEach((ds, i) => {
+    const meta = chart.getDatasetMeta(i);
+    if (!ds.isPre || meta.hidden) return;
+    meta.data.forEach((bar, j) => {
+      const v = ds.data[j];
+      if (v == null) return;
+      ctx.save(); ctx.fillStyle = BASELINE_COLOR; ctx.font = '600 12px ' + Chart.defaults.font.family; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillText(nf(v, v < 10 ? 2 : 1), bar.x, bar.y - 4); ctx.restore();
+    });
+  });
+} };
+function drawHist() {
+  if (!histChart) return;
+  const B = state.baselineDaily, rows = state.histRows || [];
+  const pre = B > 0 ? (state.range === 'day' ? B / 24 : B) : null; // hourly bars get the hourly average
+  histChart.data.labels = pre == null ? state.histLabels : ['Pre', ...state.histLabels];
+  histChart.data.datasets[0].data = pre == null ? rows.map((r) => r.kwh) : [null, ...rows.map((r) => r.kwh)];
+  histChart.data.datasets[1].data = pre == null ? [] : [Math.round(pre * 1000) / 1000, ...rows.map(() => null)];
+  histChart.update();
+}
 
 /* ---------- api ---------- */
 // The billing app's api() sends the session cookie and sends you to the sign-in page on a 401.
@@ -337,10 +431,17 @@ function makeCharts() {
   });
   histChart = new Chart($('#histChart'), {
     type: 'bar',
-    data: { labels: [], datasets: [{ data: [], backgroundColor: '#3f7421', borderRadius: 2, maxBarThickness: 28 }] },
-    options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${nf(c.parsed.y, 1)} kWh` } } },
-      scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: 8, maxRotation: 0 } }, y: { beginAtZero: true, grid, title: { display: true, text: 'kWh' } } } },
+    plugins: [preLabel],
+    data: { labels: [], datasets: [
+      { label: 'Energy used', data: [], backgroundColor: '#3f7421', borderRadius: 2, maxBarThickness: 28, grouped: false },
+      { label: BASELINE_LABEL, data: [], backgroundColor: BASELINE_COLOR, borderRadius: 2, maxBarThickness: 28, grouped: false, isPre: true },
+    ] },
+    options: { maintainAspectRatio: false, layout: { padding: { top: 16 } },
+      plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, boxHeight: 12, filter: (item, d) => d.datasets[item.datasetIndex].data.length > 0 } },
+        tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${nf(c.parsed.y, c.parsed.y < 10 ? 2 : 1)} kWh` } } },
+      scales: { x: { grid: { display: false }, border: AXIS, ticks: { maxTicksLimit: 8, maxRotation: 0 } }, y: { beginAtZero: true, grid, border: AXIS, title: { display: true, text: 'kWh' } } } },
   });
+
 }
 const clock = (t) => new Date(t).toLocaleTimeString(LOCALE(), { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
 function drawLive() {
@@ -353,9 +454,9 @@ async function loadHistory() {
   const rows = await get(`/projects/${pid}/history?range=${range}`);
   if (pid !== state.pid || range !== state.range) return;
   const fmt = { day: { hour: '2-digit', minute: '2-digit', hour12: false }, week: { weekday: 'short' }, month: { month: 'short', day: 'numeric' } }[range];
-  histChart.data.labels = rows.map((r) => new Date(r.t).toLocaleString(LOCALE(), fmt));
-  histChart.data.datasets[0].data = rows.map((r) => r.kwh);
-  histChart.update();
+  state.histLabels = rows.map((r) => new Date(r.t).toLocaleString(LOCALE(), fmt));
+  state.histRows = rows;
+  drawHist();
 }
 document.querySelectorAll('#range button').forEach((b) => b.addEventListener('click', () => {
   state.range = b.dataset.range;
@@ -497,6 +598,19 @@ setInterval(() => { // ~4 steps a second, so the numbers roll instead of jumping
   }
 }, 250);
 
+const KG_CO2_PER_TREE_YEAR = 21;
+function renderCarbon(o) {
+  const t = o.totals;
+  const factor = t.savedKwh > 0 ? t.co2Kg / t.savedKwh : null;
+  const week = (o.prePost || []).map((r) => ({ t: r.t, kg: factor == null ? 0 : Math.max(0, r.before - r.after) * factor }));
+  const max = Math.max(1, ...week.map((w) => w.kg));
+  const html = week.map((w) => `<div class="cb-col"><span class="cb-v">${nf(w.kg)}</span><span class="cb-bar"><i style="height:${(w.kg / max * 100).toFixed(1)}%"></i></span><span class="cb-d">${esc(new Date(w.t).toLocaleDateString(LOCALE(), { weekday: 'short' }))}</span></div>`).join('');
+  if ($('#cbBars').dataset.k !== html) { $('#cbBars').innerHTML = html; $('#cbBars').dataset.k = html; }
+  $('#cbWeek').innerHTML = `${nf(week.reduce((a, w) => a + w.kg, 0))}<small>kg</small>`;
+  $('#cbTrees').innerHTML = `${nf(t.co2Kg / KG_CO2_PER_TREE_YEAR)}<small>trees</small>`;
+  $('#cbFactor').innerHTML = factor == null ? '-' : `${nf(factor, 3)}<small>kg/kWh</small>`;
+}
+
 function renderOverview(o) {
   const t = o.totals;
   if (!h24Chart) makeOverviewCharts();
@@ -511,6 +625,7 @@ function renderOverview(o) {
   rollTo('co2', t.co2Kg, (v) => { $('#oCo2').innerHTML = `${nf(v, 2)}<small>kg</small>`; });
   rollTo('co2t', t.todayCo2Kg, (v) => { $('#oCo2Today').innerHTML = `${nf(v, 2)}<small>kg</small>`; });
   $('#oSites').innerHTML = `${nf(t.projects)}<small>${nf(t.equipments || t.meters)} equipments</small>`;
+  renderCarbon(o);
 
   $('#areas').innerHTML = o.areas.map((a) => `<tr><td class="name">${esc(a.area)}</td><td class="num">${nf(a.savedKwh)}</td><td class="num">${nf(a.projects)}</td></tr>`).join('');
 
@@ -720,17 +835,17 @@ function buildDetails(pid) {
   $('#siteDetails').innerHTML =
     dsec('Today', 'Compared with yesterday', [['uUsed', 'Usage today'], ['uTraffic', 'Total traffic today'], ['uParked', 'Vehicles parked today'], ['uSaved', 'Power savings today']])
     + dsec('Since go-live', 'Cumulative', [['cRate', 'Power saving rate'], ['cSaved', 'Cumulative power savings'], ['cUsed', 'Cumulative power consumption'], ['cRatio', 'Power ratio (used)'], ['cDays', 'Total energy-saving duration'], ['cBill', 'Cumulative power bill savings'], ['cCarbon', 'Cumulative carbon emission reduction'], ['cTrees', 'Tree planting comparison']])
-    + dsec('This month', 'Energy saving rate and power ratio', [['mRate', 'Energy saving rate'], ['mSaved', 'Saved'], ['mUsed', 'Actual usage'], ['mLamp', 'Lighting'], ['mCarbon', 'Carbon emission reduction'], ['mCost', 'Cost settlement'], ['mTariff', 'Tariff'], ['mUsage', 'Usage this month']])
+    + dsec('This month', 'Energy saving rate and power ratio', [['mRate', 'Energy saving rate'], ['mSaved', 'Saved'], ['mUsed', 'Actual usage'], ['mBase', 'Daily baseline, before improvement'], ['mLamp', 'Lighting'], ['mCarbon', 'Carbon emission reduction'], ['mCost', 'Cost settlement'], ['mTariff', 'Tariff'], ['mUsage', 'Usage this month']])
     + dsec('Equipment and meter', 'Current readings', [['eFix', 'Lighting fixtures'], ['eBefore', 'Before improvement'], ['eAfter', 'After improvement'], ['eMeters', 'Number of meters'], ['eStatus', 'Meter status'], ['eW', 'Power'], ['eV', 'Voltage'], ['eA', 'Current'], ['eRead', 'Total meter reading'], ['nLight', 'Current lighting power'], ['nTraffic', 'Current traffic'], ['nPark', 'Current parking occupied']])
     + '<div class="charts">' + dplot('dPowerDay', 'Power usage, this month (kWh per day)') + dplot('dShare', 'Power share trend, by month')
     + dplot('dTraffic24', 'Traffic flow, last 24 hours') + dplot('dTrafficDay', 'Traffic, this month') + '</div>';
   Object.values(dCharts).forEach((c) => c.destroy());
   for (const k of Object.keys(dCharts)) delete dCharts[k];
-  const base = { maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom' } }, scales: { y: { beginAtZero: true } } };
-  const mk = (id, type, extra = {}) => { dCharts[id] = new Chart($('#' + id), { type, data: { labels: [], datasets: [] }, options: { ...base, ...extra } }); };
+  const base = { maintainAspectRatio: false, layout: { padding: { top: 16 } }, plugins: { legend: { display: true, position: 'bottom' } }, scales: { y: { beginAtZero: true } } };
+  const mk = (id, type, extra = {}) => { dCharts[id] = new Chart($('#' + id), { type, plugins: [preLabel], data: { labels: [], datasets: [] }, options: { ...base, ...extra } }); };
   mk('dTraffic24', 'line'); mk('dTrafficDay', 'line');
-  mk('dShare', 'bar', { scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } });
-  mk('dPowerDay', 'bar', { scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } });
+  mk('dShare', 'bar', { scales: { x: { stacked: true, border: AXIS }, y: { stacked: true, beginAtZero: true, border: AXIS } } });
+  mk('dPowerDay', 'bar', { scales: { x: { stacked: true, border: AXIS }, y: { stacked: true, beginAtZero: true, border: AXIS } } });
   state.dBuilt = pid;
 }
 function setChart(id, labels, sets) {
@@ -767,8 +882,15 @@ async function loadDetails() {
   set('eRead', e.totalReadingKwh == null ? '-' : `${u(e.totalReadingKwh)}<small>kWh</small>`);
   set('nLight', `${nf(no.lightingPct, 1)}<small>%</small>`); set('nTraffic', nf(no.traffic)); set('nPark', no.parkingPct == null ? '-' : `${nf(no.parkingPct, 1)}<small>%</small>`);
   setChart('dTraffic24', d.trafficHourly.map((r) => `${String(r.hour).padStart(2, '0')}:00`), [{ label: 'People and vehicles', data: d.trafficHourly.map((r) => r.value), borderColor: '#3f7421', backgroundColor: 'rgba(91,154,46,.18)', fill: true }]);
-  setChart('dShare', d.powerShare.map((r) => `M${r.month}`), [
-    { label: 'Lighting', data: d.powerShare.map((r) => r.lamp), backgroundColor: '#e0b400' }]);
+  const B = baselineDaily(d);
+  state.baselineDaily = B; drawHist();
+  set('mBase', B == null ? '-' : `${u(B)}<small>kWh/day</small>`);
+  const withPre = (rows, key) => (B == null ? rows.map((r) => r[key]) : [null, ...rows.map((r) => r[key])]);
+  const padPre = (arr) => (B == null ? arr : ['Pre', ...arr]);
+  const preSet = () => (B == null ? [] : [{ label: BASELINE_LABEL, data: [Math.round(B * 30 * 100) / 100, ...Array(d.powerShare.length).fill(null)], backgroundColor: BASELINE_COLOR, isPre: true }]);
+  // Monthly bars: the Pre bar is 30 days at the average daily usage before.
+  setChart('dShare', padPre(d.powerShare.map((r) => new Date(2000, r.month - 1, 1).toLocaleDateString(LOCALE(), { month: 'short' }))), [
+    { label: 'Lighting', data: withPre(d.powerShare, 'lamp'), backgroundColor: '#e0b400' }, ...preSet()]);
   setChart('dPowerDay', d.daily.power.map((r) => r.day), [
     { label: 'Actual usage', data: d.daily.power.map((r) => r.used), backgroundColor: '#4a62e8' },
     { label: 'Power saved', data: d.daily.power.map((r) => r.saved), backgroundColor: '#1fb88a' }]);
@@ -789,7 +911,7 @@ async function openProject(id) {
   $('#pName').textContent = p.name;
   $('#pLoc').textContent = p.location;
   $('#kToday').textContent = $('#k30').textContent = $('#kCost').textContent = '-';
-  $('#siteDetails').innerHTML = ''; state.dBuilt = null;
+  $('#siteDetails').innerHTML = ''; state.dBuilt = null; state.baselineDaily = null; state.histRows = []; state.histLabels = [];
   try {
     const meters = await get(`/projects/${id}/meters`);
     if (id !== state.pid) return;
@@ -801,6 +923,33 @@ async function openProject(id) {
   } catch (err) { showFault(err); }
 }
 
+/* ---------- search by site or client ---------- */
+const norm = (v) => String(v || '').toLowerCase().trim();
+// Every typed word has to appear somewhere in the site's name, location or client name.
+function applyFilter() {
+  const words = norm($('#finderInput').value).split(/\s+/).filter(Boolean);
+  let shown = 0, total = 0;
+  document.querySelectorAll('#tabs .tab').forEach((t) => {
+    if (t.dataset.id === 'overview') return; // the national overview stays put
+    total++;
+    const ok = words.every((w) => (t.dataset.q || '').includes(w));
+    t.hidden = !ok; if (ok) shown++;
+  });
+  $('#finderClear').hidden = !words.length;
+  $('#noMatch').hidden = !(words.length && !shown);
+  $('#finderCount').textContent = words.length ? `${shown} of ${total} sites` : '';
+  $('#tabs').scrollLeft = 0;
+  return words.length ? [...document.querySelectorAll('#tabs .tab')].filter((t) => t.dataset.id !== 'overview' && !t.hidden) : [];
+}
+$('#finderInput').addEventListener('input', applyFilter);
+$('#finder').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const hits = applyFilter();
+  if (hits.length) select(hits[0].dataset.id); // Enter or the search button opens the first match
+});
+$('#finderClear').addEventListener('click', () => { $('#finderInput').value = ''; applyFilter(); $('#finderInput').focus(); });
+$('#finderInput').addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#finderInput').value) { $('#finderInput').value = ''; applyFilter(); } });
+
 async function boot(me) {
   if (!liveChart) { buildRegister($('#register'), 3, 1); makeCharts(); }
   try {
@@ -810,8 +959,10 @@ async function boot(me) {
     state.projects = await get('/projects');
     const staff = me.role !== 'viewer'; // the national overview mixes every client's sites
     $('#tabs').innerHTML = (staff ? '<button class="tab" role="tab" data-id="overview" aria-selected="false">Overview</button>' : '')
-      + state.projects.map((p) => `<button class="tab" role="tab" data-id="${esc(p.id)}" aria-selected="false">${esc(p.name)}</button>`).join('');
+      + state.projects.map((p) => `<button class="tab" role="tab" data-id="${esc(p.id)}" data-q="${esc([p.name, p.location, p.client].filter(Boolean).join(' ').toLowerCase())}" aria-selected="false">${esc(p.name)}</button>`).join('')
+      + '<span class="nomatch" id="noMatch" hidden>No site or client matches.</span>';
     document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => select(t.dataset.id)));
+    applyFilter();
     if (staff) select('overview');
     else if (state.projects.length) select(state.projects[0].id);
     else {

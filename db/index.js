@@ -332,6 +332,45 @@ if (!threadReadsExisted && db.prepare("SELECT 1 FROM sqlite_master WHERE type = 
     JOIN (SELECT DISTINCT bill_id, client_user_id FROM bill_messages WHERE client_user_id IS NOT NULL) t ON t.bill_id = r.bill_id`);
 }
 
+// Payment reminders: per-user notifications, one row per bill per reminder stage (UNIQUE = each stage fires once),
+// and an email outbox so failed or held-back emails can be retried and shown to finance.
+addColumn('users', 'email TEXT');
+db.exec(`
+CREATE TABLE IF NOT EXISTS notifications (
+  id INTEGER PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  bill_id INTEGER,
+  kind TEXT NOT NULL,                      -- due_soon | overdue
+  title TEXT NOT NULL, body TEXT NOT NULL,
+  read_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, id);
+CREATE TABLE IF NOT EXISTS bill_notices (
+  id INTEGER PRIMARY KEY,
+  bill_id INTEGER NOT NULL REFERENCES bills(id) ON DELETE CASCADE,
+  stage TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE (bill_id, stage)
+);
+CREATE TABLE IF NOT EXISTS notice_emails (
+  id INTEGER PRIMARY KEY,
+  notice_id INTEGER NOT NULL REFERENCES bill_notices(id) ON DELETE CASCADE,
+  to_addr TEXT NOT NULL, subject TEXT NOT NULL, body TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',  -- pending | sent | failed | skipped | cancelled
+  attempts INTEGER NOT NULL DEFAULT 0, error TEXT, sent_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);`);
+
+// Quotation approval workflow: billing officer prepares -> Finance / HR accepts or declines -> Finance / HR sends to the client.
+addColumn('quotations', 'submitted_at TEXT');
+addColumn('quotations', 'reviewed_by TEXT');
+addColumn('quotations', 'reviewed_at TEXT');
+addColumn('quotations', 'decline_reason TEXT');
+addColumn('quotations', 'sent_by TEXT');
+addColumn('quotations', 'sent_at TEXT');
+addColumn('notifications', 'quotation_id INTEGER');
+
 // Seed a first administrator so the app is usable on first run.
 const count = db.prepare('SELECT COUNT(*) c FROM users').get().c;
 if (count === 0) {

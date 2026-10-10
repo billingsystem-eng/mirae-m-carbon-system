@@ -10,22 +10,17 @@ const PRODUCTS = [
     id: 'bulb-e27', kind: 'bulb', name: 'M-Carbon Bulb E-27', group: 'LED bulb',
     blurb: 'LED bulb with a standard E27 screw base. It fits the lamp holders already installed on site.',
     specs: [['Type', 'LED bulb'], ['Fitting', 'E27 screw base'], ['Power', '5 W'], ['Colour', '6500K daylight']],
-    images: [{ src: 'bulb-e27-1' }, { src: 'bulb-e27-2' }, { src: 'bulb-e27-3' },
-             { src: 'bulb-e27-4' }, { src: 'bulb-e27-5' }, { src: 'bulb-e27-6' },
-             { src: 'bulb-e27-7' }, { src: 'bulb-e27-8' }, { src: 'bulb-e27-9' },
-             { src: 'bulb-e27-10' }, { src: 'bulb-e27-11' }, { src: 'bulb-e27-12' },
-             { src: 'bulb-e27-13' }, { src: 'bulb-e27-14' }, { src: 'bulb-e27-15' },
-             { src: 'bulb-e27-16' }]
+    images: [{ src: 'bulb-e27-1' }, { src: 'bulb-e27-3' }, { src: 'bulb-e27-5' },
+             { src: 'bulb-e27-7' }, { src: 'bulb-e27-9' }, { src: 'bulb-e27-11' },
+             { src: 'bulb-e27-13' }, { src: 'bulb-e27-15' }]
   },
   {
     id: 't5-always-on', kind: 'tube', name: 'M-Carbon Tube T5 Always On', group: 'LED tube',
     blurb: 'Slim T5 LED tube for retrofitting existing fixtures. This is the Always On model.',
     specs: [['Type', 'LED tube, T5'], ['Model', 'Always On'], ['Fitting', 'G5 two-pin'], ['Size', '1160 × 19 mm'], ['Power', '8 W'], ['Colour', '6500K daylight']],
-    images: [{ src: 't5-always-on-5', fit: 'bleed-bottom' }, { src: 't5-always-on-3', fit: 'tilt' }, { src: 't5-always-on-4', fit: 'tilt' },
-             { src: 't5-always-on-6', fit: 'bleed-bottom' }, { src: 't5-always-on-7', fit: 'bleed-top' }, { src: 't5-always-on-8', fit: 'bleed-top' },
-             { src: 't5-always-on-9', fit: 'bleed-top' }, { src: 't5-always-on-10', fit: 'bleed-top' }, { src: 't5-always-on-11', fit: 'wide' },
-             { src: 't5-always-on-12', fit: 'wide' }, { src: 't5-always-on-13', fit: 'bleed-top' }, { src: 't5-always-on-14', fit: 'bleed-top' },
-             { src: 't5-always-on-1', fit: 'long' }, { src: 't5-always-on-2', fit: 'long' }]
+    images: [{ src: 't5-always-on-5', fit: 'bleed-bottom' }, { src: 't5-always-on-3', fit: 'tilt' }, { src: 't5-always-on-7', fit: 'bleed-top' },
+             { src: 't5-always-on-9', fit: 'bleed-top' }, { src: 't5-always-on-11', fit: 'wide' }, { src: 't5-always-on-13', fit: 'bleed-top' },
+             { src: 't5-always-on-1', fit: 'long' }]
   },
   {
     id: 't8-always-on', kind: 'tube', name: 'M-Carbon Tube T8 Always On', group: 'LED tube',
@@ -38,10 +33,8 @@ const PRODUCTS = [
     id: 't8-iot', kind: 'tube', name: 'M-Carbon Tube T8 IoT', group: 'LED tube',
     blurb: 'T8 LED tube with an IoT connection, so the lamp can be tracked in the M-Carbon monitor.',
     specs: [['Type', 'LED tube, T8'], ['Model', 'IoT'], ['Fitting', 'G13 two-pin'], ['Power', '0–18 W adjustable'], ['Efficacy', '180 lm/W'], ['Light output', 'Up to 3,240 lm'], ['Colour', '6500K daylight'], ['Lifespan', 'Up to 100,000 hours'], ['Warranty', 'Up to 7 years']],
-    images: [{ src: 't8-iot-9', fit: 'bleed-bottom' }, { src: 't8-iot-3', fit: 'tilt' }, { src: 't8-iot-4', fit: 'tilt' },
-             { src: 't8-iot-5', fit: 'tilt' }, { src: 't8-iot-6', fit: 'tilt' }, { src: 't8-iot-7', fit: 'bleed-top' },
-             { src: 't8-iot-8', fit: 'bleed-top' }, { src: 't8-iot-10', fit: 'wide' }, { src: 't8-iot-1', fit: 'long' },
-             { src: 't8-iot-2', fit: 'long' }, { src: 't8-iot-11', fit: 'long' }, { src: 't8-iot-12', fit: 'long' }]
+    images: [{ src: 't8-iot-9', fit: 'bleed-bottom' }, { src: 't8-iot-3', fit: 'tilt' }, { src: 't8-iot-5', fit: 'tilt' },
+             { src: 't8-iot-7', fit: 'bleed-top' }, { src: 't8-iot-1', fit: 'long' }, { src: 't8-iot-11', fit: 'long' }]
   }
 ];
 

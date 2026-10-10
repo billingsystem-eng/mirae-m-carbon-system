@@ -18,6 +18,8 @@ const quotationsRouter = require('./routes/quotations');
 const invoicesRouter = require('./routes/invoices');
 const onlinePayments = require('./routes/online-payments');
 const messagesRouter = require('./routes/messages');
+const notificationsRouter = require('./routes/notifications');
+const notify = require('./lib/notify');
 
 const db = require('./db'); // opens the database and creates tables on first run
 
@@ -54,7 +56,7 @@ app.get('/', (req, res) => {
 });
 
 // Viewers (client logins) get their issued bills, quotations, live monitor and payment methods — read-only.
-const VIEWER_PAGES = new Set(['/bills.html', '/bill.html', '/statement.html', '/invoice.html', '/payment-methods.html', '/messages.html',
+const VIEWER_PAGES = new Set(['/bills.html', '/bill.html', '/statement.html', '/invoice.html', '/payment-methods.html', '/messages.html', '/notifications.html',
   '/quotations.html', '/quotation-print.html', '/monitor.html', '/products.html']);
 app.get(/\.html$/, (req, res, next) => {
   if (req.session?.userId && req.session.role === 'viewer' &&
@@ -83,6 +85,7 @@ app.use('/api/payment-methods', requireAuth, paymentMethodsRouter);
 app.use('/api/psgc', requireAuth, psgcRouter);
 app.use('/api/quotations', requireAuth, quotationsRouter);
 app.use('/api/invoices', requireAuth, invoicesRouter);
+app.use('/api/notifications', requireAuth, notificationsRouter);   // payment reminders (due soon / overdue)
 app.use('/api/messages', requireAuth, messagesRouter);   // payment chat: client <-> finance, per bill
 app.use('/api/online-payments', requireAuth, onlinePayments.router);   // PayMongo checkout   // scanned Sales Invoice copies
 
@@ -95,4 +98,5 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`M-Carbon Billing System running on http://localhost:${PORT}`);
+  notify.start();
 });

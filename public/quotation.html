@@ -23,13 +23,18 @@
     <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
       <div><div class="crumb"><a href="/quotations.html">Quotations</a></div><h1 id="title">New quotation</h1></div>
       <div class="actions">
-        <select id="status" hidden style="width:auto"></select>
+        <span id="state" class="pill draft" hidden></span>
+        <span id="wf" style="display:contents"></span>
         <a class="btn" id="view-btn" href="#" hidden>View quotation</a>
       </div>
     </div>
 
+    <div class="panel" id="decline-note" hidden style="border-left:4px solid var(--alert)">
+      <div style="padding:12px 16px"><b>Declined by Finance / HR</b><p id="decline-text" style="margin:6px 0 0;white-space:pre-line"></p></div>
+    </div>
+
     <div class="panel"><header><h2>Customer</h2></header><div class="body grid" style="padding:16px">
-      <div><label>Existing client (optional)</label><select id="client_id"><option value="">— Not linked —</option></select></div>
+      <div><label>Client (needed to send it to them)</label><select id="client_id" data-edit><option value="">— Not linked —</option></select></div>
       <div><label>Customer or company name</label><input id="customer_name" data-edit></div>
       <div><label>Project site (if applicable)</label><input id="project_site" data-edit></div>
       <div><label>Client reference ID (PR no.)</label><input id="client_ref_id" data-edit></div>
@@ -64,6 +69,11 @@
       <div><label>Footer contact — email</label><input id="contact_email" data-edit></div>
     </div></div>
 
+    <div class="panel" id="approvals" hidden>
+      <header><h2>Approval</h2></header>
+      <div class="body" id="approvals-body" style="padding:16px"></div>
+    </div>
+
     <div class="panel" id="invoice-panel" hidden>
       <header><h2>Sales invoice (scanned copy)</h2></header>
       <div class="body" id="invoice-body"></div>
@@ -81,9 +91,8 @@
 const g = (id) => document.getElementById(id);
 const FIELDS = ['client_id','customer_name','project_site','client_ref_id','quote_date','valid_until','vat_rate','submitted_by','contact_no','terms',
   'prepared_by_name','prepared_by_title','approved_by_name','approved_by_title','contact_name','contact_phone','contact_email'];
-const LABEL = { draft: 'Draft', sent: 'Sent', accepted: 'Accepted', paid: 'Paid', declined: 'Declined' };
 const id = new URLSearchParams(location.search).get('id');
-let me, clients = [];
+let me, clients = [], defs, q = null;
 const iso = (d) => d.toISOString().slice(0, 10);
 
 function rowHtml(i = {}, n = 0) {
@@ -120,35 +129,122 @@ function fill(q) {
   FIELDS.forEach((f) => (g(f).value = q[f] ?? ''));
   g('rows').innerHTML = ''; q.items.forEach(addRow); recalc();
 }
+// Flow (like a billing statement): Draft -> For review -> Accepted (Finance / HR) -> Sent to client -> Paid.
+// Finance / HR can also decline a quotation in review, with a reason; the billing officer fixes it and sends it again.
+const PILL = { draft: 'draft', for_review: 'for_review', approved: 'approved', declined: 'void', sent: 'final', accepted: 'final', paid: 'issued' };
+const WAIT = {
+  draft: 'Waiting for the billing officer to send it for review.',
+  declined: 'Declined. The billing officer needs to fix it and send it for review again.',
+  for_review: 'Waiting for Finance / HR to accept or decline it.',
+  approved: 'Accepted. Waiting for Finance / HR to send it to the client.',
+  sent: 'With the client. Mark it as paid when payment arrives, then attach the Sales Invoice.',
+  accepted: 'The client has accepted. Mark it as paid when payment arrives, then attach the Sales Invoice.',
+  paid: 'Paid.'
+};
+const can = (...roles) => roles.includes(me.role);
+
+function setLocked(on, why) {
+  document.querySelectorAll('[data-edit]').forEach((el) => { el.disabled = on; el.title = on ? why : ''; });
+  g('save').hidden = on;
+}
+
+function renderWorkflow() {
+  const s = q.status, parts = [];
+  if (can('admin', 'billing_officer') && ['draft', 'declined'].includes(s)) parts.push(`<button class="primary" id="wf-review">${s === 'declined' ? 'Send for review again' : 'Send for review'}</button>`);
+  if (can('finance_hr') && s === 'for_review') parts.push('<button class="primary" id="wf-accept">Accept</button>');
+  if (can('finance_hr') && s === 'approved') parts.push('<button class="primary" id="wf-send">Send to client</button>');
+  if (can('finance_hr') && ['for_review', 'approved'].includes(s)) parts.push('<button class="danger" id="wf-decline">Decline</button>');
+  if (can('finance_hr', 'admin') && ['sent', 'accepted'].includes(s)) parts.push('<button class="primary" id="wf-paid">Mark as paid</button>');
+  g('wf').innerHTML = parts.join('');
+  if (g('wf-review')) g('wf-review').onclick = () => move('for_review');
+  if (g('wf-accept')) g('wf-accept').onclick = () => move('approved');
+  if (g('wf-send')) g('wf-send').onclick = () => {
+    if (confirm(`Send ${q.quote_no} to ${q.customer_name}? The client will see it in their login.`)) move('sent');
+  };
+  if (g('wf-decline')) g('wf-decline').onclick = () => {
+    const reason = prompt('Why is this quotation being declined? The billing officer will see this and fix it.');
+    if (reason === null) return;
+    if (!reason.trim()) return toast('A reason is required.', true);
+    move('declined', reason.trim());
+  };
+  if (g('wf-paid')) g('wf-paid').onclick = () => move('paid');
+}
+
+function renderApprovals() {
+  const s = q.status;
+  const by = (who, at) => who ? `<b>${esc(who)}</b> · ${esc(at || '')}` : '';
+  const reviewed = ['approved', 'sent', 'accepted', 'paid'].includes(s);
+  const rows = [
+    ['Prepared and sent for review', 'Billing officer / Administrator', s !== 'draft' ? 'ok' : '', s !== 'draft' ? esc(q.submitted_at || '') : ''],
+    ['Finance review', 'Finance / HR', reviewed ? 'ok' : s === 'declined' ? 'no' : '',
+      reviewed ? by(q.reviewed_by, q.reviewed_at) + ' · accepted' : s === 'declined' ? by(q.reviewed_by, q.reviewed_at) + ' · declined' : ''],
+    ['Sent to client', 'Finance / HR', ['sent', 'accepted', 'paid'].includes(s) ? 'ok' : '', by(q.sent_by, q.sent_at)],
+    ['Paid', 'Finance / HR or administrator', s === 'paid' ? 'ok' : '', '']
+  ];
+  const mark = { ok: '✓', no: '✕', '': '○' };
+  g('approvals-body').innerHTML = `<table><tbody>${rows.map(([name, role, st, info]) => `<tr>
+      <td style="width:26px">${mark[st]}</td><td><b>${name}</b><br><span style="font-size:.82rem;color:var(--ink-soft)">${role}</span></td>
+      <td style="text-align:right">${info || (st ? '' : '<span style="color:var(--ink-soft)">Pending</span>')}</td></tr>`).join('')}</tbody></table>
+    <p style="margin:10px 0 0;color:var(--ink-soft);font-size:.86rem">${WAIT[s] || ''}</p>`;
+}
+
+/** Everything that depends on the quotation's current status. */
+function render() {
+  g('title').textContent = q.quote_no;
+  g('state').className = 'pill ' + PILL[q.status]; g('state').textContent = q.status_label; g('state').hidden = false;
+  g('decline-note').hidden = !(q.status === 'declined' && q.decline_reason);
+  g('decline-text').textContent = q.decline_reason ? `${q.decline_reason}${q.reviewed_by ? '\n— ' + q.reviewed_by : ''}` : '';
+  g('approvals').hidden = false;
+  renderWorkflow(); renderApprovals();
+  g('view-btn').href = '/quotation-print.html?id=' + id; g('view-btn').hidden = false;
+  if (readOnly(me)) setLocked(true, 'Your role is read-only.');
+  else if (!q.editable) setLocked(true, 'Locked while it is under review or after it has been accepted. Finance / HR can decline it to send it back.');
+  else setLocked(false);
+  g('del').hidden = !id || readOnly(me) || !(q.editable || me.role === 'admin');
+  g('del').disabled = false; g('del').title = '';
+  renderInvoicePanel('quotation', id, me);
+}
+
+async function saveQuote(silent) {
+  const r = await api(id ? '/api/quotations/' + id : '/api/quotations', { method: id ? 'PUT' : 'POST', body: collect() });
+  if (!silent) toast('Quotation saved');
+  return r;
+}
+
+async function move(status, reason) {
+  try {
+    if (q.editable && !readOnly(me)) q = await saveQuote(true); // send what is on screen, not an older save
+    q = await api(`/api/quotations/${id}/status`, { method: 'PATCH', body: { status, reason } });
+    fill(q); render();
+    toast('Now ' + q.status_label.toLowerCase());
+  } catch (e) { toast(e.message, true); }
+}
+
 (async () => {
   me = await shell();
-  const [defs, cl] = await Promise.all([api('/api/quotations/defaults'), api('/api/clients')]);
-  clients = cl.clients;
+  const [d, cl] = await Promise.all([api('/api/quotations/defaults'), api('/api/clients')]);
+  defs = d; clients = cl.clients;
   clients.forEach((c) => g('client_id').add(new Option(c.name, c.id)));
   g('client_id').onchange = () => { const c = clients.find((x) => String(x.id) === g('client_id').value); if (c) g('customer_name').value = c.name; };
   g('rows').oninput = recalc; g('vat_rate').oninput = recalc;
   g('rows').onclick = (e) => { if (e.target.classList.contains('rm')) { e.target.closest('tr').remove(); recalc(); } };
   g('add-row').onclick = () => addRow();
   if (id) {
-    const q = await api('/api/quotations/' + id);
-    fill(q); g('title').textContent = q.quote_no;
-    defs.statuses.forEach((s) => g('status').add(new Option(LABEL[s], s))); g('status').value = q.status; g('status').hidden = false;
-    g('status').onchange = async () => { await api(`/api/quotations/${id}/status`, { method: 'PATCH', body: { status: g('status').value } }); toast('Status updated'); renderInvoicePanel('quotation', id, me); };
-    renderInvoicePanel('quotation', id, me);
-    g('view-btn').href = '/quotation-print.html?id=' + id; g('view-btn').hidden = false; g('del').hidden = false;
+    q = await api('/api/quotations/' + id);
+    fill(q); render();
   } else {
     const t = new Date(), v = new Date(); v.setDate(v.getDate() + 30);
     FIELDS.forEach((f) => (g(f).value = ''));
     g('quote_date').value = iso(t); g('valid_until').value = iso(v); g('vat_rate').value = 12;
     g('terms').value = defs.terms; g('submitted_by').value = me.full_name; g('prepared_by_name').value = me.full_name;
     addRow();
+    if (readOnly(me)) setLocked(true, 'Your role is read-only.');
   }
-  if (readOnly(me)) disableEditing();
   g('save').onclick = async () => {
     try {
-      const q = await api(id ? '/api/quotations/' + id : '/api/quotations', { method: id ? 'PUT' : 'POST', body: collect() });
-      toast('Quotation saved');
-      if (!id) location.href = '/quotation.html?id=' + q.id; else { fill(q); g('title').textContent = q.quote_no; }
+      const r = await saveQuote();
+      if (!id) location.href = '/quotation.html?id=' + r.id;
+      else { q = r; fill(q); render(); }
     } catch (e) { toast(e.message, true); }
   };
   g('del').onclick = async () => {
