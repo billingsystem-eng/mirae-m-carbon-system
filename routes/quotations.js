@@ -35,6 +35,16 @@ const DEFAULT_TERMS = [
   '6) Shipping: Shipping and delivery charges will be calculated based on the delivery location and will be quoted separately, unless otherwise stated in the quotation.'
 ].join('\n');
 
+// Korean wording of the same terms (shown when the interface is in Korean).
+const DEFAULT_TERMS_KO = [
+  '1) 주문 확인: 고객이 본 견적서를 수락한 시점부터 적용됩니다.',
+  '2) 결제 조건: 청구서 발행일로부터 30일 이내에 결제해야 합니다.',
+  '3) 배송: 주문 확인일로부터 3~5 영업일 이내이며, 제품 재고 상황에 따라 달라질 수 있습니다.',
+  '4) 견적서 유효 기간: 본 견적서는 상단에 명시된 \u2018유효 기간\u2019까지 유효합니다.',
+  '5) 보증: LED 조명 제품은 제조 결함 및 기술적 오작동에 대해 5년 보증이 적용됩니다. 보증 범위는 제품 교체로 한정되며, 유지보수 서비스는 포함되지 않습니다.',
+  '6) 배송: 배송비는 배송지에 따라 산정되며, 견적서에 별도로 명시되지 않는 한 별도로 견적됩니다.'
+].join('\n');
+
 const text = (v, max) => String(v ?? '').trim().slice(0, max);
 const num = (v) => { const n = Number(v); return Number.isFinite(n) ? n : NaN; };
 const r2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
@@ -75,7 +85,7 @@ function parse(b) {
     client_id: b.client_id ? Number(b.client_id) : null,
     customer_name: text(b.customer_name, 200), project_site: text(b.project_site, 200), client_ref_id: text(b.client_ref_id, 80),
     submitted_by: text(b.submitted_by, 120), contact_no: text(b.contact_no, 60),
-    vat_rate: num(b.vat_rate ?? 12), terms: text(b.terms, 4000),
+    vat_rate: num(b.vat_rate ?? 10), terms: text(b.terms, 4000),
     prepared_by_name: text(b.prepared_by_name, 120), prepared_by_title: text(b.prepared_by_title, 120),
     approved_by_name: text(b.approved_by_name, 120), approved_by_title: text(b.approved_by_title, 120),
     contact_name: text(b.contact_name, 120), contact_phone: text(b.contact_phone, 60), contact_email: text(b.contact_email, 120)
@@ -102,7 +112,7 @@ function saveItems(id, items) {
   items.forEach((i, n) => ins.run(id, n, i.description, i.quantity, i.unit, i.unit_price, i.unit_material, i.unit_labor));
 }
 
-router.get('/defaults', (req, res) => res.json({ terms: DEFAULT_TERMS, statuses: STATUSES, labels: LABELS }));
+router.get('/defaults', (req, res) => res.json({ terms: DEFAULT_TERMS, terms_ko: DEFAULT_TERMS_KO, statuses: STATUSES, labels: LABELS }));
 
 router.get('/', (req, res) => {
   const q = text(req.query.q, 100), status = text(req.query.status, 20);

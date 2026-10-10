@@ -471,7 +471,7 @@ async function loadSummary() {
   if (pid !== state.pid) return;
   $('#kToday').innerHTML = s.todayKwh == null ? '-' : `${nf(s.todayKwh)}<small>kWh</small>`;
   $('#k30').innerHTML = s.last30Kwh == null ? '-' : `${nf(s.last30Kwh)}<small>kWh</small>`;
-  $('#kCost').textContent = s.last30Cost == null ? '-' : '\u20B1' + nf(s.last30Cost);
+  $('#kCost').textContent = s.last30Cost == null ? '-' : '\u20A9' + nf(s.last30Cost);
 }
 function renderMeters() {
   $('#meters').innerHTML = state.meters.map((m) => `
@@ -870,11 +870,11 @@ async function loadDetails() {
   set('cRate', `${nf(c.saveRate, 1)}<small>%</small>`); set('cSaved', `${u(c.savedKwh)}<small>kWh</small>`);
   set('cUsed', `${u(c.usedKwh)}<small>kWh</small>`);
   set('cRatio', `${nf(c.usedRatio, 1)}<small>%</small>`); set('cDays', `${nf(c.durationDays, 1)}<small>days</small>`);
-  set('cBill', `\u20B1${u(c.billSavings)}`); set('cCarbon', `${u(c.carbonKg)}<small>kg</small>`); set('cTrees', `${nf(c.trees)}<small>units</small>`);
+  set('cBill', `\u20A9${u(c.billSavings)}`); set('cCarbon', `${u(c.carbonKg)}<small>kg</small>`); set('cTrees', `${nf(c.trees)}<small>units</small>`);
   set('mRate', `${nf(m.saveRate, 0)}<small>% saved / ${nf(m.usedRatio, 0)}% used</small>`);
   set('mSaved', `${u(m.savedKwh)}<small>kWh</small>`); set('mUsed', `${u(m.usedKwh)}<small>kWh</small>`);
   set('mLamp', `${u(m.lampKwh)}<small>kWh, ${nf(m.lampPct, 0)}%</small>`);
-  set('mCarbon', `${u(m.carbonKg)}<small>kg</small>`); set('mCost', `\u20B1${u(m.costSaved)}`); set('mTariff', `\u20B1${u(m.tariff)}<small>/kWh</small>`);
+  set('mCarbon', `${u(m.carbonKg)}<small>kg</small>`); set('mCost', `\u20A9${u(m.costSaved)}`); set('mTariff', `\u20A9${u(m.tariff)}<small>/kWh</small>`);
   set('mUsage', `${u(m.usageKwh)}<small>kWh</small>${m.usageVsLast == null ? '' : `<small class="dl">${m.usageVsLast >= 0 ? '\u25B2' : '\u25BC'} ${nf(Math.abs(m.usageVsLast), 1)}% vs last month</small>`}`);
   set('eFix', `${nf(d.fixtures)}<small>pcs</small>`); set('eBefore', `${u(d.beforeKwh)}<small>kWh</small>`); set('eAfter', `${u(d.afterKwh)}<small>kWh</small>`);
   set('eMeters', nf(e.count)); set('eStatus', e.online == null ? '-' : e.online ? 'Normal' : 'Offline');

@@ -53,7 +53,7 @@ router.post('/', canEdit, (req, res) => {
   if (!b.name || !b.account_no) {
     return res.status(400).json({ error: 'A client name and account number are required.' });
   }
-  const defaults = { status: STATUSES[0], addr_country: 'Philippines' };
+  const defaults = { status: STATUSES[0], addr_country: 'South Korea' };
   const cols = CLIENT_FIELDS.join(',');
   const marks = CLIENT_FIELDS.map(() => '?').join(',');
   try {

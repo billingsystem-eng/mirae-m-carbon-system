@@ -143,10 +143,9 @@ const METHODS = {
   operating_hours: 'Method 3 - Operating hours'
 };
 
-const addr = (c) => [c.addr_unit, c.addr_building, c.addr_street, c.addr_barangay, c.addr_city, c.addr_region, c.addr_zip, c.addr_country]
-  .filter(Boolean).join(', ');
+const addr = addrLine;
 
-const peso = (n) => PESO + ' ' + dec(n);
+const peso = (n) => PESO + ' ' + dec(n, 0);
 const kwhs = (n) => Number(n || 0).toLocaleString(LOCALE(), { maximumFractionDigits: 3 }) + ' kWh';
 const dt = (d) => new Date(d + 'T00:00:00');
 const longDate = (d) => d ? dt(d).toLocaleDateString(LOCALE(), { month: 'long', day: 'numeric', year: 'numeric' }) : '—';

@@ -1,6 +1,7 @@
 /* Shared front-end helpers. */
 
-const PESO = '\u20B1';
+// Korean won, in every interface language (no decimals). The constant keeps its old name so existing pages still work.
+const PESO = '\u20A9';
 
 async function api(path, options = {}) {
   const res = await fetch(path, {
@@ -31,8 +32,14 @@ function toast(message, bad = false) {
   setTimeout(() => note.remove(), 4200);
 }
 
-const money = (n) =>
-  PESO + Number(n || 0).toLocaleString(LOCALE(), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const money = (n) => {
+  return PESO + Number(n || 0).toLocaleString(LOCALE(), { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+};
+/** Full address in Korean order when the UI is Korean (postal code, 시/도, 시/군/구, road, detail), otherwise the original order. */
+const addrLine = (c) => (typeof LANG !== 'undefined' && LANG === 'ko'
+  ? [c.addr_zip && `(${c.addr_zip})`, c.addr_region, c.addr_city, c.addr_street, c.addr_unit, c.addr_building && `(${[c.addr_barangay, c.addr_building].filter(Boolean).join(', ')})`]
+  : [c.addr_unit, c.addr_building, c.addr_street, c.addr_barangay, c.addr_city, c.addr_region, c.addr_zip, c.addr_country]
+).filter(Boolean).join(typeof LANG !== 'undefined' && LANG === 'ko' ? ' ' : ', ');
 const kwh = (n, dp = 3) =>
   Number(n || 0).toLocaleString(LOCALE(), { minimumFractionDigits: 0, maximumFractionDigits: dp }) + ' kWh';
 const dec = (n, dp = 2) =>
@@ -89,7 +96,7 @@ async function shell() {
   const here = location.pathname;
   const roleText = { admin: 'Administrator', billing_officer: 'Billing officer', finance_hr: 'Finance / HR', viewer: 'Viewer' }[me.role] || me.role;
   rail.innerHTML = `
-    <div class="mark"><b>M-Carbon System</b><span>Mirae ESP</span></div>
+    <div class="mark"><b>M-Carbon System</b><span>Mirae ESP Solutions</span></div>
     <nav>${NAV.filter((n) => (!n.adminOnly || me.role === 'admin') && (me.role !== 'viewer' || VIEWER_PAGES.includes(n.href)))
       .map((n) => `<a href="${n.href}" class="${here === n.href || (n.also || []).includes(here) ? 'on' : ''}">${navIcon(n.icon)}<span>${n.label}</span></a>`)
       .join('')}</nav>

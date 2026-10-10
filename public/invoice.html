@@ -73,12 +73,12 @@
 <script src="/js/app.js"></script>
 <script>
 const id = new URLSearchParams(location.search).get('id');
-const P = (n) => PESO + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const P = (n) => PESO + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 const r2 = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
 const mdy = (d) => d ? d.slice(5, 7) + '/' + d.slice(8, 10) + '/' + d.slice(0, 4) : '';
 const longDate = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
 const kwhs = (n) => Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 3 }) + ' kWh';
-const addr = (c) => [c.addr_unit, c.addr_building, c.addr_street, c.addr_barangay, c.addr_city, c.addr_region, c.addr_zip, c.addr_country].filter(Boolean).join(', ');
+const addr = addrLine;
 
 const ONES = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
 const TENS = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
@@ -92,7 +92,7 @@ function inWords(amount) {
   groups.forEach(([v, name]) => { if (n >= v) { parts.push(below1000(Math.floor(n / v)) + ' ' + name); n %= v; } });
   if (n || !parts.length) parts.push(below1000(n) || 'Zero');
   const s = parts.length > 1 ? parts.slice(0, -1).join(' ') + ' and ' + parts[parts.length - 1] : parts[0];
-  return s + ' Pesos' + (cents ? ` and ${String(cents).padStart(2, '0')}/100` : '') + ' Only';
+  return s + ' Won Only';
 }
 
 let bill = null;

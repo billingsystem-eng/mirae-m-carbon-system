@@ -113,7 +113,18 @@ function barChart(monthly) {
 
   let mode = 'cum';
   const energy = () => monthly.map((m) => (mode === 'cum' ? m.cum_kwh : m.kwh));
-  const energyLabel = () => (mode === 'cum' ? 'Cumulative energy savings (kWh)' : 'Monthly energy savings (kWh)');
+  const energyLabel = () => T(mode === 'cum' ? 'Cumulative energy savings (kWh)' : 'Monthly energy savings (kWh)');
+
+  // Both y axes must put zero at the same height. If any billing value is negative, give the kWh axis the same share of space below zero.
+  function alignZero(chart) {
+    const kv = chart.data.datasets[0].data.map(Number), pv = chart.data.datasets[1].data.map(Number);
+    const kMax = Math.max(0, ...kv), kMin = Math.min(0, ...kv), pMax = Math.max(0, ...pv), pMin = Math.min(0, ...pv);
+    const frac = (mn, mx) => (mx - mn > 0 ? -mn / (mx - mn) : 0);
+    const f = Math.min(0.9, Math.max(frac(kMin, kMax), frac(pMin, pMax)));
+    const lower = (mx) => (f > 0 ? -(f / (1 - f)) * mx : undefined);
+    chart.options.scales.kwh.min = lower(kMax || 1);
+    chart.options.scales.php.min = lower(pMax || 1);
+  }
 
   const chart = new Chart(document.getElementById('bar'), {
     type: 'bar',
@@ -121,7 +132,7 @@ function barChart(monthly) {
       labels: monthly.map((m) => monthName(m.month)),
       datasets: [
         { label: energyLabel(), data: energy(), yAxisID: 'kwh', backgroundColor: '#3f7fb0', borderRadius: 2 },
-        { label: 'Monthly billing (₱)', data: monthly.map((m) => m.billed), yAxisID: 'php', backgroundColor: '#0c6b5a', borderRadius: 2 }
+        { label: T('Monthly billing (₩)'), data: monthly.map((m) => m.billed), yAxisID: 'php', backgroundColor: '#0c6b5a', borderRadius: 2 }
       ]
     },
     options: {
@@ -134,10 +145,12 @@ function barChart(monthly) {
       scales: {
         x: { grid: { display: false } },
         kwh: { position: 'left', beginAtZero: true, title: { display: true, text: 'kWh' }, ticks: { callback: (v) => compactNum.format(v) } },
-        php: { position: 'right', beginAtZero: true, title: { display: true, text: 'Billing (₱)' }, grid: { drawOnChartArea: false }, ticks: { callback: (v) => compactNum.format(v) } }
+        php: { position: 'right', beginAtZero: true, title: { display: true, text: T('Billing (₩)') }, grid: { drawOnChartArea: false }, ticks: { callback: (v) => compactNum.format(v) } }
       }
     }
   });
+
+  alignZero(chart); chart.update();
 
   document.querySelectorAll('.seg button').forEach((btn) => {
     btn.onclick = () => {
@@ -149,6 +162,7 @@ function barChart(monthly) {
       });
       chart.data.datasets[0].data = energy();
       chart.data.datasets[0].label = energyLabel();
+      alignZero(chart);
       chart.update();
     };
   });
@@ -158,13 +172,14 @@ function barChart(monthly) {
   await shell();
   const d = await api('/api/reports/overview');
 
+  const ko = LANG === 'ko';
   document.getElementById('stats').innerHTML = [
-    ['Active clients', d.clients, `${d.projects} project sites`],
-    ['Energy saved', kwh(d.total_kwh_saved, 0), 'across issued statements'],
-    ['Billed to clients', money(d.total_billed), `${d.statements} statements`],
-    ['Collected', money(d.total_collected), 'recorded payments'],
-    ['Outstanding', money(d.outstanding), 'unpaid balance']
-  ].map(([label, value, sub]) => `<div class="stat"><b>${value}</b><span>${label} — ${sub}</span></div>`).join('');
+    [T('Active clients'), d.clients, ko ? `${d.projects} 프로젝트` : `${d.projects} project sites`],
+    [T('Energy saved'), kwh(d.total_kwh_saved, 0), ko ? '' : 'across issued statements'],
+    [T('Billed to clients'), money(d.total_billed), ko ? `${d.statements}건 명세서` : `${d.statements} statements`],
+    [T('Collected'), money(d.total_collected), ko ? '' : 'recorded payments'],
+    [T('Outstanding'), money(d.outstanding), ko ? '' : 'unpaid balance']
+  ].map(([label, value, sub]) => `<div class="stat"><b>${value}</b><span>${label}${sub ? (ko ? ' – ' : ' — ') + sub : ''}</span></div>`).join('');
 
   const pending = document.getElementById('pending');
   const qp = d.quotes_pending || [];
