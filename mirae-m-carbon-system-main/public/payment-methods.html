@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Payment method — M-Carbon System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+  .ico { width: 1em; height: 1em; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ---- Page heading ---- */
+  .pm-title { display: flex; align-items: center; gap: 12px; }
+  .pm-title-ico {
+    width: 40px; height: 40px; border-radius: 10px; flex: none;
+    background: var(--signal); color: #fff; font-size: 22px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pm-title h1 { margin: 0; }
+  .pm-title p { margin: 2px 0 0; }
+
+  /* ---- Cards ---- */
+  .pm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .pm-card {
+    position: relative; background: var(--surface);
+    border: 1px solid var(--rule); border-left: 4px solid var(--signal);
+    border-radius: 8px; padding: 16px 16px 12px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .pm-card.pending { border-left-color: #d9a441; background: linear-gradient(#fffdf7, #fff 60%); }
+  .pm-card.inactive { border-left-color: var(--rule-strong); background: #f7f8f6; }
+  .pm-card.inactive .pm-badge { filter: grayscale(1); opacity: 0.6; }
+  .pm-card.inactive .pm-name { color: var(--ink-soft); }
+
+  .pm-top { display: flex; align-items: center; gap: 14px; }
+  .pm-badge {
+    flex: none; width: 46px; height: 46px; border-radius: 12px;
+    background: var(--signal-tint); color: var(--signal); font-size: 24px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pm-heading { flex: 1; min-width: 0; }
+  .pm-name { font-weight: 600; font-size: 1.02rem; letter-spacing: -0.01em; word-break: break-word; line-height: 1.25; }
+  .pm-status { margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .pm-status .pill { display: inline-flex; align-items: center; gap: 4px; }
+  .pm-status .pill .ico { font-size: 13px; }
+
+  .pm-hint {
+    display: flex; gap: 8px; align-items: flex-start;
+    background: var(--amber-tint); color: var(--amber);
+    border-radius: 6px; padding: 8px 10px; font-size: 0.8rem; line-height: 1.4;
+  }
+  .pm-hint .ico { font-size: 15px; margin-top: 1px; }
+
+  /* ---- Details as labelled rows ---- */
+  .pm-rows { display: flex; flex-direction: column; gap: 2px; border-top: 1px dashed var(--rule); padding-top: 10px; }
+  .pm-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; font-size: 0.88rem; min-height: 30px; }
+  .pm-row-ico {
+    flex: none; width: 26px; height: 26px; border-radius: 7px; background: var(--paper);
+    color: var(--ink-soft); font-size: 14px; display: flex; align-items: center; justify-content: center;
+  }
+  .pm-row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+  .pm-row-label { font-size: 0.72rem; color: var(--ink-soft); }
+  .pm-row-value { word-break: break-word; }
+  .pm-row-value.pm-mono { letter-spacing: 0.03em; text-align: left; }
+  .pm-copy {
+    flex: none; border: 0; background: transparent; color: var(--ink-soft); cursor: pointer;
+    width: 28px; height: 28px; border-radius: 6px; font-size: 15px; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pm-copy:hover { background: var(--signal-tint); color: var(--signal); }
+  .pm-none { display: flex; align-items: center; gap: 8px; color: var(--ink-soft); font-style: italic; font-size: 0.86rem;
+    border-top: 1px dashed var(--rule); padding-top: 12px; }
+
+  /* ---- Actions ---- */
+  .pm-actions { margin-top: auto; display: flex; gap: 2px; flex-wrap: wrap; border-top: 1px solid var(--rule); padding-top: 8px; }
+  .pm-btn {
+    flex: 1 1 auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    border: 0; background: transparent; color: var(--signal); font: inherit; font-size: 0.86rem; font-weight: 500;
+    padding: 7px 6px; border-radius: 6px; cursor: pointer; white-space: nowrap; border: 0;
+  }
+  .pm-btn .ico { font-size: 15px; }
+  .pm-btn:hover { background: var(--signal-tint); }
+  .pm-btn.approve { background: var(--signal); color: #fff; font-weight: 600; }
+  .pm-btn.approve:hover { background: #0a5849; }
+  .pm-btn.pm-del { flex: none; width: 36px; padding: 7px 0; color: var(--alert); }
+  .pm-btn.pm-del:hover { background: var(--alert-tint); }
+  .pm-btn:focus-visible, .pm-copy:focus-visible { outline: 2px solid var(--signal); outline-offset: 1px; }
+
+  .pm-empty {
+    grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    text-align: center; padding: 34px 16px; color: var(--ink-soft);
+    background: var(--surface); border: 1px dashed var(--rule-strong); border-radius: 8px;
+  }
+  .pm-empty .ico { font-size: 34px; color: var(--signal); }
+
+  /* ---- Form ---- */
+  #form-panel header { background: var(--paper); }
+  #form-panel header h2 { display: flex; align-items: center; gap: 8px; }
+  #form-panel header h2 .ico { font-size: 18px; color: var(--signal); }
+  .pm-name-row { display: flex; gap: 10px; align-items: center; }
+  .pm-name-row input { flex: 1; min-width: 0; }
+  .pm-preview {
+    flex: none; width: 40px; height: 40px; border-radius: 10px; font-size: 22px;
+    background: var(--signal-tint); color: var(--signal);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pm-submit { display: inline-flex; align-items: center; gap: 6px; }
+  .pm-submit .ico { font-size: 16px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .pm-btn, .pm-copy { transition: background-color .15s ease, color .15s ease; }
+  }
+</style>
+<link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail"></aside>
+  <main>
+    <div class="page-head">
+      <div class="pm-title">
+        <div class="pm-title-ico" id="title-ico"></div>
+        <div><h1>Payment method</h1>
+        <p>Active, approved methods are printed under “Payment Methods” on every billing statement.</p></div>
+      </div>
+    </div>
+
+    <div id="list" class="pm-grid"></div>
+
+    <div class="panel" id="form-panel" style="max-width:560px;margin-top:18px">
+      <header><h2 id="form-title"></h2></header>
+      <div class="body"><form id="pform">
+        <div class="field"><label for="pm-name">Name</label>
+          <div class="pm-name-row">
+            <div class="pm-preview" id="pm-preview" aria-hidden="true"></div>
+            <input id="pm-name" required maxlength="120" placeholder="e.g. Bank transfer — BDO">
+          </div></div>
+        <div class="field"><label for="pm-details">Details</label>
+          <textarea id="pm-details" maxlength="600" placeholder="Account name, account number, branch, payee, or instructions. Each line prints on its own line."></textarea></div>
+        <div class="actions">
+          <button class="primary pm-submit" type="submit" id="pm-save"></button>
+          <button type="button" id="pm-cancel" hidden>Cancel</button>
+        </div>
+      </form></div>
+    </div>
+    <p id="ro-note" class="empty" hidden style="padding-top:0">Only administrators and billing officers can change payment methods. New or edited methods appear here once an administrator approves them.</p>
+  </main>
+</div>
+<script src="/js/i18n.js"></script>
+<script src="/js/app.js"></script>
+<script>
+let methods = [];
+let editingId = null;
+let canEdit = false;
+let isAdmin = false;
+
+const g = (id) => document.getElementById(id);
+
+/* ---- Icons (inline SVG, no external requests) ---- */
+const PATHS = {
+  wallet: '<path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><path d="M16 13h2"/>',
+  bank: '<path d="M3 21h18"/><path d="M5 21V10M9.5 21V10M14.5 21V10M19 21V10"/><path d="M2 10 12 4l10 6z"/>',
+  cheque: '<rect x="2.5" y="5.5" width="19" height="13" rx="2"/><path d="M6 10h7M6 14h4M15 14.5l1.2 1.2 2.3-2.6"/>',
+  cash: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v.01M18 14.5v.01"/>',
+  card: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
+  phone: '<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/>',
+  globe: '<circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19"/><path d="M12 2.5c2.7 2.7 4 5.9 4 9.5s-1.3 6.8-4 9.5c-2.7-2.7-4-5.9-4-9.5s1.3-6.8 4-9.5z"/>',
+  coins: '<circle cx="9" cy="9" r="6"/><path d="M15.2 9.3A6 6 0 1 1 9.3 15.2"/><path d="M9 6.5v5M7.5 8h3"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  shield: '<path d="M12 2.5 4 5.5v6c0 4.7 3.2 8.6 8 10 4.8-1.4 8-5.3 8-10v-6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
+  clock: '<circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3 2"/>',
+  dot: '<circle cx="12" cy="12" r="9.5"/><path d="m8 12 3 3 5-6"/>',
+  pause: '<circle cx="12" cy="12" r="9.5"/><path d="M10 9v6M14 9v6"/>',
+  edit: '<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+  power: '<path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  undo: '<path d="M3 8v5h5"/><path d="M3.5 13A8.5 8.5 0 1 0 6 6.5"/>',
+  hash: '<path d="M5 9h14M5 15h14M10 3 8 21M16 3l-2 18"/>',
+  pin: '<path d="M12 21.5s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9.5" r="2.5"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4.5 21c.8-4 3.8-6 7.5-6s6.7 2 7.5 6"/>',
+  note: '<path d="M6 3h9l4 4v14H6z"/><path d="M14.5 3v5H19M9.5 13h6M9.5 17h6"/>',
+  copy: '<rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M15.5 8.5V5.5a2 2 0 0 0-2-2h-8a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h3"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  save: '<path d="M5 3h11l4 4v14H5z"/><path d="M8 3v5h7V3M8 21v-7h8v7"/>',
+  info: '<circle cx="12" cy="12" r="9.5"/><path d="M12 11v5.5M12 7.6v.01"/>'
+};
+const icon = (name) => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${PATHS[name] || PATHS.coins}</svg>`;
+
+/* Pick an icon for a method from its name */
+function typeIcon(name) {
+  const n = (name || '').toLowerCase();
+  if (/(gcash|maya|paymaya|wallet|paypal|e-?wallet|gotyme)/.test(n)) return 'phone';
+  if (/(cheque|check)/.test(n)) return 'cheque';
+  if (/(bank|transfer|bdo|bpi|metrobank|security|landbank|unionbank|pnb|rcbc|eastwest|instapay|pesonet)/.test(n)) return 'bank';
+  if (/(cash|over the counter|counter)/.test(n)) return 'cash';
+  if (/(card|credit|debit|visa|master)/.test(n)) return 'card';
+  if (/(online|web|portal|internet)/.test(n)) return 'globe';
+  return 'coins';
+}
+
+/* Pick an icon for a "Label: value" detail line */
+function rowIcon(label) {
+  const l = (label || '').toLowerCase();
+  if (/(number|no\.?|acct|account #|ref)/.test(l)) return 'hash';
+  if (/(branch|address|location)/.test(l)) return 'pin';
+  if (/(name|payee|holder|pay to)/.test(l)) return 'user';
+  return 'note';
+}
+
+function renderDetails(details) {
+  const lines = (details || '').split('\n').map((x) => x.trim()).filter(Boolean);
+  if (!lines.length) return `<div class="pm-none">${icon('info')} No details on file</div>`;
+  return '<div class="pm-rows">' + lines.map((line) => {
+    const m = line.match(/^([^:]{1,32}):\s*(.+)$/);
+    const label = m ? m[1] : '';
+    const value = m ? m[2] : line;
+    const isNum = /(number|no\.?|acct|account #)/i.test(label) || /^[\d\s-]{5,}$/.test(value);
+    return `<div class="pm-row">
+      <div class="pm-row-ico">${icon(m ? rowIcon(label) : (isNum ? 'hash' : 'note'))}</div>
+      <div class="pm-row-body">
+        ${label ? `<span class="pm-row-label">${esc(label)}</span>` : ''}
+        <span class="pm-row-value ${isNum ? 'pm-mono' : ''}">${esc(value)}</span>
+      </div>
+      ${isNum ? `<button type="button" class="pm-copy" title="Copy" aria-label="Copy ${esc(label || 'value')}" data-copy="${esc(value)}">${icon('copy')}</button>` : ''}
+    </div>`;
+  }).join('') + '</div>';
+}
+
+function render() {
+  if (!methods.length) {
+    g('list').innerHTML = `<div class="pm-empty">${icon('wallet')}
+      <strong>No payment methods yet</strong>
+      <span>Add one below. Until a method is approved, statements print a placeholder line.</span></div>`;
+    return;
+  }
+  g('list').innerHTML = methods.map((m) => {
+    const approved = m.approval_status === 'approved';
+    const state = !m.active ? 'inactive' : approved ? '' : 'pending';
+    return `
+    <div class="pm-card ${state}">
+      <div class="pm-top">
+        <div class="pm-badge">${icon(typeIcon(m.name))}</div>
+        <div class="pm-heading">
+          <div class="pm-name">${esc(m.name)}</div>
+          <div class="pm-status">
+            <span class="pill ${m.active ? 'issued' : 'void'}">${icon(m.active ? 'dot' : 'pause')}${m.active ? 'Active' : 'Inactive'}</span>
+            <span class="pill ${approved ? 'approved' : 'for_review'}">${icon(approved ? 'shield' : 'clock')}${approved ? 'Approved' : 'Pending approval'}</span>
+          </div>
+        </div>
+      </div>
+      ${approved ? '' : `<div class="pm-hint">${icon('clock')}<span>Not printed on statements until an administrator approves it.</span></div>`}
+      ${renderDetails(m.details)}
+      ${canEdit ? `<div class="pm-actions">
+        ${isAdmin ? (approved
+          ? `<button class="pm-btn" onclick="setApproval(${m.id}, 'revoke')">${icon('undo')}Revoke</button>`
+          : `<button class="pm-btn approve" onclick="setApproval(${m.id}, 'approve')">${icon('check')}Approve</button>`) : ''}
+        <button class="pm-btn" onclick="edit(${m.id})">${icon('edit')}Edit</button>
+        <button class="pm-btn" onclick="toggle(${m.id}, ${m.active ? 0 : 1})">${icon('power')}${m.active ? 'Deactivate' : 'Reactivate'}</button>
+        <button class="pm-btn pm-del" title="Delete" aria-label="Delete ${esc(m.name)}" onclick="remove(${m.id})">${icon('trash')}</button>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function load() {
+  methods = await api('/api/payment-methods');
+  render();
+}
+
+function setFormMode() {
+  const editing = !!editingId;
+  g('form-title').innerHTML = icon(editing ? 'edit' : 'plus') + (editing ? 'Edit payment method' : 'Add a payment method');
+  g('pm-save').innerHTML = icon(editing ? 'save' : 'plus') + (editing ? 'Save changes' : 'Add payment method');
+  g('pm-cancel').hidden = !editing;
+}
+
+function updatePreview() {
+  g('pm-preview').innerHTML = icon(typeIcon(g('pm-name').value));
+}
+
+function resetForm() {
+  editingId = null;
+  g('pform').reset();
+  setFormMode(); updatePreview();
+}
+
+function edit(id) {
+  const m = methods.find((x) => x.id === id);
+  if (!m) return;
+  editingId = id;
+  g('pm-name').value = m.name;
+  g('pm-details').value = m.details || '';
+  setFormMode(); updatePreview();
+  g('pm-name').focus();
+  g('form-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function setApproval(id, action) {
+  try {
+    await api('/api/payment-methods/' + id + '/' + action, { method: 'POST' });
+    await load(); toast(action === 'approve' ? 'Payment method approved' : 'Approval revoked');
+  } catch (e) { toast(e.message, true); }
+}
+
+async function toggle(id, active) {
+  try { await api('/api/payment-methods/' + id, { method: 'PUT', body: { active } }); await load(); }
+  catch (e) { toast(e.message, true); }
+}
+
+async function remove(id) {
+  const m = methods.find((x) => x.id === id);
+  if (!m || !confirm(`Delete “${m.name}”? It will no longer print on statements.`)) return;
+  try {
+    await api('/api/payment-methods/' + id, { method: 'DELETE' });
+    if (editingId === id) resetForm();
+    await load(); toast('Payment method deleted');
+  } catch (e) { toast(e.message, true); }
+}
+
+/* Copy account numbers */
+g('list').addEventListener('click', async (e) => {
+  const b = e.target.closest('.pm-copy');
+  if (!b) return;
+  const v = b.dataset.copy;
+  try { await navigator.clipboard.writeText(v); }
+  catch {
+    const t = document.createElement('textarea'); t.value = v; document.body.appendChild(t);
+    t.select(); document.execCommand('copy'); t.remove();
+  }
+  toast('Copied');
+});
+
+g('pm-name').addEventListener('input', updatePreview);
+g('pm-cancel').onclick = resetForm;
+
+g('pform').onsubmit = async (e) => {
+  e.preventDefault();
+  const body = { name: g('pm-name').value.trim(), details: g('pm-details').value.trim() };
+  try {
+    if (editingId) await api('/api/payment-methods/' + editingId, { method: 'PUT', body });
+    else await api('/api/payment-methods', { method: 'POST', body });
+    toast(isAdmin ? (editingId ? 'Payment method updated' : 'Payment method added') : 'Submitted — it will appear here once an administrator approves it');
+    resetForm(); await load();
+  } catch (err) { toast(err.message, true); }
+};
+
+(async () => {
+  g('title-ico').innerHTML = icon('wallet');
+  setFormMode(); updatePreview();
+  const me = await shell();
+  isAdmin = me.role === 'admin';
+  canEdit = isAdmin || me.role === 'billing_officer';
+  if (!canEdit) { g('form-panel').hidden = true; g('ro-note').hidden = false; }
+  await load();
+})().catch((e) => toast(e.message, true));
+</script>
+</body>
+</html>
