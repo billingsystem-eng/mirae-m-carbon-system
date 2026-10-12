@@ -39,6 +39,7 @@
             <div class="field"><label for="c-account">Account number</label><input id="c-account" required></div>
             <div class="field"><label for="c-name">Client or company name</label><input id="c-name" required></div>
             <div class="field"><label for="c-tin">Business registration no.</label><input id="c-tin"></div>
+            <div class="field"><label for="c-rep">Representative (대표자명)</label><input id="c-rep" maxlength="30"></div>
           </div>
           <h3 style="margin-bottom:8px">Billing address</h3>
           <div class="grid3">
@@ -137,6 +138,7 @@ document.getElementById('client-form').onsubmit = async (e) => {
         account_no: document.getElementById('c-account').value.trim(),
         name: document.getElementById('c-name').value.trim(),
         tin: document.getElementById('c-tin').value.trim(),
+        representative_name: document.getElementById('c-rep').value.trim(),
         addr_unit: document.getElementById('a-unit').value,
         addr_building: document.getElementById('a-building').value,
         addr_street: document.getElementById('a-street').value,

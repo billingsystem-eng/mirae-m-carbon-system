@@ -161,6 +161,11 @@
           <div class="body" id="approvals-body"></div>
         </div>
 
+        <div class="panel" id="taxinv-panel" hidden>
+          <header><h2>Electronic tax invoice (전자세금계산서)</h2></header>
+          <div class="body" id="taxinv-body"></div>
+        </div>
+
         <div class="panel" id="invoice-panel" hidden>
           <header><h2>Sales invoice (scanned copy)</h2></header>
           <div class="body" id="invoice-body"></div>
@@ -467,6 +472,66 @@ async function revise() {
   } catch (e) { toast(e.message, true); }
 }
 
+/* Electronic tax invoice (Bolta). Staff only. "Requested" means Bolta has it and is sending it to the NTS;
+   only "Issued" is final. Test-key invoices are never sent to the NTS and are labelled as such. */
+let taxInvTimer = null;
+async function renderTaxInvoice(me, vat) {
+  const panel = document.getElementById('taxinv-panel'), body = document.getElementById('taxinv-body');
+  if (!panel || !body || me.role === 'viewer') return;
+  clearTimeout(taxInvTimer);
+  let d;
+  try { d = await api('/api/tax-invoices/bills/' + id + (vat ? '?vat=' + vat : '')); } catch (e) { return; }
+  if (!d.enabled && !d.invoices.length) return;           // not set up and nothing to show: stay hidden
+  panel.hidden = false;
+  const won = (n) => '₩' + Number(n || 0).toLocaleString('ko-KR');
+  const label = { requested: 'Waiting for the NTS result', issued: 'Issued', failed: 'Failed', unknown: 'No answer from Bolta yet' };
+  const cls = { requested: 'for_review', issued: 'issued', failed: 'void', unknown: 'for_review' };
+  const rows = d.invoices.map((t) => `<div style="padding:8px 0;border-bottom:1px solid var(--rule)">
+      <span class="pill ${cls[t.status] || ''}">${esc(label[t.status] || t.status)}</span>
+      <b>${won(t.supply_cost + (t.tax || 0))}</b> <small style="color:var(--ink-soft)">(supply ${won(t.supply_cost)} + VAT ${won(t.tax)}) · ${esc(t.purpose === 'RECEIPT' ? '영수' : '청구')} · ${esc(t.write_date)}
+      ${t.environment === 'test' ? ' · <b>TEST — not sent to the NTS</b>' : ''}</small>
+      ${t.nts_transaction_id ? `<div><small>NTS approval no. ${esc(t.nts_transaction_id)}</small></div>` : ''}
+      ${t.tax_invoice_url ? `<div><a href="${esc(t.tax_invoice_url)}" target="_blank" rel="noopener">Open in Bolta</a></div>` : ''}
+      ${t.failure_message ? `<div style="color:var(--alert)"><small>${esc(t.failure_code || '')} ${esc(t.failure_message)}</small></div>` : ''}
+      ${['requested', 'unknown'].includes(t.status) && d.can_issue ? `<button type="button" class="quiet" data-refresh="${t.id}">Refresh</button>` : ''}
+    </div>`).join('') || '<div class="empty" style="padding:12px 0;text-align:left">No tax invoice requested yet.</div>';
+
+  let action = '';
+  if (!d.enabled) action = '<p style="margin:12px 0 0;color:var(--ink-soft)">Tax invoices are switched off (no Bolta API key is set).</p>';
+  else if (d.has_active) action = '';
+  else if (d.blocked_reason) action = `<p style="margin:12px 0 0;color:var(--ink-soft);font-size:.88rem">${esc(d.blocked_reason)}</p>`;
+  else if (!d.can_issue) action = '<p style="margin:12px 0 0;color:var(--ink-soft);font-size:.88rem">Only an administrator or finance can issue the tax invoice.</p>';
+  else if (d.problems.length) action = `<div class="notice" style="margin-top:12px"><b>Fix before issuing:</b><ul style="margin:6px 0 0 18px">${d.problems.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
+  else {
+    const p = d.preview;
+    action = `<div style="margin-top:12px" class="no-print">
+      <div class="field"><label for="ti-vat">VAT treatment</label><select id="ti-vat">${Object.entries(d.vat_modes).map(([k, v]) => `<option value="${k}"${k === p.vat_mode ? ' selected' : ''}>${esc(v)}</option>`).join('')}</select></div>
+      <p style="margin:8px 0">To <b>${esc(p.recipient.name)}</b> (${esc(p.recipient.brn)}): supply ${won(p.supply_cost)} + VAT ${won(p.tax)} = <b>${won(p.total)}</b>
+        · ${p.purpose === 'RECEIPT' ? '영수 (payment confirmed)' : '청구 (not yet paid)'} · dated ${esc(p.write_date)}</p>
+      ${d.environment === 'live' ? '<p style="margin:0 0 8px"><b>This is a LIVE key: it files a real invoice with the NTS and uses prepaid points.</b></p>' : '<p style="margin:0 0 8px;color:var(--ink-soft)">Test key: nothing is sent to the NTS.</p>'}
+      <button type="button" class="primary" id="ti-issue">Issue tax invoice</button></div>`;
+  }
+  body.innerHTML = rows + action;
+
+  const sel = body.querySelector('#ti-vat'); if (sel) sel.onchange = () => renderTaxInvoice(me, sel.value);
+  const btn = body.querySelector('#ti-issue');
+  if (btn) btn.onclick = async () => {
+    const p = d.preview;
+    if (!confirm(`Issue a ${d.environment === 'live' ? 'LIVE ' : 'test '}tax invoice for ${won(p.total)} to ${p.recipient.name}?` + (d.environment === 'live' ? '\nThis cannot be undone from here; corrections need an amended invoice.' : ''))) return;
+    btn.disabled = true;
+    try { await api(`/api/tax-invoices/bills/${id}/issue`, { method: 'POST', body: { vat_mode: body.querySelector('#ti-vat').value } }); toast('Sent to Bolta'); }
+    catch (e) { toast(e.message, true); }
+    renderTaxInvoice(me);
+  };
+  body.querySelectorAll('[data-refresh]').forEach((b) => (b.onclick = async () => {
+    b.disabled = true;
+    try { await api(`/api/tax-invoices/${b.dataset.refresh}/refresh`, { method: 'POST' }); } catch (e) { toast(e.message, true); }
+    renderTaxInvoice(me);
+  }));
+  // While something is waiting, quietly re-check (the webhook normally updates it first).
+  if (d.invoices.some((t) => t.status === 'requested')) taxInvTimer = setTimeout(() => renderTaxInvoice(me), 15000);
+}
+
 async function load() {
   clearTimeout(autosaveTimer);
   autosaveTimer = null;
@@ -562,6 +627,7 @@ async function load() {
 
   renderApprovals();
   renderInvoicePanel('bill', id, me);
+  renderTaxInvoice(me);
   if (readOnly(me) || !bill.editable) disableEditing();
   preview();
 }
