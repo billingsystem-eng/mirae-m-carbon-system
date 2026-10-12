@@ -10,10 +10,9 @@ const notify = require('../lib/notify');
 const router = express.Router();
 
 const CLIENT_FIELDS = [
-  'account_no', 'name', 'tin', 'status',
+  'account_no', 'name', 'tin', 'representative_name', 'status',
   'addr_unit', 'addr_building', 'addr_street', 'addr_barangay',
-  'addr_city', 'addr_region', 'addr_country', 'addr_zip', 'notes',
-  'representative_name', 'business_type', 'business_item'
+  'addr_city', 'addr_region', 'addr_country', 'addr_zip', 'notes'
 ];
 
 const STATUSES = [

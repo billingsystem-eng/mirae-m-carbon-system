@@ -17,8 +17,8 @@ const psgcRouter = require('./routes/psgc');
 const quotationsRouter = require('./routes/quotations');
 const invoicesRouter = require('./routes/invoices');
 const onlinePayments = require('./routes/online-payments');
-const taxInvoices = require('./routes/tax-invoices');
 const messagesRouter = require('./routes/messages');
+const bolta = require('./routes/bolta');
 const notificationsRouter = require('./routes/notifications');
 const notify = require('./lib/notify');
 
@@ -32,16 +32,11 @@ app.set('trust proxy', 1);
 // PayMongo webhook: needs the RAW body (for the signature check), so it is mounted before express.json.
 // No session here - PayMongo calls it directly; the signature is what authenticates it.
 app.post('/api/online-payments/webhook', express.raw({ type: () => true, limit: '1mb' }), onlinePayments.webhook);
-app.post('/api/bolta/webhook/:secret', express.raw({ type: () => true, limit: '1mb' }), (req, res) => {
-  if (req.params.secret !== process.env.BOLTA_WEBHOOK_SECRET) return res.sendStatus(404);
-  console.log('Bolta webhook:', req.body.toString());
-  res.sendStatus(200);
-});
+
+// Bolta webhook: raw body, no session; the secret in the URL path authenticates it.
+app.post('/api/bolta/webhook/:secret', express.raw({ type: () => true, limit: '1mb' }), bolta.webhook);
 
 app.use(express.json({ limit: '2mb' }));
-
-// Bolta (tax invoice) result webhook: public, no session. The secret token in its URL authenticates it.
-app.post('/api/bolta/webhook', taxInvoices.webhook);
 
 app.use(session({
   // In production, set SESSION_SECRET in your environment instead of using this default.
@@ -95,8 +90,8 @@ app.use('/api/psgc', requireAuth, psgcRouter);
 app.use('/api/quotations', requireAuth, quotationsRouter);
 app.use('/api/invoices', requireAuth, invoicesRouter);
 app.use('/api/notifications', requireAuth, notificationsRouter);   // payment reminders (due soon / overdue)
+app.use('/api/bolta', requireAuth, bolta.router);   // Korean tax invoices via Bolta
 app.use('/api/messages', requireAuth, messagesRouter);   // payment chat: client <-> finance, per bill
-app.use('/api/tax-invoices', requireAuth, taxInvoices.router);   // Bolta electronic tax invoices
 app.use('/api/online-payments', requireAuth, onlinePayments.router);   // PayMongo checkout   // scanned Sales Invoice copies
 
 app.use(express.static(path.join(__dirname, 'public')));

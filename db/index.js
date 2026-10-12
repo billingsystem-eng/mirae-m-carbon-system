@@ -223,6 +223,21 @@ addColumn('users', 'client_id INTEGER REFERENCES clients(id)');
 addColumn('payment_methods', "approval_status TEXT NOT NULL DEFAULT 'approved'"); // pending | approved
 addColumn('payment_methods', 'approved_by TEXT');
 addColumn('payment_methods', 'approved_at TEXT');
+
+// --- Bolta tax invoices (Korean e-tax invoice API) ---
+addColumn('clients', 'representative_name TEXT');      // 대표자명, required on the invoice
+addColumn('bills', 'bolta_issuance_key TEXT');
+addColumn('bills', 'bolta_ref_id TEXT');
+addColumn('bills', 'tax_invoice_status TEXT');          // requested | event_received | failed
+addColumn('bills', 'tax_invoice_error TEXT');
+addColumn('bills', 'tax_invoice_attempts INTEGER DEFAULT 0');
+addColumn('bills', 'tax_invoice_at TEXT');
+addColumn('bills', 'tax_invoice_last_event TEXT');
+db.exec(`CREATE TABLE IF NOT EXISTS bolta_events (
+  id INTEGER PRIMARY KEY,
+  at TEXT NOT NULL DEFAULT (datetime('now')),
+  headers_json TEXT, body TEXT
+);`);
 addColumn('payment_methods', 'created_by TEXT');
 addColumn('quotations', 'project_site TEXT');          // optional "Project Site" shown under the customer name
 addColumn('quotation_items', 'unit_material REAL NOT NULL DEFAULT 0');
@@ -370,37 +385,6 @@ addColumn('quotations', 'decline_reason TEXT');
 addColumn('quotations', 'sent_by TEXT');
 addColumn('quotations', 'sent_at TEXT');
 addColumn('notifications', 'quotation_id INTEGER');
-
-// Electronic tax invoices issued through Bolta (볼타). One row per issue ATTEMPT: a failed attempt stays on
-// record and a retry gets a new row, because Bolta never lets a Bolta-Client-Reference-Id be reused.
-//   requested = sent to Bolta, waiting for the NTS result   issued = confirmed by Bolta (has the NTS number)
-//   failed    = Bolta reported a failure                    unknown = no answer from Bolta; check with Refresh
-db.exec(`CREATE TABLE IF NOT EXISTS tax_invoices (
-  id INTEGER PRIMARY KEY,
-  bill_id INTEGER NOT NULL REFERENCES bills(id),
-  client_reference_id TEXT NOT NULL UNIQUE,   -- sent to Bolta as Bolta-Client-Reference-Id
-  issuance_key TEXT,                          -- Bolta's request id (store the whole string)
-  environment TEXT NOT NULL DEFAULT 'test',   -- test | live (which kind of API key issued it)
-  status TEXT NOT NULL DEFAULT 'requested',   -- requested | issued | failed | unknown
-  write_date TEXT NOT NULL,                   -- 작성일자
-  tax_type TEXT NOT NULL,                     -- TAXABLE | ZERO_RATE | TAX_FREE
-  supply_cost INTEGER NOT NULL,               -- 공급가액 (whole won)
-  tax INTEGER,                                -- 세액 (null for 면세)
-  purpose TEXT NOT NULL,                      -- RECEIPT | CLAIM
-  nts_transaction_id TEXT,                    -- 국세청승인번호
-  tax_invoice_url TEXT,
-  failure_code TEXT, failure_message TEXT,
-  created_by TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-  issued_at TEXT
-);
-CREATE INDEX IF NOT EXISTS idx_tax_invoices_bill ON tax_invoices(bill_id);
-CREATE INDEX IF NOT EXISTS idx_tax_invoices_key ON tax_invoices(issuance_key);`);
-// A tax invoice needs the client's representative (대표자명), which the client record did not hold.
-addColumn('clients', 'representative_name TEXT');
-addColumn('clients', 'business_type TEXT');   // 업태 (optional on the invoice)
-addColumn('clients', 'business_item TEXT');   // 종목 (optional on the invoice)
 
 // Seed a first administrator so the app is usable on first run.
 const count = db.prepare('SELECT COUNT(*) c FROM users').get().c;

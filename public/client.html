@@ -32,10 +32,8 @@
               <div class="field"><label for="account_no">Account number</label><input id="account_no" data-f data-edit></div>
               <div class="field"><label for="name">Client name</label><input id="name" data-f data-edit></div>
               <div class="field"><label for="tin">Business registration no.</label><input id="tin" data-f data-edit></div>
+              <div class="field"><label for="representative_name">Representative name (대표자)</label><input id="representative_name" data-f data-edit></div>
               <div class="field"><label for="status">Account status</label><select id="status" data-f data-edit></select></div>
-              <div class="field"><label for="representative_name">Representative (대표자명)</label><input id="representative_name" data-f data-edit maxlength="30"></div>
-              <div class="field"><label for="business_type">Business type (업태) — optional</label><input id="business_type" data-f data-edit maxlength="100"></div>
-              <div class="field"><label for="business_item">Business item (종목) — optional</label><input id="business_item" data-f data-edit maxlength="100"></div>
             </div>
             <h3 style="margin:10px 0 8px">Billing address</h3>
             <div class="grid3">
@@ -109,7 +107,7 @@
 <script src="/js/app.js"></script>
 <script>
 const id = new URLSearchParams(location.search).get('id');
-const FIELDS = ['account_no','name','tin','status','addr_unit','addr_building','addr_street','addr_barangay','addr_city','addr_region','addr_country','addr_zip','notes','representative_name','business_type','business_item'];
+const FIELDS = ['account_no','name','tin','representative_name','status','addr_unit','addr_building','addr_street','addr_barangay','addr_city','addr_region','addr_country','addr_zip','notes'];
 let client, me;
 
 async function load() {
