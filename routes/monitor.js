@@ -14,7 +14,11 @@ const db = require('../db');
 const { viewerScope } = require('../middleware/auth');
 
 const MODE = process.env.MONITOR_MODE === 'live' ? 'live' : 'mock';
+<<<<<<< HEAD
 const RATE = Number(process.env.RATE_KRW_PER_KWH) || 150; // won per kWh, for the 30-day cost estimate (set RATE_KRW_PER_KWH)
+=======
+const RATE = Number(process.env.RATE_PHP_PER_KWH) || 11.5; // PHP per kWh, for the cost estimate
+>>>>>>> 80e301041922043c733ee859525a80c8d7d6caaf
 const POLL_MS = Number(process.env.POLL_MS) || 2000;
 const RING = 90; // live points kept per site (90 x 2 s = 3 minutes)
 
