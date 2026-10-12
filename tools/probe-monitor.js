@@ -64,11 +64,7 @@ async function main() {
   if (!familyId) { console.log('No site to probe. Pass --family <id>.'); return; }
   console.log('Probing site', familyId);
 
-<<<<<<< HEAD
   const now = new Date(Date.now() + (process.env.MONITOR_TZ_OFFSET === undefined || process.env.MONITOR_TZ_OFFSET === '' ? 9 : Number(process.env.MONITOR_TZ_OFFSET)) * 3600e3);
-=======
-  const now = new Date(Date.now() + 8 * 3600e3);
->>>>>>> 80e301041922043c733ee859525a80c8d7d6caaf
   const month = `${now.getUTCFullYear()}-${now.getUTCMonth() + 1}`;
   save('month-stats', await attempt(`monthly statistics for ${month}`, () => dashboard.call(
     '/api/iotphp/conservation/statisticsBigScreen', { familyId, type: 2, date: month })));

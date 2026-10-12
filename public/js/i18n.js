@@ -328,11 +328,7 @@
  "— Select city first —": "— 먼저 시 선택 —",
  "Select region first": "먼저 지역을 선택하세요",
  "Select city first": "먼저 시를 선택하세요",
-<<<<<<< HEAD
  "South Korea": "대한민국",
-=======
- "Philippines": "필리핀",
->>>>>>> 80e301041922043c733ee859525a80c8d7d6caaf
  "Pasig City": "파시그시",
  "Could not load barangays:": "바랑가이를 불러오지 못했습니다:",
  "Could not load cities:": "시/군을 불러오지 못했습니다:",
@@ -395,11 +391,7 @@
  "Reconnecting": "재연결 중",
  "Disconnected": "연결 끊김",
  "All monitored sites": "모든 모니터링 사이트",
-<<<<<<< HEAD
  "Map of South Korea with monitored sites": "모니터링 사이트가 표시된 대한민국 지도",
-=======
- "Map of the Philippines with monitored sites": "모니터링 사이트가 표시된 필리핀 지도",
->>>>>>> 80e301041922043c733ee859525a80c8d7d6caaf
  "Where the sites are": "사이트 위치",
  "Where the savings come from": "절감 발생 위치",
  "Savings by area": "지역별 절감",
@@ -432,11 +424,7 @@
  "No margins": "여백 없음",
  "Consumption and savings for every project site, read from the M-Carbon Dashboard.": "M-Carbon 대시보드에서 읽어온 모든 프로젝트 사이트의 소비량 및 절감량입니다.",
  "Sample data. This page is not reading from the M-Carbon Dashboard, so none of these figures are real. Set MONITOR_MODE=live on the server to use real readings.": "샘플 데이터입니다. 이 페이지는 M-Carbon 대시보드에서 읽어오지 않으므로 표시된 수치는 실제 값이 아닙니다. 실제 값을 사용하려면 서버에서 MONITOR_MODE=live로 설정하세요.",
-<<<<<<< HEAD
  "kr-map.js did not load.": "kr-map.js를 불러오지 못했습니다.",
-=======
- "ph-map.js did not load.": "ph-map.js를 불러오지 못했습니다.",
->>>>>>> 80e301041922043c733ee859525a80c8d7d6caaf
  "Payment methods": "결제 수단",
  "Add a payment method": "결제 수단 추가",
  "Add payment method": "결제 수단 추가",

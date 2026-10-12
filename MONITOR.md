@@ -1,6 +1,5 @@
 # Live monitor (Wattwise inside the billing system)
 
-<<<<<<< HEAD
 **Mirae ESP reads the Korean dashboard**, `http://dashboardko.mirae.m-carbonsolutions.com`
 (the M-Carbon billing app reads the Philippine one). Switching is configuration, in `.env`:
 
@@ -16,8 +15,6 @@ Site pins use Korean city coordinates (`PLACES` in `lib/monitor/live.js`, Englis
 a place that is not in the list is logged and pinned at the centre of Korea.
 
 
-=======
->>>>>>> 80e301041922043c733ee859525a80c8d7d6caaf
 New page: **Live monitor** in the left menu (`/monitor.html`). It is your Wattwise dashboard
 (map, savings, per-site meters and live load) running behind the billing login.
 
@@ -26,11 +23,7 @@ New page: **Live monitor** in the left menu (`/monitor.html`). It is your Wattwi
 | File | Change |
 |---|---|
 | `public/monitor.html` | New. The Wattwise page with its CSS scoped under `.ww`, so the billing pages look the same as before |
-<<<<<<< HEAD
 | `public/js/kr-map.js` | New. South Korea outline (built by `tools/build-map.mjs` from Natural Earth) |
-=======
-| `public/js/ph-map.js` | New. The same map file Wattwise uses |
->>>>>>> 80e301041922043c733ee859525a80c8d7d6caaf
 | `public/js/app.js` | One line: "Live monitor" added to `NAV` |
 | `routes/monitor.js` | New. Wattwise's REST calls and live stream, mounted at `/api/monitor` |
 | `lib/monitor/mock.js` | New. Wattwise's sample data, unchanged |
@@ -50,11 +43,7 @@ the live stream, so no token appears in a URL.
 
 ## What works in live mode today
 
-<<<<<<< HEAD
 Works, using responses the billing app already relies on (confirmed against the Philippine dashboard; the Korean one has not been probed yet, so run `node tools/probe-monitor.js` against it first): the site list, and 7-day and 30-day energy.
-=======
-Works, using responses the billing app already relies on: the site list, and 7-day and 30-day energy.
->>>>>>> 80e301041922043c733ee859525a80c8d7d6caaf
 
 Not mapped yet, so the page shows a clear message instead of numbers: the overview map and totals,
 meters, live kW, and today's hourly chart.
