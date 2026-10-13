@@ -95,6 +95,8 @@
 .ww .head p { margin: 0; color: var(--muted); font-size: 13px; }
 .ww .plot { position: relative; height: 250px; }
 .ww .plot.short { height: 300px; }
+.ww #h24Chart { cursor: crosshair; }
+.ww .head p.live { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
 .ww .split, .ww .ov { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 18px; }
 .ww .ov { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); margin-bottom: 0; }
 .ww .seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 8px; background: #edf1ec; }
@@ -285,7 +287,7 @@
           </section>
           <section class="block">
             <div class="head"><h2>Last 24 hours</h2><p id="peak"></p></div>
-            <div class="plot"><canvas id="h24Chart"></canvas></div>
+            <div class="plot" title="Hover to see each hour, click to pin one"><canvas id="h24Chart"></canvas></div>
           </section>
         </div>
       </div>
@@ -565,12 +567,53 @@ async function loadOverview() {
   renderOverview(o);
 }
 
+/* Last-24-hours chart: hover for the readout, click an hour to pin it. */
+let h24Hover = null, h24PinT = null, h24PeakText = '';
+const h24PinIdx = () => (state.overview && h24PinT != null ? state.overview.hourly.findIndex((h) => h.t === h24PinT) : -1);
+function h24Readout() {
+  const o = state.overview, el = $('#peak');
+  const i = h24Hover != null ? h24Hover : h24PinIdx();
+  const h = o && i >= 0 ? o.hourly[i] : null;
+  el.classList.toggle('live', !!h);
+  el.textContent = h ? `${hhmm(h.t)} - ${hhmm(h.t + 3600e3)}: ${nf(h.kwh, 2)} kWh${h24Hover == null ? ' (pinned)' : ''}` : h24PeakText;
+}
+const h24Cross = { id: 'h24Cross', afterDatasetsDraw(chart) {
+  const meta = chart.getDatasetMeta(0), { top, bottom } = chart.chartArea, ctx = chart.ctx;
+  const mark = (i, pinned) => {
+    const pt = meta.data[i]; if (!pt) return;
+    ctx.save();
+    ctx.strokeStyle = pinned ? '#3f7421' : 'rgba(63,116,33,.45)'; ctx.lineWidth = pinned ? 1.5 : 1; ctx.setLineDash(pinned ? [] : [4, 4]);
+    ctx.beginPath(); ctx.moveTo(pt.x, top); ctx.lineTo(pt.x, bottom); ctx.stroke();
+    if (pinned) { ctx.setLineDash([]); ctx.fillStyle = '#3f7421'; ctx.beginPath(); ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); }
+    ctx.restore();
+  };
+  if (h24Hover != null) mark(h24Hover, false);
+  const p = h24PinIdx(); if (p >= 0) mark(p, true);
+} };
+
 function makeOverviewCharts() {
   const grid = { color: '#e3e9e4' };
   h24Chart = new Chart($('#h24Chart'), {
     type: 'line',
-    data: { labels: [], datasets: [{ data: [], borderColor: '#3f7421', backgroundColor: 'rgba(91,154,46,.18)', fill: true, borderWidth: 2, pointRadius: 0, tension: .3 }] },
-    options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${nf(c.parsed.y, 1)} kWh` } } },
+    plugins: [h24Cross],
+    data: { labels: [], datasets: [{ data: [], borderColor: '#3f7421', backgroundColor: 'rgba(91,154,46,.18)', fill: true, borderWidth: 2, pointRadius: 0, pointHoverRadius: 5, pointHoverBackgroundColor: '#fff', pointHoverBorderColor: '#3f7421', pointHoverBorderWidth: 2, tension: .3 }] },
+    options: {
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },   // follow the cursor along the time axis, no need to hit a point
+      onHover: (e, els, chart) => { const i = els.length ? els[0].index : null; if (i !== h24Hover) { h24Hover = i; h24Readout(); chart.draw(); } },
+      onClick: (e, els, chart) => {
+        const o = state.overview, i = els.length ? els[0].index : null;
+        const t = i == null || !o ? null : o.hourly[i].t;
+        h24PinT = t === h24PinT ? null : t;                // click an hour to pin it, click it again to clear
+        h24Readout(); chart.draw();
+      },
+      plugins: { legend: { display: false }, tooltip: {
+        displayColors: false, padding: 10,
+        callbacks: {
+          title: (c) => { const h = state.overview && state.overview.hourly[c[0].dataIndex]; return h ? `${new Date(h.t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })}, ${hhmm(h.t)} - ${hhmm(h.t + 3600e3)}` : c[0].label; },
+          label: (c) => `${nf(c.parsed.y, 2)} kWh`,
+          afterLabel: (c) => { const mx = Math.max(...c.dataset.data, 0); return mx > 0 ? `${nf(c.parsed.y / mx * 100)}% of the day's peak` : ''; },
+        } } },
       scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: window.innerWidth < 600 ? 4 : 6, maxRotation: 0 } }, y: { beginAtZero: true, grid, title: { display: true, text: 'kWh per hour' } } } },
   });
   ppChart = new Chart($('#ppChart'), {
@@ -633,7 +676,8 @@ function renderOverview(o) {
   h24Chart.data.datasets[0].data = o.hourly.map((h) => h.kwh);
   h24Chart.update();
   const peak = o.hourly.reduce((a, b) => (b.kwh > a.kwh ? b : a));
-  $('#peak').textContent = `Peak ${nf(o.maxHourly || peak.kwh, 2)} kWh`;
+  h24PeakText = `Peak ${nf(o.maxHourly || peak.kwh, 2)} kWh`;
+  h24Readout();
 
   ppChart.data.labels = o.prePost.map((r) => new Date(r.t).toLocaleDateString(LOCALE(), { month: 'short', day: 'numeric' }));
   ppChart.data.datasets[0].data = o.prePost.map((r) => r.before);
