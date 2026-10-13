@@ -416,3 +416,8 @@ button:disabled { box-shadow: none; }
 #pic-dialog .pic-pick { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 #pic-dialog .pic-note { color: var(--ink-soft); font-size: .84rem; text-align: center; margin: 12px 0; }
 #pic-dialog [hidden] { display: none !important; }   /* the global button style would otherwise keep a hidden "Remove photo" visible */
+
+/* Back button, added to the top of every page by addBackButton() in app.js */
+.back-btn { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 14px; padding: 6px 12px 6px 8px; font-size: 0.86rem; }
+.back-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@media print { .back-btn { display: none !important; } }

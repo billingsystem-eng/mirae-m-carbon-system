@@ -62,6 +62,20 @@
 const id = new URLSearchParams(location.search).get('id');
 const mdy = (d) => d ? d.slice(5, 7) + '/' + d.slice(8, 10) + '/' + d.slice(0, 4) : '';
 const P = (n) => PESO + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const ONES = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+const TENS = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+const below1000 = (n) => { const h = Math.floor(n / 100), r = n % 100, out = [];
+  if (h) out.push(ONES[h] + ' Hundred');
+  if (r) out.push(r < 20 ? ONES[r] : TENS[Math.floor(r / 10)] + (r % 10 ? ' ' + ONES[r % 10] : ''));
+  return out.join(' '); };
+function inWords(amount) {
+  const whole = Math.floor(amount + 1e-9);
+  const groups = [[1e9, 'Billion'], [1e6, 'Million'], [1e3, 'Thousand']], parts = []; let n = whole;
+  groups.forEach(([v, name]) => { if (n >= v) { parts.push(below1000(Math.floor(n / v)) + ' ' + name); n %= v; } });
+  if (n || !parts.length) parts.push(below1000(n) || 'Zero');
+  let s = parts.length > 1 ? parts.slice(0, -1).join(' ') + ' and ' + parts[parts.length - 1] : parts[0];
+  return s + ' Won Only';
+}
 (async () => {
   const me = await shell();
   if (!id) return;
@@ -80,13 +94,17 @@ const P = (n) => PESO + Number(n || 0).toLocaleString('en-US', { minimumFraction
   const rows = q.items.map((i, n) => `<tr><td class="c">${n + 1}</td><td class="desc">${esc(i.description)}</td>
       <td class="c">${esc(i.unit)}</td><td class="c">${Number(i.quantity)}</td><td class="r">${P(i.unit_material)}</td><td class="r">${P(i.unit_labor)}</td><td class="r">${P(i.line_total)}</td></tr>`).join('');
   const blanks = '<tr class="fill"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>'.repeat(fills);
+  const contact = q.contact_name || q.contact_phone || q.contact_email
+    ? `If you have any questions about this quote, please contact ${esc(q.contact_name)}${q.contact_phone ? ' at ' + esc(q.contact_phone) : ''}${q.contact_email ? ' or ' + esc(q.contact_email) : ''}. Thank you!`
+    : 'Thank you for your business!';
   document.getElementById('doc').innerHTML = `
     <img class="logo" src="/img/mirae-esp-logo.png" alt="Mirae ESP Inc">
     <div class="head">
       <div class="addr"><table>
         <tr><td colspan="2">서울특별시 금천구 두산로 70, A동 1712호</td></tr><tr><td colspan="2">(독산동, 현대지식산업센터)</td></tr>
         <tr><td colspan="2">TEL : 02-6265-0414</td></tr><tr><td colspan="2">E-mail : mirae@mirae-esp.com</td></tr>
-        <tr><td colspan="2">Website : www.mirae-esp.com</td></tr></table></div>
+        <tr><td colspan="2">Website : www.mirae-esp.com</td></tr>
+        <tr><td>Submitted by:</td><td>${esc(q.submitted_by)}</td></tr><tr><td>Contact No.:</td><td>${esc(q.contact_no)}</td></tr></table></div>
       <div class="meta"><div class="bar big">QUOTATION</div><table>
         <tr><td>Quotation No.:</td><td>${esc(q.quote_no)}</td></tr><tr><td>Date:</td><td>${mdy(q.quote_date)}</td></tr>
         <tr><td>Valid Until:</td><td>${mdy(q.valid_until)}</td></tr><tr><td>Client Ref. ID:</td><td>${esc(q.client_ref_id)}</td></tr></table></div>
@@ -99,10 +117,12 @@ const P = (n) => PESO + Number(n || 0).toLocaleString('en-US', { minimumFraction
       <div class="terms"><b>Terms and Conditions:</b>${esc(q.terms)}</div>
       <div class="sum"><table>
         <tr><td>Sub Total (VAT Ex)</td><td>${P(q.subtotal)}</td></tr><tr><td>Add: ${Number(q.vat_rate)}% VAT</td><td>${P(q.vat)}</td></tr>
-        <tr class="tot"><td>Total (VAT Inc)</td><td>${P(q.total)}</td></tr></table>
+        <tr class="tot"><td>Total (VAT Inc)</td><td>${P(q.total)}</td></tr>
+        <tr class="words"><td colspan="2">Total Quote (in words):<br>${inWords(q.total)}</td></tr></table>
         <div class="sig"><div class="ln">Prepared by : <span></span></div><p>${esc(q.prepared_by_name)}</p><p>${esc(q.prepared_by_title)}</p>
         <div class="ln" style="margin-top:22px">Approved by : <span></span></div><p>${esc(q.approved_by_name)}</p><p>${esc(q.approved_by_title)}</p></div></div>
-    </div>`;
+    </div>
+    <footer>${contact}</footer>`;
 })();
 </script>
 </body>

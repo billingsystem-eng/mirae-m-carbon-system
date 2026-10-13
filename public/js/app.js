@@ -112,8 +112,9 @@ async function shell() {
     <div class="who">
       <div class="who-id"><button id="chpic" type="button" class="who-pic" title="Change profile photo" aria-label="Change profile photo">${userAvatar(me.role === 'viewer' ? 'client' : 'staff', { id: me.id, v: me.avatar_v })}</button>
         <span><b>${esc(me.full_name)}</b>${roleText}</span></div>
-      <button id="chpw" type="button">Change password</button> <button id="signout">${navIcon('signout')}Sign out</button></div>`;
-  rail.querySelector('#chpw').onclick = openPasswordDialog;
+      ${me.role !== 'admin' ? '<button id="chpw" type="button">Change password</button> ' : ''}<button id="signout">${navIcon('signout')}Sign out</button></div>`;
+  const chpw = rail.querySelector('#chpw');   // every role except administrators
+  if (chpw) chpw.onclick = openPasswordDialog;
   rail.querySelector('#chpic').onclick = () => openPhotoDialog(me, (v) => {
     me.avatar_v = v;
     rail.querySelector('#chpic').innerHTML = userAvatar(me.role === 'viewer' ? 'client' : 'staff', { id: me.id, v });
@@ -123,6 +124,7 @@ async function shell() {
     location.href = '/login.html';
   };
   document.body.dataset.role = me.role;
+  addBackButton(me);
   // Unread payment-chat messages show as a badge on the Messages link.
   api('/api/messages/unread').then((u) => setMessageBadge(u.total)).catch(() => {});
   api('/api/notifications/unread').then((u) => setNotifBadge(u.total)).catch(() => {});
@@ -148,6 +150,37 @@ function setNotifBadge(n) {
 }
 
 /** Lets any signed-in user change their own password (needs the current one). */
+/**
+ * Adds a "Back" button at the top of every page that uses the left rail.
+ * Goes to the previous page in this site when there is one; otherwise falls back to the page's parent
+ * (the last link in its breadcrumb) or the home page. Hidden on the home page when there is nowhere to go back to.
+ */
+function addBackButton(me) {
+  const main = document.querySelector('main');
+  if (!main || main.querySelector('.back-btn')) return;
+  const home = me.role === 'viewer' ? '/bills.html' : '/dashboard.html';
+  const cameFromSite = (() => {
+    try { return !!document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1; }
+    catch (_) { return false; }
+  })();
+  // Parent page from the breadcrumb, e.g. "Billing / Worksheet" -> the first real link that is not this page.
+  const crumbLinks = [...main.querySelectorAll('.crumb a[href]')].filter((a) => a.getAttribute('href') && a.getAttribute('href') !== '#');
+  const parent = crumbLinks.length ? crumbLinks[crumbLinks.length - 1].getAttribute('href') : null;
+  const fallback = parent || home;
+  if (!cameFromSite && location.pathname === fallback) return;   // home page, opened directly: nothing to go back to
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'back-btn no-print';
+  btn.setAttribute('aria-label', 'Back');
+  btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span>Back</span>';
+  btn.onclick = () => {
+    if (cameFromSite) history.back();
+    else location.href = fallback;
+  };
+  main.insertBefore(btn, main.firstChild);
+}
+
 function openPasswordDialog() {
   if (document.getElementById('pw-dialog')) return;
   const dlg = document.createElement('dialog');
