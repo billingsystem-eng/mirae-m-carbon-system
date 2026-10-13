@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Messages — M-Carbon System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/app.css">
+<link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail"></aside>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>Messages</h1>
+        <p id="sub">Payment conversations between clients and Mirae ESP finance. Each conversation belongs to one issued statement.</p>
+      </div>
+    </div>
+
+    <div class="msgs-layout" id="layout">
+      <section class="panel msgs-list" aria-label="Conversations">
+        <header>
+          <label class="sr-only" for="q">Search conversations</label>
+          <input id="q" type="search" placeholder="Search by statement, client or project">
+        </header>
+        <div id="threads" class="msgs-threads"></div>
+      </section>
+
+      <section class="panel msgs-thread" aria-label="Conversation">
+        <header class="msgs-thread-head" id="th-head">
+          <h2>Select a conversation</h2>
+        </header>
+        <div class="body" id="chat-body">
+          <p class="chat-empty" id="th-empty">Pick a statement on the left to read or send messages about its payment.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+<script src="/js/i18n.js"></script>
+<script src="/js/app.js"></script>
+<script src="/js/chat.js"></script>
+<script>
+const g = (x) => document.getElementById(x);
+let me, threads = [], pending = [], nologin = [], activeKey = null;
+const pkey = (t) => 'p:' + t.project_id + ':' + t.client_user_id;
+const keyOf = (t) => t.bill_id + ':' + t.client_user_id;   // one conversation per bill and client login
+
+// "5 min ago", "Yesterday", or a short date: enough to scan a list.
+function ago(ts) {
+  if (!ts) return '';
+  const d = new Date(String(ts).replace(' ', 'T') + 'Z');
+  if (isNaN(d)) return '';
+  const mins = Math.floor((Date.now() - d.getTime()) / 60000);
+  if (mins < 1) return 'now';
+  if (mins < 60) return mins + ' min';
+  if (d.toDateString() === new Date().toDateString()) return d.toLocaleTimeString(LOCALE(), { hour: 'numeric', minute: '2-digit' });
+  return d.toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' });
+}
+
+function renderList() {
+  const q = g('q').value.trim().toLowerCase();
+  const mySide = me.role === 'viewer' ? 'client' : 'staff';
+  const rows = threads.filter((t) => !q ||
+    [t.statement_no, t.client_name, t.project_name, t.client_user_name].some((v) => String(v || '').toLowerCase().includes(q)));
+  const listHtml = rows.length ? rows.map((t) => {
+    const preview = t.last_snippet
+      ? (t.last_side === mySide && !t.last_system ? 'You: ' : '') + t.last_snippet
+      : 'No messages yet';
+    // Name first, like a chat app: staff see the client login, a client sees Mirae ESP finance's project.
+    const who = me.role === 'viewer' ? esc(t.client_name) : esc(t.client_user_name);
+    const sub = esc(t.statement_no) + (me.role === 'viewer' ? (t.project_name ? ' · ' + esc(t.project_name) : '') : ' · ' + esc(t.client_name));
+    const other = me.role === 'viewer' ? 'staff' : 'client';   // the person you are talking to
+    return `<button type="button" class="thread-item${keyOf(t) === activeKey ? ' on' : ''}${t.unread ? ' unread' : ''}" data-key="${esc(keyOf(t))}">
+      ${userAvatar(other, me.role === 'viewer' ? { id: me.id, v: me.avatar_v } : { id: t.client_user_id, v: t.client_user_avatar_v })}<span class="ti-main">
+      <span class="ti-top"><b>${who}</b><span class="ti-time">${esc(ago(t.last_at))}</span></span>
+      <span class="ti-who">${sub}</span>
+      <span class="ti-bot"><span class="ti-snip${t.last_snippet ? '' : ' none'}">${esc(preview)}</span>${t.unread ? `<span class="nav-badge">${t.unread > 99 ? '99+' : t.unread}</span>` : ''}</span>
+      </span>
+    </button>`;
+  }).join('') : '';
+  // Projects still waiting for their first issued statement: shown so the assignment is visible, no chat yet.
+  const pendRows = pending.filter((t) => !q || [t.client_name, t.project_name, t.client_user_name].some((v) => String(v || '').toLowerCase().includes(q)));
+  const pendHtml = pendRows.length ? `<p class="ti-section">Waiting for first statement</p>` + pendRows.map((t) => {
+    const who = me.role === 'viewer' ? esc(t.client_name) : esc(t.client_user_name);
+    const sub = esc(t.project_name) + (me.role === 'viewer' ? '' : ' · ' + esc(t.client_name));
+    return `<button type="button" class="thread-item pending${pkey(t) === activeKey ? ' on' : ''}" data-key="${esc(pkey(t))}">
+      ${userAvatar(me.role === 'viewer' ? 'staff' : 'client', me.role === 'viewer' ? { id: me.id, v: me.avatar_v } : { id: t.client_user_id, v: t.client_user_avatar_v })}<span class="ti-main"><span class="ti-top"><b>${who}</b></span><span class="ti-who">${sub}</span>
+      <span class="ti-snip none">No statement issued yet</span></span></button>`;
+  }).join('') : '';
+  const emptyHtml = (rows.length || pendRows.length || nologin.length) ? '' : `<p class="chat-empty" style="padding:18px">${(threads.length || pending.length || nologin.length)
+      ? 'No conversation matches your search.'
+      : (me.role === 'viewer'
+          ? 'Messages open once a statement has been issued to you.'
+          : 'No clients with a login yet. Add a client login under Users.')}</p>`;
+  const nlRows = nologin.filter((t) => !q || [t.client_name, t.project_name, t.statement_no].some((v) => String(v || '').toLowerCase().includes(q)));
+  const nlHtml = nlRows.length ? `<p class="ti-section">Issued, but no client login</p>` + nlRows.map((t) =>
+    `<button type="button" class="thread-item pending${'n:' + t.bill_id === activeKey ? ' on' : ''}" data-key="n:${t.bill_id}">
+      ${userAvatar('client')}<span class="ti-main"><span class="ti-top"><b>${esc(t.client_name)}</b></span><span class="ti-who">${esc(t.statement_no)}${t.project_name ? ' · ' + esc(t.project_name) : ''}</span>
+      <span class="ti-snip none">No login to message</span></span></button>`).join('') : '';
+  g('threads').innerHTML = listHtml + pendHtml + nlHtml + emptyHtml;
+  g('threads').querySelectorAll('.thread-item').forEach((b) => { b.onclick = () => (b.dataset.key.startsWith('n:') ? openNoLogin(b.dataset.key) : b.classList.contains('pending') ? openPending(b.dataset.key) : openThread(b.dataset.key)); });
+}
+
+async function loadThreads() {
+  try {
+    const d = await api('/api/messages/threads');
+    threads = d.threads;
+    pending = d.pending || [];
+    nologin = d.nologin || [];
+    renderList();
+    setMessageBadge(d.total_unread);
+  } catch (e) {   // the next refresh tries again, but say so if there is nothing to show
+    if (!threads.length && !pending.length && !nologin.length) g('threads').innerHTML = `<p class="chat-empty" style="padding:18px">Conversations could not be loaded. ${esc(e.message)}</p>`;
+  }
+}
+
+function openPending(key) {
+  const t = pending.find((x) => pkey(x) === key);
+  if (!t) return;
+  activeKey = key;
+  BillChat.stop();
+  g('layout').classList.add('show-thread');
+  g('th-head').innerHTML = `<div class="th-id">${userAvatar(me.role === 'viewer' ? 'staff' : 'client', me.role === 'viewer' ? { id: me.id, v: me.avatar_v } : { id: t.client_user_id, v: t.client_user_avatar_v })}<div>
+    <button type="button" class="quiet msgs-back" id="back">← All conversations</button>
+    <h2>${esc(me.role === 'viewer' ? t.client_name : t.client_user_name + ' (' + t.client_name + ')')}</h2>
+    <p class="msgs-sub">${esc(t.project_name)}</p></div></div>`;
+  g('back').onclick = () => { g('layout').classList.remove('show-thread'); };
+  g('chat-body').innerHTML = `<p class="chat-empty" style="padding:0 24px;max-width:46ch;text-align:center">No statement has been issued for ${esc(t.project_name)} yet. The conversation opens as soon as its first statement is issued.</p>`;
+  renderList();
+}
+
+function openNoLogin(key) {
+  const t = nologin.find((x) => 'n:' + x.bill_id === key);
+  if (!t) return;
+  activeKey = key;
+  BillChat.stop();
+  g('layout').classList.add('show-thread');
+  g('th-head').innerHTML = `<div class="th-id">${userAvatar('client')}<div>
+    <button type="button" class="quiet msgs-back" id="back">← All conversations</button>
+    <h2>${esc(t.client_name)}</h2><p class="msgs-sub">${esc(t.statement_no)}${t.project_name ? ' · ' + esc(t.project_name) : ''}</p></div></div>
+    <a class="btn" href="/bill.html?id=${t.bill_id}">View statement</a>`;
+  g('back').onclick = () => { g('layout').classList.remove('show-thread'); };
+  g('chat-body').innerHTML = `<p class="chat-empty" style="padding:0 24px;max-width:46ch;text-align:center">${esc(t.client_name)} has no client login, so there is nobody to message. Add one under <a href="/users.html">Users</a> and assign it to this client; the conversation then opens here with the statement notice.</p>`;
+  renderList();
+}
+
+function openThread(key) {
+  const t = threads.find((x) => keyOf(x) === key);
+  if (!t) return;
+  activeKey = key;
+  history.replaceState(null, '', '?bill=' + t.bill_id + '&user=' + t.client_user_id);
+  g('layout').classList.add('show-thread');
+  g('th-head').innerHTML = `
+    <div class="th-id">
+      ${userAvatar(me.role === 'viewer' ? 'staff' : 'client', me.role === 'viewer' ? { id: me.id, v: me.avatar_v } : { id: t.client_user_id, v: t.client_user_avatar_v })}
+      <div>
+      <button type="button" class="quiet msgs-back" id="back">← All conversations</button>
+      <h2>${esc(t.statement_no)} · ${esc(me.role === 'viewer' ? t.client_name : t.client_user_name + ' (' + t.client_name + ')')}</h2>
+      <p class="msgs-sub">${t.project_name ? esc(t.project_name) + ' · ' : ''}${dateText(t.period_start)} – ${dateText(t.period_end)}
+        · ${t.balance_due > 0 ? 'Balance due <b>' + money(t.balance_due) + '</b>' + (t.due_date ? ', due ' + dateText(t.due_date) : '') : 'Paid in full'}</p>
+      </div>
+    </div>
+    <a class="btn" href="/bill.html?id=${t.bill_id}">View statement</a>`;
+  g('back').onclick = () => { g('layout').classList.remove('show-thread'); };
+  BillChat.mount(g('chat-body'), {
+    billId: t.bill_id,
+    threadUserId: me.role === 'viewer' ? undefined : t.client_user_id,   // a client login is always its own conversation
+    isClient: me.role === 'viewer',
+    onChange: loadThreads
+  });
+  renderList();
+}
+
+(async () => {
+  me = await shell();
+  g('q').oninput = renderList;
+  await loadThreads();
+  const qs = new URLSearchParams(location.search);
+  const wantBill = Number(qs.get('bill')), wantUser = Number(qs.get('user'));
+  const want = threads.find((t) => t.bill_id === wantBill && (me.role === 'viewer' || t.client_user_id === wantUser));
+  if (want) openThread(keyOf(want));
+  // New conversations and unread counts on the other threads: refresh the list while the tab is open.
+  setInterval(() => { if (document.visibilityState === 'visible') loadThreads(); }, 10000);
+})().catch((e) => toast(e.message, true));
+</script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sign in — M-Carbon System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+  body { display: block; padding: 0; min-height: 100vh; }
+  .ico { width: 1em; height: 1em; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  .login { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); min-height: 100vh; }
+
+  /* ---- Brand side ---- */
+  .brand {
+    position: relative; overflow: hidden; color: #dfe9e5;
+    background:
+      radial-gradient(900px 500px at 15% -10%, rgba(91,154,46,.28), transparent 60%),
+      radial-gradient(700px 500px at 100% 110%, rgba(12,107,90,.45), transparent 60%),
+      var(--ink);
+    padding: 44px clamp(32px, 5vw, 72px);
+    display: flex; flex-direction: column; justify-content: space-between; gap: 32px;
+  }
+  .brand-top { display: flex; align-items: center; gap: 14px; }
+  .brand-top svg { width: 46px; height: 46px; flex: none; }
+  .brand-name { line-height: 1.15; }
+  .brand-name b { display: block; color: #fff; font-size: 1.2rem; letter-spacing: -0.01em; }
+  .brand-name span { font-size: 0.82rem; color: #8fa39e; }
+
+  .brand-mid { flex: 1; display: flex; align-items: center; justify-content: center; }
+  .brand-mid .art { width: 100%; max-width: 540px; height: auto; display: block; }
+
+  .brand-foot { font-size: 0.8rem; color: #6f867f; }
+
+  /* ---- Form side ---- */
+  .formside { display: flex; align-items: center; justify-content: center; padding: 32px 24px; background: var(--paper); }
+  .card {
+    width: 100%; max-width: 410px; background: var(--surface);
+    border: 1px solid var(--rule); border-radius: 12px; padding: 30px 30px 26px;
+    box-shadow: 0 10px 30px rgba(21, 35, 34, .07);
+  }
+  .card .ines { display: block; height: 60px; width: auto; max-width: 100%; margin: 0 0 22px; }
+  .card h1 { margin: 0 0 4px; font-size: 1.55rem; letter-spacing: -0.02em; }
+  .card .sub { margin: 0 0 22px; color: var(--ink-soft); font-size: 0.92rem; }
+  .card .field { margin-bottom: 14px; }
+  .with-ico { position: relative; }
+  .with-ico > .lead { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 17px; color: var(--ink-soft); pointer-events: none; }
+  .with-ico input { width: 100%; padding-left: 40px; padding-top: 10px; padding-bottom: 10px; }
+  .with-ico input:focus + .lead, .with-ico:focus-within > .lead { color: var(--signal); }
+  .with-ico .eye {
+    position: absolute; right: 6px; top: 0; bottom: 0; margin: auto 0;   /* centred without transform: the global button hover/press styles set one */
+    width: 34px; height: 34px; border: 0; background: transparent; color: var(--ink-soft);
+    border-radius: 6px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; padding: 0;
+    box-shadow: none; transform: none;
+  }
+  .with-ico .eye:hover:not(:disabled), .with-ico .eye:active:not(:disabled) { background: var(--signal-tint); color: var(--signal); border: 0; box-shadow: none; transform: none; }
+  .with-ico .eye:focus-visible { outline: 2px solid var(--signal); outline-offset: 0; }
+  .with-ico.pw input::-ms-reveal, .with-ico.pw input::-ms-clear { display: none; }   /* Edge adds its own show-password icon */
+  .with-ico.pw input { padding-right: 44px; }
+  .go { width: 100%; padding: 11px 14px; font-size: 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 4px; }
+  .go .ico { font-size: 18px; }
+  .card .legal { margin: 20px 0 0; padding-top: 16px; border-top: 1px solid var(--rule); text-align: center; font-size: 0.78rem; color: var(--ink-soft); }
+
+  @media (max-width: 880px) {
+    .login { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    .brand { padding: 18px 20px; gap: 0; }
+    .brand-top { padding-right: 120px; }
+    .brand-top svg { width: 38px; height: 38px; }
+    .brand-mid, .brand-foot { display: none; }
+    .formside { padding: 24px 16px 40px; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="login">
+
+  <section class="brand">
+    <div class="brand-top">
+      <svg viewBox="0 0 48 48" aria-label="M-Carbon" role="img">
+        <defs><linearGradient id="lf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a4d65e"/><stop offset="1" stop-color="#4f8f27"/></linearGradient></defs>
+        <path d="M24 2.5C38.5 9 45 24 34.5 38.5 30.5 43.5 26.5 45.5 24 46 21.5 45.5 17.5 43.5 13.5 38.5 3 24 9.5 9 24 2.5z" fill="url(#lf)"/>
+        <path d="M16 31V19l8 9 8-9v12" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="brand-name"><b>M-Carbon System</b><span>Mirae ESP Inc. System</span></div>
+    </div>
+
+    <div class="brand-mid">
+      <svg class="art" viewBox="0 0 520 470" role="img" aria-label="LED bulb with a leaf, surrounded by icons for energy, savings and billing">
+        <defs>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#9fd36a" stop-opacity=".38"/><stop offset=".55" stop-color="#5b9a2e" stop-opacity=".12"/><stop offset="1" stop-color="#5b9a2e" stop-opacity="0"/></radialGradient>
+          <linearGradient id="lf2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b6e26f"/><stop offset="1" stop-color="#4f8f27"/></linearGradient>
+        </defs>
+        <circle cx="260" cy="220" r="215" fill="url(#glow)"/>
+        <g fill="none" stroke="#9fd36a">
+          <circle cx="260" cy="220" r="90" stroke-opacity=".28" stroke-dasharray="2 7" stroke-linecap="round" stroke-width="1.6"/>
+          <circle cx="260" cy="220" r="150" stroke-opacity=".22" stroke-width="1.2"/>
+          <circle cx="260" cy="220" r="210" stroke-opacity=".16" stroke-dasharray="3 9" stroke-linecap="round" stroke-width="1.4"/>
+        </g>
+        <circle cx="344.6" cy="250.8" r="3.2" fill="#9fd36a" opacity=".8"/><circle cx="175.4" cy="189.2" r="3.2" fill="#9fd36a" opacity=".8"/><circle cx="185.0" cy="90.1" r="3.2" fill="#9fd36a" opacity=".8"/><circle cx="365.0" cy="401.9" r="3.2" fill="#9fd36a" opacity=".8"/><circle cx="331.8" cy="22.7" r="3.2" fill="#9fd36a" opacity=".8"/><circle cx="78.1" cy="325.0" r="3.2" fill="#9fd36a" opacity=".8"/>
+        
+    <g transform="translate(330.4 87.6)">
+      <circle r="36" fill="#9fd36a" opacity=".07"/>
+      <circle r="27" fill="#18302c" stroke="#9fd36a" stroke-opacity=".55" stroke-width="1.4"/>
+      <g transform="translate(-15.9 -15.9) scale(1.325)" fill="none" stroke="#cfe3ae" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></g>
+    </g>
+    <g transform="translate(392.4 290.4)">
+      <circle r="36" fill="#9fd36a" opacity=".07"/>
+      <circle r="27" fill="#18302c" stroke="#9fd36a" stroke-opacity=".55" stroke-width="1.4"/>
+      <g transform="translate(-15.9 -15.9) scale(1.325)" fill="none" stroke="#cfe3ae" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9.5 8h5M9.5 12h5"/></g>
+    </g>
+    <g transform="translate(127.6 290.4)">
+      <circle r="36" fill="#9fd36a" opacity=".07"/>
+      <circle r="27" fill="#18302c" stroke="#9fd36a" stroke-opacity=".55" stroke-width="1.4"/>
+      <g transform="translate(-15.9 -15.9) scale(1.325)" fill="none" stroke="#cfe3ae" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l6 6 4-4 8 8"/><path d="M15 17h6v-6"/></g>
+    </g>
+    <g transform="translate(459.7 155.1)">
+      <circle r="33" fill="#9fd36a" opacity=".07"/>
+      <circle r="24" fill="#18302c" stroke="#9fd36a" stroke-opacity=".55" stroke-width="1.4"/>
+      <g transform="translate(-14.1 -14.1) scale(1.178)" fill="none" stroke="#cfe3ae" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-9 5-14 15-14 0 10-5 15-14 15"/><path d="M5 19c3-5 6-8 10-10"/></g>
+    </g>
+    <g transform="translate(230.8 428.0)">
+      <circle r="33" fill="#9fd36a" opacity=".07"/>
+      <circle r="24" fill="#18302c" stroke="#9fd36a" stroke-opacity=".55" stroke-width="1.4"/>
+      <g transform="translate(-14.1 -14.1) scale(1.178)" fill="none" stroke="#cfe3ae" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><path d="M15.2 9.3A6 6 0 1 1 9.3 15.2"/><path d="M9 6.5v5M7.5 8h3"/></g>
+    </g>
+    <g transform="translate(69.7 131.3)">
+      <circle r="33" fill="#9fd36a" opacity=".07"/>
+      <circle r="24" fill="#18302c" stroke="#9fd36a" stroke-opacity=".55" stroke-width="1.4"/>
+      <g transform="translate(-14.1 -14.1) scale(1.178)" fill="none" stroke="#cfe3ae" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></g>
+    </g>
+        <!-- LED bulb -->
+        <g transform="translate(0 -6)">
+          <path d="M232 241C225 249 222 255 222 265H298C298 255 295 249 288 241A58 58 0 1 0 232 241Z" fill="#9fd36a" fill-opacity=".1" stroke="#cfe3ae" stroke-width="2.4" stroke-linejoin="round"/>
+          <path d="M238 276H282M240 286H280M247 296H273" stroke="#cfe3ae" stroke-width="2.6" stroke-linecap="round"/>
+          <g transform="translate(236 178) scale(.92)">
+            <path d="M24 2.5C38.5 9 45 24 34.5 38.5 30.5 43.5 26.5 45.5 24 46 21.5 45.5 17.5 43.5 13.5 38.5 3 24 9.5 9 24 2.5z" fill="url(#lf2)"/>
+            <path d="M16 31V19l8 9 8-9v12" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <div class="brand-foot">Mirae ESP Inc. System</div>
+  </section>
+
+  <section class="formside">
+    <div class="card">
+      <img class="ines" src="/img/mirae-esp-logo.png" alt="Mirae ESP Inc">
+      <h1>Sign in</h1>
+      <p class="sub">Use your billing system account.</p>
+      <div id="error" class="notice bad" hidden></div>
+      <form id="form">
+        <div class="field">
+          <label for="username">Username</label>
+          <div class="with-ico">
+            <input id="username" name="username" autocomplete="username" required autofocus>
+            <svg class="ico lead" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 21c.8-4 3.8-6 7.5-6s6.7 2 7.5 6"/></svg>
+          </div>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="with-ico pw">
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+            <svg class="ico lead" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3M12 15v2"/></svg>
+            <button type="button" class="eye" id="eye" aria-label="Show password" title="Show password">
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <button class="primary go" type="submit">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h3.5A1.5 1.5 0 0 1 20 4.5v15a1.5 1.5 0 0 1-1.5 1.5H15"/><path d="M10 17l5-5-5-5M15 12H3"/></svg>
+          Sign in
+        </button>
+      </form>
+      <p class="legal">Authorised Mirae ESP staff only.</p>
+    </div>
+  </section>
+
+</div>
+<script src="/js/i18n.js"></script>
+<script src="/js/app.js"></script>
+<script>
+const form = document.getElementById('form');
+const error = document.getElementById('error');
+
+form.onsubmit = async (e) => {
+  e.preventDefault();
+  error.hidden = true;
+  try {
+    await api('/api/auth/login', {
+      method: 'POST',
+      body: { username: username.value, password: password.value }
+    });
+    location.href = '/dashboard.html';
+  } catch (err) {
+    error.textContent = err.message;
+    error.hidden = false;
+  }
+};
+
+// Already signed in? Go straight through.
+api('/api/auth/me').then(() => (location.href = '/dashboard.html')).catch(() => {});
+
+// Show / hide password
+const eye = document.getElementById('eye');
+eye.onmousedown = (e) => e.preventDefault();   // keep the cursor in the password box
+eye.onclick = () => {
+  const show = password.type === 'password';
+  password.type = show ? 'text' : 'password';
+  const label = show ? 'Hide password' : 'Show password';
+  eye.setAttribute('aria-label', label); eye.setAttribute('aria-pressed', String(show)); eye.title = label;
+  eye.innerHTML = show
+    ? '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.7A10 10 0 0 1 12 5.5c6.4 0 10 6.5 10 6.5a17 17 0 0 1-3.2 3.9M6.3 7.3C3.7 9 2 12 2 12s3.6 6.5 10 6.5c1.5 0 2.8-.3 4-.8"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>'
+    : '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+};
+</script>
+</body>
+</html>
