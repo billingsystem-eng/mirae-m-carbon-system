@@ -805,7 +805,6 @@ Object.assign(KO, {
   "Messages could not be loaded.": "메시지를 불러오지 못했습니다.",
   "Payment messages": "납부 메시지",
   "Write a message about this payment…": "이 납부에 대한 메시지를 작성하세요…",
-<<<<<<< HEAD
   // Profile photo
   "Profile photo": "프로필 사진",
   "Choose photo…": "사진 선택…",
@@ -829,8 +828,6 @@ Object.assign(KO, {
   "Issued, but no client login": "발행됨, 고객 계정 없음",
   "No login to message": "메시지를 보낼 계정이 없습니다",
   "No clients with a login yet. Add a client login under Users.": "로그인 계정이 있는 고객이 아직 없습니다. 사용자 메뉴에서 고객 계정을 추가하세요.",
-=======
->>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
   "Use your billing system account.": "청구 시스템 계정을 사용하세요.",
   "Authorised Mirae ESP staff only.": "승인된 미래 이에스피 직원 전용입니다.",
   "Show password": "비밀번호 표시",

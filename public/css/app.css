@@ -93,13 +93,8 @@ h3 { font-size: 0.92rem; color: var(--ink-soft); font-weight: 600; }
 #pw-dialog h2 { margin: 0 0 14px; }
 #pw-dialog .field { margin-bottom: 12px; }
 #pw-dialog input { width: 100%; box-sizing: border-box; }
-<<<<<<< HEAD
 #pw-dialog .pw-err, #pic-dialog .pw-err { color: var(--alert); font-size: 0.86rem; margin: 0 0 10px; }
 #pw-dialog .pw-actions, #pic-dialog .pw-actions { display: flex; justify-content: flex-end; gap: 8px; }
-=======
-#pw-dialog .pw-err { color: var(--alert); font-size: 0.86rem; margin: 0 0 10px; }
-#pw-dialog .pw-actions { display: flex; justify-content: flex-end; gap: 8px; }
->>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
 
 main { padding: 26px 30px 64px; max-width: 1180px; }
 .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
@@ -339,7 +334,6 @@ button:disabled { box-shadow: none; }
   .msgs-layout.show-thread .msgs-list { display: none; }
   .msgs-layout:not(.show-thread) .msgs-thread { display: none; }
   .msgs-back { display: inline-block; }
-<<<<<<< HEAD
 }
 
 
@@ -422,6 +416,3 @@ button:disabled { box-shadow: none; }
 #pic-dialog .pic-pick { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 #pic-dialog .pic-note { color: var(--ink-soft); font-size: .84rem; text-align: center; margin: 12px 0; }
 #pic-dialog [hidden] { display: none !important; }   /* the global button style would otherwise keep a hidden "Remove photo" visible */
-=======
-}
->>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921

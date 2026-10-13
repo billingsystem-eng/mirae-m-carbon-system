@@ -37,11 +37,8 @@
 .um .urow:last-child { border-bottom: 0; }
 .um .usum { display: grid; grid-template-columns: 40px minmax(0, 1.15fr) 150px minmax(0, 1.3fr) 176px; grid-template-areas: "av name role con act"; gap: 4px 16px; align-items: center; padding: 12px 16px; }
 .um .av { grid-area: av; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: .85rem; letter-spacing: .02em; }
-<<<<<<< HEAD
 .um .av { position: relative; overflow: hidden; }
 .um .av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-=======
->>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
 .um .av.admin { background: var(--ink); color: #fff; }
 .um .av.billing_officer { background: var(--leaf-tint); color: var(--leaf-dark); }
 .um .av.finance_hr { background: var(--amber-tint); color: var(--amber); }
@@ -204,11 +201,7 @@ function rowHtml(u) {
     : `<div>${u.email ? esc(u.email) : '<span class="soft">No email</span>'}</div><div class="sub">Sees every client</div>`;
   return `<article class="urow${u.active ? '' : ' off'}" data-id="${u.id}">
     <div class="usum">
-<<<<<<< HEAD
       <span class="av ${esc(u.role)}" aria-hidden="true">${esc(initials(u.full_name))}${u.avatar_v > 0 ? `<img src="/api/avatars/${u.id}?v=${u.avatar_v}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span>
-=======
-      <span class="av ${esc(u.role)}" aria-hidden="true">${esc(initials(u.full_name))}</span>
->>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
       <div class="uname"><b>${esc(u.full_name)}${mine ? '<span class="pill draft">You</span>' : ''}</b><span>@${esc(u.username)}</span></div>
       <div class="urole">${esc(role.label)}</div>
       <div class="ucon">${con}</div>

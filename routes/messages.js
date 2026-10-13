@@ -17,10 +17,7 @@ const db = require('../db');
 const audit = require('../lib/audit');
 const { viewerScope } = require('../middleware/auth');
 const { balanceDue } = require('../lib/invoice-ready');
-<<<<<<< HEAD
 const { ensureNotices } = require('../lib/chat-notice');
-=======
->>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
 
 const router = express.Router();
 
@@ -55,13 +52,9 @@ function shape(row, userId) {
     sender_name: row.sender_name,
     body: row.body,
     created_at: row.created_at,
-<<<<<<< HEAD
     mine: row.user_id === userId,
     user_id: row.user_id,
     avatar_v: row.avatar_v || 0
-=======
-    mine: row.user_id === userId
->>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
   };
 }
 
@@ -105,10 +98,7 @@ router.get('/unread', (req, res) => res.json(unreadFor(req)));
 // (its own conversation). Staff get one row per issued bill x client login, so they can write to a specific
 // login. Conversations with messages come first, newest activity on top.
 router.get('/threads', (req, res) => {
-<<<<<<< HEAD
   try { ensureNotices(); } catch (e) { console.error('[chat] notice backfill failed:', e.message); }
-=======
->>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
   const params = [];
   let joinUser;
   let where = "b.status = 'issued'";
@@ -127,13 +117,8 @@ router.get('/threads', (req, res) => {
   const rows = db.prepare(`
     SELECT b.id AS bill_id, b.statement_no, b.period_start, b.period_end, b.due_date,
            c.name AS client_name, p.name AS project_name,
-<<<<<<< HEAD
            u.id AS client_user_id, u.full_name AS client_user_name, u.avatar_v AS client_user_avatar_v,
            lm.body AS last_body, lm.created_at AS last_at, lm.side AS last_side, lm.sender_role AS last_role
-=======
-           u.id AS client_user_id, u.full_name AS client_user_name,
-           lm.body AS last_body, lm.created_at AS last_at, lm.side AS last_side
->>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
     FROM bills b
     JOIN clients c ON c.id = b.client_id
     LEFT JOIN projects p ON p.id = b.project_id
@@ -144,7 +129,6 @@ router.get('/threads', (req, res) => {
     ORDER BY (lm.id IS NULL), lm.id DESC, b.bill_date DESC, b.id DESC, u.full_name
     LIMIT 300`).all(...params);
 
-<<<<<<< HEAD
   // Projects with no issued statement yet cannot have a conversation (chats belong to a statement), but they are
   // listed so that assigning a client login or adding a project shows up straight away.
   const pendParams = [];
@@ -169,19 +153,11 @@ router.get('/threads', (req, res) => {
     total_unread: unread.total,
     pending,
     nologin,
-=======
-  const unread = unreadFor(req);
-  res.json({
-    total_unread: unread.total,
->>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
     threads: rows.map((r) => ({
       bill_id: r.bill_id,
       client_user_id: r.client_user_id,
       client_user_name: r.client_user_name,
-<<<<<<< HEAD
       client_user_avatar_v: r.client_user_avatar_v || 0,
-=======
->>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
       statement_no: r.statement_no,
       client_name: r.client_name,
       project_name: r.project_name,
@@ -192,10 +168,7 @@ router.get('/threads', (req, res) => {
       unread: unread.threads[r.bill_id + ':' + r.client_user_id] || 0,
       last_at: r.last_at || null,
       last_side: r.last_side || null,
-<<<<<<< HEAD
       last_system: r.last_role === 'system',
-=======
->>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
       last_snippet: r.last_body ? (r.last_body.length > 90 ? r.last_body.slice(0, 90) + '…' : r.last_body) : null
     }))
   });
@@ -205,17 +178,11 @@ router.get('/bills/:id', (req, res) => {
   const t = openThread(req, req.params.id, req.query.user);
   if (!t) return res.status(404).json({ error: 'Conversation not found.' });
 
-<<<<<<< HEAD
   try { ensureNotices(t.bill.id); } catch (e) { console.error('[chat] notice failed:', e.message); }
   const after = Math.max(0, Number(req.query.after) || 0);
   const rows = db.prepare(`SELECT m.*, u.avatar_v FROM bill_messages m LEFT JOIN users u ON u.id = m.user_id
                            WHERE m.bill_id = ? AND m.client_user_id = ? AND m.id > ?
                            ORDER BY m.id ASC LIMIT 500`).all(t.bill.id, t.threadUserId, after);
-=======
-  const after = Math.max(0, Number(req.query.after) || 0);
-  const rows = db.prepare(`SELECT * FROM bill_messages WHERE bill_id = ? AND client_user_id = ? AND id > ?
-                           ORDER BY id ASC LIMIT 500`).all(t.bill.id, t.threadUserId, after);
->>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
 
   // Only mark as read when the person is actually looking at the conversation (the page passes mark=1 while visible).
   if (req.query.mark === '1') {
@@ -259,11 +226,7 @@ router.post('/bills/:id', (req, res) => {
   // Whoever sends has, by definition, seen everything in that conversation up to their own message.
   markRead(t.bill.id, t.threadUserId, req.session.userId, info.lastInsertRowid);
 
-<<<<<<< HEAD
   const row = db.prepare('SELECT m.*, u.avatar_v FROM bill_messages m LEFT JOIN users u ON u.id = m.user_id WHERE m.id = ?').get(info.lastInsertRowid);
-=======
-  const row = db.prepare('SELECT * FROM bill_messages WHERE id = ?').get(info.lastInsertRowid);
->>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
   res.json(shape(row, req.session.userId));
 });
 
