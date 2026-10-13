@@ -385,7 +385,10 @@ router.post('/:id/status', requireRole('admin', 'billing_officer', 'finance_hr')
 
   if (next === 'issued') {
     db.prepare('UPDATE clients SET status = ? WHERE id = ?').run('Billed', bill.client_id);
+<<<<<<< HEAD
     try { require('../lib/chat-notice').ensureNotices(bill.id); } catch (e) { console.error('[chat] could not post the issued notice:', e.message); }
+=======
+>>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
   }
   audit.log(req, 'bill', bill.id, 'status', `${LABELS[bill.status]} → ${LABELS[next]}`);
   res.json({ ok: true, status: next, status_label: LABELS[next] });

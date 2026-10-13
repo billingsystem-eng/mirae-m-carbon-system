@@ -52,6 +52,7 @@
   .with-ico input { width: 100%; padding-left: 40px; padding-top: 10px; padding-bottom: 10px; }
   .with-ico input:focus + .lead, .with-ico:focus-within > .lead { color: var(--signal); }
   .with-ico .eye {
+<<<<<<< HEAD
     position: absolute; right: 6px; top: 0; bottom: 0; margin: auto 0;   /* centred without transform: the global button hover/press styles set one */
     width: 34px; height: 34px; border: 0; background: transparent; color: var(--ink-soft);
     border-radius: 6px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; padding: 0;
@@ -60,6 +61,13 @@
   .with-ico .eye:hover:not(:disabled), .with-ico .eye:active:not(:disabled) { background: var(--signal-tint); color: var(--signal); border: 0; box-shadow: none; transform: none; }
   .with-ico .eye:focus-visible { outline: 2px solid var(--signal); outline-offset: 0; }
   .with-ico.pw input::-ms-reveal, .with-ico.pw input::-ms-clear { display: none; }   /* Edge adds its own show-password icon */
+=======
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    width: 34px; height: 34px; border: 0; background: transparent; color: var(--ink-soft);
+    border-radius: 6px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .with-ico .eye:hover { background: var(--signal-tint); color: var(--signal); }
+>>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
   .with-ico.pw input { padding-right: 44px; }
   .go { width: 100%; padding: 11px 14px; font-size: 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 4px; }
   .go .ico { font-size: 18px; }
@@ -207,12 +215,19 @@ api('/api/auth/me').then(() => (location.href = '/dashboard.html')).catch(() => 
 
 // Show / hide password
 const eye = document.getElementById('eye');
+<<<<<<< HEAD
 eye.onmousedown = (e) => e.preventDefault();   // keep the cursor in the password box
+=======
+>>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
 eye.onclick = () => {
   const show = password.type === 'password';
   password.type = show ? 'text' : 'password';
   const label = show ? 'Hide password' : 'Show password';
+<<<<<<< HEAD
   eye.setAttribute('aria-label', label); eye.setAttribute('aria-pressed', String(show)); eye.title = label;
+=======
+  eye.setAttribute('aria-label', label); eye.title = label;
+>>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
   eye.innerHTML = show
     ? '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.7A10 10 0 0 1 12 5.5c6.4 0 10 6.5 10 6.5a17 17 0 0 1-3.2 3.9M6.3 7.3C3.7 9 2 12 2 12s3.6 6.5 10 6.5c1.5 0 2.8-.3 4-.8"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>'
     : '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';

@@ -350,9 +350,12 @@ if (!threadReadsExisted && db.prepare("SELECT 1 FROM sqlite_master WHERE type = 
 // Payment reminders: per-user notifications, one row per bill per reminder stage (UNIQUE = each stage fires once),
 // and an email outbox so failed or held-back emails can be retried and shown to finance.
 addColumn('users', 'email TEXT');
+<<<<<<< HEAD
 // Profile picture: file name under DATA_DIR/uploads/avatars, and a counter that changes the image URL so browsers refetch.
 addColumn('users', 'avatar_file TEXT');
 addColumn('users', 'avatar_v INTEGER NOT NULL DEFAULT 0');
+=======
+>>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
 db.exec(`
 CREATE TABLE IF NOT EXISTS notifications (
   id INTEGER PRIMARY KEY,

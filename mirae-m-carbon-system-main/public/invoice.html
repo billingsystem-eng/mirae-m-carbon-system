@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sales invoice — M-Carbon</title>
+<link rel="stylesheet" href="/css/app.css">
+<style>
+  main { max-width: 900px; margin: 0 auto; }
+  .si { --navy: #2b3480; background: #fff; color: #000; margin: 0 auto; max-width: 794px; padding: 26px 30px 22px;
+    border: 1px solid var(--rule); font: 12px/1.3 Arial, "Liberation Sans", Helvetica, sans-serif;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .si table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  .si td, .si th { padding: 3px 6px; border: 0; vertical-align: top; }
+  .si .logo { height: 68px; display: block; margin-bottom: 18px; }
+  .si .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; }
+  .si .addr { flex: 1 1 52%; } .si .addr td:first-child { width: 86px; }
+  .si .meta { flex: 0 0 280px; margin-top: 8px; }
+  .si .bar { background: var(--navy); color: #fff; font-weight: 700; padding: 4px 8px; }
+  .si .bar.big { font-size: 15px; text-align: center; padding: 5px; }
+  .si .meta td { border: 1px solid #c9cde0; padding: 3px 6px; } .si .meta td:first-child { border-right: 0; white-space: nowrap; }
+  .si .meta td:last-child { border-left: 0; font-size: 10.5px; }
+  .si .to { width: 215px; margin-top: 16px; }
+  .si .cust { padding: 3px 6px; border-bottom: 1px solid #c9cde0; margin-bottom: 14px; line-height: 1.35; }
+  .si .cust .sub { font-size: 11px; margin-top: 2px; }
+  .si .items th { background: var(--navy); color: #fff; text-align: center; border: 1px solid var(--navy); }
+  .si .items td { border-left: 1px solid #c9cde0; border-right: 1px solid #c9cde0; }
+  .si .items td.c { text-align: center; } .si .items td.r { text-align: right; white-space: nowrap; }
+  .si .items .desc small { display: block; color: #333; font-size: 10.5px; margin-top: 2px; }
+  .si .items .nf td { text-align: center; font-style: italic; background: #f1f1f1; border-top: 1px solid #c9cde0; border-bottom: 1px solid #c9cde0; font-size: 11px; }
+  .si .items tr.fill td { height: 22px; } .si .items tr.fill:nth-child(even) td { background: #f1f1f1; }
+  .si .items { border-bottom: 1px solid #c9cde0; }
+  .si .low { display: flex; justify-content: space-between; gap: 22px; margin-top: 12px; }
+  .si .terms { flex: 1 1 52%; border: 1px solid #c9cde0; padding: 4px 6px; font-size: 10px; min-height: 150px; white-space: pre-wrap; }
+  .si .terms b { display: block; font-size: 12px; font-weight: 400; margin-bottom: 3px; }
+  .si .sum { flex: 0 0 280px; } .si .sum td { border-bottom: 1px solid #c9cde0; } .si .sum td:last-child { text-align: right; white-space: nowrap; }
+  .si .sum .tot td { background: var(--navy); color: #fff; font-weight: 700; border: 0; }
+  .si .sum .words td { background: var(--navy); color: #fff; font-size: 7.5px; font-style: italic; text-align: right; padding: 0 6px 5px; border: 0; }
+  .si .sum .paid td { color: #1d6b2f; font-weight: 700; }
+  .si .sig { margin-top: 26px; text-align: center; } .si .sig .ln { text-align: left; margin-bottom: 4px; }
+  .si .sig .ln span { display: inline-block; border-bottom: 1px solid #000; width: 190px; }
+  .si .draft-flag { color: #b00020; font-weight: 700; margin-top: 6px; }
+  .si footer { margin-top: 18px; border-top: 1px solid #c9cde0; padding-top: 6px; text-align: center; font-style: italic; font-size: 10.5px; }
+  .opts { display: flex; gap: 14px; align-items: end; flex-wrap: wrap; margin: 0 0 14px; }
+  .opts[hidden] { display: none; }
+  .opts label { display: block; font-size: .8rem; color: var(--ink-soft); margin-bottom: 3px; }
+  @page { size: A4; margin: 10mm; }
+  @media print { .si { border: 0; padding: 0; max-width: none; } main { max-width: none; } }
+</style>
+<link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail"></aside>
+  <main>
+    <div class="page-head no-print" style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+      <div><div class="crumb"><a href="/bills.html">Billing</a> / <a id="back" href="#">Worksheet</a></div><h1>Sales invoice</h1></div>
+      <div class="actions"><button class="primary" onclick="window.print()">Print or save as PDF</button></div>
+    </div>
+    <div class="opts no-print">
+      <div><label for="o-no">Invoice no.</label><input id="o-no" type="text" style="width:190px"></div>
+      <div><label for="o-vat">VAT treatment</label>
+        <select id="o-vat">
+          <option value="none">No VAT line (amount as billed)</option>
+          <option value="add">Add 12% VAT on top of amount billed</option>
+          <option value="incl">Amount billed already includes 12% VAT</option>
+        </select></div>
+    </div>
+    <div id="doc" class="si"></div>
+  </main>
+</div>
+<script src="/js/i18n.js"></script>
+<script src="/js/app.js"></script>
+<script>
+const id = new URLSearchParams(location.search).get('id');
+const P = (n) => PESO + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const r2 = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
+const mdy = (d) => d ? d.slice(5, 7) + '/' + d.slice(8, 10) + '/' + d.slice(0, 4) : '';
+const longDate = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
+const kwhs = (n) => Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 3 }) + ' kWh';
+const addr = addrLine;
+
+const ONES = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+const TENS = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+const below1000 = (n) => { const h = Math.floor(n / 100), r = n % 100, out = [];
+  if (h) out.push(ONES[h] + ' Hundred');
+  if (r) out.push(r < 20 ? ONES[r] : TENS[Math.floor(r / 10)] + (r % 10 ? ' ' + ONES[r % 10] : ''));
+  return out.join(' '); };
+function inWords(amount) {
+  const whole = Math.floor(amount + 1e-9), cents = Math.round((amount - whole) * 100);
+  const groups = [[1e9, 'Billion'], [1e6, 'Million'], [1e3, 'Thousand']], parts = []; let n = whole;
+  groups.forEach(([v, name]) => { if (n >= v) { parts.push(below1000(Math.floor(n / v)) + ' ' + name); n %= v; } });
+  if (n || !parts.length) parts.push(below1000(n) || 'Zero');
+  const s = parts.length > 1 ? parts.slice(0, -1).join(' ') + ' and ' + parts[parts.length - 1] : parts[0];
+  return s + ' Won Only';
+}
+
+let bill = null;
+let locked = false; // true for client (viewer) logins
+
+function render() {
+  const b = bill;
+  // Client (viewer) logins can't change the invoice number or VAT treatment: fixed values, controls removed.
+  const mode = locked ? 'none' : document.getElementById('o-vat').value;
+  const invNo = locked ? b.statement_no : (document.getElementById('o-no').value.trim() || b.statement_no);
+  const charge = Number(b.amount_billed || 0);          // Mirae ESP share for the period
+  const other = Number(b.adjustments_total || 0) + Number(b.interest_charged || 0);
+  const base = r2(charge + other);                      // this period's charges
+  let net, vat, total;
+  if (mode === 'add') { net = base; vat = r2(base * 0.12); total = r2(base + vat); }
+  else if (mode === 'incl') { net = r2(base / 1.12); vat = r2(base - net); total = base; }
+  else { net = base; vat = 0; total = base; }
+
+  const primary = (b.contacts || []).find((c) => c.is_primary) || (b.contacts || [])[0];
+  const isDraft = ['draft', 'for_review', 'approved', 'void'].includes(b.status);
+  const items = [{
+    d: `Energy savings share — ${b.project.name}`,
+    sub: `Period ${longDate(b.period_start)} – ${longDate(b.period_end)} (${b.days} days) · Savings ${kwhs(b.energy_savings_kwh)} · Gross savings ${P(b.gross_savings)} × ${+Number(b.ines_pct).toFixed(2)}% Mirae ESP share`,
+    amt: charge
+  }];
+  if (other) items.push({ d: 'Billing adjustments' + (Number(b.interest_charged) ? ' (incl. late payment interest)' : ''), sub: '', amt: other });
+  const rows = items.map((i, n) => `<tr><td class="c">${n + 1}</td><td class="desc">${esc(i.d)}${i.sub ? `<small>${esc(i.sub)}</small>` : ''}</td>
+      <td class="c">1</td><td class="r">${P(i.amt)}</td><td class="r">${P(i.amt)}</td></tr>`).join('');
+  const blanks = '<tr class="fill"><td></td><td></td><td></td><td></td><td></td></tr>'.repeat(Math.max(0, 6 - items.length));
+  const paid = Number(b.payments_total || 0);
+  const vatRows = mode === 'none'
+    ? `<tr><td>Total Amount</td><td>${P(net)}</td></tr>`
+    : `<tr><td>Sub Total (VAT Ex)</td><td>${P(net)}</td></tr><tr><td>Add: 12% VAT</td><td>${P(vat)}</td></tr>`;
+
+  document.getElementById('doc').innerHTML = `
+    <img class="logo" src="/img/mirae-esp-logo.png" alt="Mirae ESP Inc">
+    <div class="head">
+      <div class="addr"><table>
+        <tr><td colspan="2">Unit C, 12F, Strata 2000 Building</td></tr><tr><td colspan="2">F. Ortigas Jr., Ortigas Center</td></tr>
+        <tr><td colspan="2">San Antonio, Pasig City</td></tr>
+        </table></div>
+      <div class="meta"><div class="bar big">SALES INVOICE</div><table>
+        <tr><td>Invoice No.:</td><td>${esc(invNo)}</td></tr>
+        <tr><td>Date:</td><td>${mdy(b.bill_date)}</td></tr>
+        <tr><td>Due Date:</td><td>${mdy(b.due_date)}</td></tr>
+        <tr><td>Statement Ref.:</td><td>${esc(b.statement_no)}</td></tr></table>
+        ${isDraft ? `<div class="draft-flag">${esc(b.status_label).toUpperCase()} — NOT FOR RELEASE</div>` : ''}</div>
+    </div>
+    <div class="to"><div class="bar">SOLD TO</div></div>
+    <div class="cust">${esc(b.client.name)}
+      ${addr(b.client) ? `<div class="sub">${esc(addr(b.client))}</div>` : ''}
+      <div class="sub">TIN: ${esc(b.client.tin || '—')} · Account No.: ${esc(b.client.account_no || '—')}${primary ? ' · Attention: ' + esc(primary.name) : ''}</div>
+      <div class="sub">Project Site: ${esc(b.project.name)}</div></div>
+    <table class="items"><thead><tr><th style="width:44px">Item #</th><th>Description</th><th style="width:54px">Qty</th>
+      <th style="width:100px">Unit Price</th><th style="width:100px">Amount</th></tr></thead>
+      <tbody>${rows}<tr class="nf"><td colspan="5">--- nothing follows ---</td></tr>${blanks}</tbody></table>
+    <div class="low">
+      <div class="terms"><b>Notes:</b>${esc((b.notes ? b.notes + '\n\n' : '') + 'This invoice covers the savings-based charge shown on billing statement ' + b.statement_no + '.')}</div>
+      <div class="sum"><table>
+        ${vatRows}
+        <tr class="tot"><td>Total Amount Due</td><td>${P(total)}</td></tr>
+        <tr class="words"><td colspan="2">Amount in words:<br>${inWords(total)}</td></tr>
+        ${paid ? `<tr class="paid"><td>Payments received</td><td>${P(paid)}</td></tr>` : ''}</table>
+        <div class="sig"><div class="ln">Received by : <span></span></div>
+        <div class="ln" style="margin-top:22px">Authorized signature : <span></span></div></div></div>
+    </div>
+    <footer>Thank you for your business!</footer>`;
+}
+
+(async () => {
+  const me = await shell();
+  locked = me.role === 'viewer';
+  if (locked) document.querySelector('.opts').remove();
+  if (!id) return;
+  bill = await api('/api/bills/' + id);
+  document.getElementById('back').href = '/bill.html?id=' + bill.id;
+  document.title = bill.statement_no + ' — Sales invoice';
+  if (!locked) {
+    document.getElementById('o-no').value = bill.statement_no;
+    document.getElementById('o-no').oninput = render;
+    document.getElementById('o-vat').onchange = render;
+  }
+  render();
+})().catch((e) => toast(e.message, true));
+</script>
+</body>
+</html>

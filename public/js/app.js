@@ -66,6 +66,7 @@ const NAV_ICONS = {
 };
 const navIcon = (k) => `<svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true">${NAV_ICONS[k]}</svg>`;
 
+<<<<<<< HEAD
 /** Round user icon. side: 'staff' (Mirae ESP, green) or 'client' (grey). Returns an HTML string.
  *  Pass pic = { id, v } to show that user's profile picture (v = users.avatar_v; 0 / missing = no picture, so the icon stays). */
 const userAvatar = (side = 'client', pic = null) => {
@@ -75,6 +76,8 @@ const userAvatar = (side = 'client', pic = null) => {
   return `<span class="avatar ${side === 'staff' ? 'staff' : 'client'}${img ? ' has-pic' : ''}" aria-hidden="true">${icon}${img}</span>`;
 };
 
+=======
+>>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
 const NAV = [
   { href: '/dashboard.html', label: 'Overview', icon: 'overview' },
   { href: '/clients.html', label: 'Clients & projects', icon: 'clients' },
@@ -109,6 +112,7 @@ async function shell() {
     <nav>${NAV.filter((n) => (!n.adminOnly || me.role === 'admin') && (me.role !== 'viewer' || VIEWER_PAGES.includes(n.href)))
       .map((n) => `<a href="${n.href}" class="${here === n.href || (n.also || []).includes(here) ? 'on' : ''}">${navIcon(n.icon)}<span>${n.label}</span></a>`)
       .join('')}</nav>
+<<<<<<< HEAD
     <div class="who">
       <div class="who-id"><button id="chpic" type="button" class="who-pic" title="Change profile photo" aria-label="Change profile photo">${userAvatar(me.role === 'viewer' ? 'client' : 'staff', { id: me.id, v: me.avatar_v })}</button>
         <span><b>${esc(me.full_name)}</b>${roleText}</span></div>
@@ -118,6 +122,10 @@ async function shell() {
     me.avatar_v = v;
     rail.querySelector('#chpic').innerHTML = userAvatar(me.role === 'viewer' ? 'client' : 'staff', { id: me.id, v });
   });
+=======
+    <div class="who"><b>${esc(me.full_name)}</b>${roleText}<br><button id="chpw" type="button">Change password</button> <button id="signout">${navIcon('signout')}Sign out</button></div>`;
+  rail.querySelector('#chpw').onclick = openPasswordDialog;
+>>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
   rail.querySelector('#signout').onclick = async () => {
     await api('/api/auth/logout', { method: 'POST' });
     location.href = '/login.html';
@@ -181,6 +189,7 @@ function openPasswordDialog() {
   g('pw-cur').focus();
 }
 
+<<<<<<< HEAD
 /** Lets any signed-in user set, change or remove their own profile picture. The photo is centre-cropped to a square
  *  and shrunk in the browser (256 px JPEG), so uploads stay small whatever the camera produced. */
 function openPhotoDialog(me, onSaved) {
@@ -265,6 +274,8 @@ async function squarePhoto(file, size) {
   return new Promise((ok, no) => c.toBlob((b) => (b ? ok(b) : no(new Error('encode'))), 'image/jpeg', 0.86));
 }
 
+=======
+>>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
 /** Viewers can read everything but change nothing. */
 const readOnly = (me) => me.role === 'viewer' || me.role === 'finance_hr'; // finance / HR can approve and view, not edit
 /* Clients & projects can only be changed by administrators. */

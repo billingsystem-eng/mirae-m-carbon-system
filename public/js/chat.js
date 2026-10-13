@@ -30,8 +30,13 @@ const BillChat = (() => {
       <div class="chat-log" id="chat-log" role="log" aria-live="polite" aria-label="Payment messages"></div>
       <form class="chat-form" id="chat-form" autocomplete="off">
         <label class="sr-only" for="chat-input">Message</label>
+<<<<<<< HEAD
         <textarea id="chat-input" rows="1" maxlength="2000" placeholder="Write a message about this payment…"></textarea>
         <button type="submit" class="primary chat-send" id="chat-send" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+=======
+        <textarea id="chat-input" rows="2" maxlength="2000" placeholder="Write a message about this payment…"></textarea>
+        <button type="submit" class="primary" id="chat-send">Send</button>
+>>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
       </form>
       <p class="chat-closed" id="chat-closed" hidden>This bill is no longer open for messages.</p>`;
 
@@ -48,13 +53,17 @@ const BillChat = (() => {
     let lastId = 0;
     let busy = false;
 
+<<<<<<< HEAD
     let prev = null;   // previous rendered message, used for grouping and time dividers
+=======
+>>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
     const render = (m) => {
       if (seen.has(m.id)) return;
       seen.add(m.id);
       lastId = Math.max(lastId, m.id);
       const empty = log.querySelector('.chat-empty');
       if (empty) empty.remove();
+<<<<<<< HEAD
       const d = new Date(String(m.created_at).replace(' ', 'T') + 'Z');
       const gap = !prev || isNaN(d) || d - prev.d > 30 * 60e3 || d.toDateString() !== prev.d.toDateString();
       if (gap) {
@@ -86,6 +95,18 @@ const BillChat = (() => {
       col.appendChild(el);
       row.appendChild(col);
       log.appendChild(row);
+=======
+      const el = document.createElement('div');
+      el.className = 'chat-msg ' + (m.mine ? 'mine' : 'theirs') + ' ' + m.side;
+      const who = document.createElement('div');
+      who.className = 'chat-meta';
+      who.textContent = (m.mine ? 'You' : m.sender_name) + (m.side === 'staff' ? ' · Mirae ESP' : '') + ' · ' + when(m.created_at);
+      const text = document.createElement('div');
+      text.className = 'chat-text';
+      text.textContent = m.body;            // textContent, never innerHTML: messages are untrusted input
+      el.append(who, text);
+      log.appendChild(el);
+>>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
     };
 
     const nearBottom = () => log.scrollHeight - log.scrollTop - log.clientHeight < 80;
@@ -119,15 +140,22 @@ const BillChat = (() => {
       send.disabled = true;
       try {
         const m = await api(`/api/messages/bills/${billId}`, { method: 'POST', body: { body, user_id: threadUserId } });
+<<<<<<< HEAD
         input.value = ''; grow();
+=======
+        input.value = '';
+>>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
         render(m);
         log.scrollTop = log.scrollHeight;
         if (onChange) onChange();
       } catch (ex) { toast(ex.message, true); }
       finally { send.disabled = false; input.focus(); }
     };
+<<<<<<< HEAD
     const grow = () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 120) + 'px'; };
     input.addEventListener('input', grow);
+=======
+>>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
     // Enter sends, Shift+Enter makes a new line.
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); }

@@ -35,8 +35,12 @@ router.get('/me', (req, res) => {
     username: req.session.username,
     full_name: req.session.fullName,
     role: req.session.role,
+<<<<<<< HEAD
     client_id: scope ? scope.clientId : null,
     avatar_v: (db.prepare('SELECT avatar_v FROM users WHERE id = ?').get(req.session.userId) || {}).avatar_v || 0
+=======
+    client_id: scope ? scope.clientId : null
+>>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
   });
 });
 
@@ -57,7 +61,11 @@ router.post('/password', requireAuth, (req, res) => {
 // --- User management (administrators only) ---
 
 router.get('/users', requireRole('admin'), (req, res) => {
+<<<<<<< HEAD
   res.json(db.prepare(`SELECT u.id, u.username, u.full_name, u.role, u.active, u.created_at, u.client_id, u.email, u.avatar_v, c.name AS client_name
+=======
+  res.json(db.prepare(`SELECT u.id, u.username, u.full_name, u.role, u.active, u.created_at, u.client_id, u.email, c.name AS client_name
+>>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
     FROM users u LEFT JOIN clients c ON c.id = u.client_id ORDER BY u.username`).all());
 });
 
