@@ -19,10 +19,9 @@ const invoicesRouter = require('./routes/invoices');
 const onlinePayments = require('./routes/online-payments');
 const messagesRouter = require('./routes/messages');
 const bolta = require('./routes/bolta');
-<<<<<<< HEAD
+
 const avatarsRouter = require('./routes/avatars');
-=======
->>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
+
 const notificationsRouter = require('./routes/notifications');
 const notify = require('./lib/notify');
 
@@ -96,10 +95,9 @@ app.use('/api/invoices', requireAuth, invoicesRouter);
 app.use('/api/notifications', requireAuth, notificationsRouter);   // payment reminders (due soon / overdue)
 app.use('/api/bolta', requireAuth, bolta.router);   // Korean tax invoices via Bolta
 app.use('/api/messages', requireAuth, messagesRouter);   // payment chat: client <-> finance, per bill
-<<<<<<< HEAD
+
 app.use('/api/avatars', requireAuth, avatarsRouter);   // profile pictures
-=======
->>>>>>> 53eba40c7138305e3aac0e937c2d94124e32b921
+
 app.use('/api/online-payments', requireAuth, onlinePayments.router);   // PayMongo checkout   // scanned Sales Invoice copies
 
 app.use(express.static(path.join(__dirname, 'public')));
