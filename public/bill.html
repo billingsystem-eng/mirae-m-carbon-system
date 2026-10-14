@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Billing worksheet — M-Carbon System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+  #daily td { padding: 4px 8px; }
+  #daily input { padding: 4px 6px; }
+  #rate-lines td { padding: 5px 8px; }
+  .locked { background: var(--amber-tint); }
+</style>
+<link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail"></aside>
+  <main>
+    <div class="page-head">
+      <div>
+        <div class="crumb"><a href="/bills.html">Billing</a></div>
+        <h1 id="title">Billing worksheet</h1>
+        <p id="sub"></p>
+        <p id="wk-status" style="margin:4px 0 0;color:var(--ink-soft);font-size:.82rem"></p>
+      </div>
+      <div class="actions" id="actions"></div>
+    </div>
+
+    <div id="banner"></div>
+
+    <div class="split">
+      <div>
+        <div class="panel">
+          <header>
+            <h2>Consumption and baseline</h2>
+            <span id="source-tag" class="pill draft">Standalone / manual source</span>
+          </header>
+          <div class="body">
+            <div class="actions no-print" style="margin-bottom:12px">
+              <button type="button" id="pull-dashboard" data-edit>Pull from dashboard</button>
+              <span id="synced-at" style="color:var(--ink-soft);font-size:.82rem;align-self:center"></span>
+            </div>
+            <div class="field">
+              <label for="method">Baseline calculation method</label>
+              <select id="method" data-edit>
+                <option value="fixed">Method 1 — Dashboard fixed baseline</option>
+                <option value="savings_pct">Method 2 — Agreed savings percentage</option>
+                <option value="operating_hours">Method 3 — Actual operating hours per day</option>
+              </select>
+            </div>
+
+            <div class="grid2">
+              <div class="field" id="wrap-baseline">
+                <label for="dashboard_daily_baseline">Dashboard average daily baseline (kWh/day)</label>
+                <input id="dashboard_daily_baseline" type="number" step="0.0001" data-edit>
+              </div>
+              <div class="field" id="wrap-pct">
+                <label for="agreed_savings_pct">Agreed savings percentage (%)</label>
+                <input id="agreed_savings_pct" type="number" step="0.0001" data-edit>
+              </div>
+              <div class="field" id="wrap-actual">
+                <label for="actual_kwh">Total actual M-Carbon consumption (kWh)</label>
+                <input id="actual_kwh" type="number" step="0.001" data-edit>
+              </div>
+            </div>
+
+            <div id="wrap-daily" hidden>
+              <h3 style="margin-bottom:8px">Daily entries</h3>
+              <div class="inline-form no-print" style="margin-bottom:10px">
+                <div><label for="bulk-hours">Set operating hours for every day</label><input id="bulk-hours" type="number" step="0.25" data-edit></div>
+                <div><button type="button" id="apply-hours" data-edit>Apply to all days</button></div>
+              </div>
+              <div class="table-wrap" style="max-height:340px;overflow-y:auto">
+                <table id="daily">
+                  <thead><tr><th>Date</th><th class="num">Actual consumption (kWh)</th><th class="num">Operating hours</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <header>
+            <h2>Electricity rates for this period</h2>
+            <div class="actions no-print">
+              <button type="button" id="load-rates" data-edit>Load project rates</button>
+              <button type="button" id="single-rate" data-edit>Put all savings on one rate</button>
+            </div>
+          </header>
+          <div class="table-wrap">
+            <table id="rate-lines">
+              <thead><tr><th>Rate label</th><th class="num">Rate (&#8369;/kWh)</th><th>Active hours</th><th class="num">Energy savings (kWh)</th><th class="num">Savings value</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="body no-print"><button type="button" id="add-line" data-edit>Add rate line</button></div>
+        </div>
+
+        <div class="panel">
+          <header><h2>Sharing ratio and balances</h2></header>
+          <div class="body">
+            <div class="grid2">
+              <div class="field">
+                <label for="ines_pct">Mirae ESP share (%)</label>
+                <input id="ines_pct" type="number" step="0.01" data-edit>
+                <select class="no-print" id="use-ratio" data-edit hidden style="margin-top:4px"></select>
+              </div>
+              <div class="field"><label for="client_pct">Client share (%)</label><input id="client_pct" type="number" step="0.01" data-edit></div>
+              <div class="field">
+                <label for="previous_balance">Previous outstanding balance (&#8369;)</label>
+                <input id="previous_balance" type="number" step="0.01" data-edit>
+                <button type="button" class="quiet no-print" id="use-suggested" data-edit></button>
+              </div>
+              <div class="field">
+                <label for="interest_charged">Late payment interest (&#8369;)</label>
+                <input id="interest_charged" type="number" step="0.0001" data-edit>
+                <button type="button" class="quiet no-print" id="use-suggested-interest" data-edit></button>
+              </div>
+              <div class="field"><label for="bill_date">Bill date</label><input id="bill_date" type="date" data-edit></div>
+              <div class="field"><label for="due_date">Due date</label><input id="due_date" type="date" data-edit></div>
+            </div>
+            <div class="field"><label for="notes">Notes on this computation</label><textarea id="notes" data-edit></textarea></div>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="panel">
+            <header><h2>Payments</h2></header>
+            <div id="payments"></div>
+            <div class="body no-print" id="pay-confirm"></div>
+            <div class="body no-print">
+              <form id="pay-form" class="inline-form">
+                <div><label for="pay-date">Date</label><input id="pay-date" type="date" required data-edit></div>
+                <div><label for="pay-amount">Amount</label><input id="pay-amount" type="number" step="0.01" required data-edit></div>
+                <div><label for="pay-ref">Reference</label><input id="pay-ref" data-edit></div>
+                <div><button type="submit" data-edit>Record payment</button></div>
+              </form>
+            </div>
+          </div>
+          <div class="panel">
+            <header><h2>Adjustments</h2></header>
+            <div id="adjustments"></div>
+            <div class="body no-print">
+              <form id="adj-form" class="inline-form">
+                <div><label for="adj-date">Date</label><input id="adj-date" type="date" required data-edit></div>
+                <div><label for="adj-amount">Amount (negative for a credit)</label><input id="adj-amount" type="number" step="0.01" required data-edit></div>
+                <div><label for="adj-reason">Reason</label><input id="adj-reason" required data-edit></div>
+                <div><button type="submit" data-edit>Apply adjustment</button></div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" id="approvals-panel">
+          <header><h2>Approvals before issue</h2></header>
+          <div class="body" id="approvals-body"></div>
+        </div>
+
+        <div class="panel" id="taxinv-panel" hidden>
+          <header><h2>Electronic tax invoice (전자세금계산서)</h2></header>
+          <div class="body" id="taxinv-body"></div>
+        </div>
+
+        <div class="panel" id="invoice-panel" hidden>
+          <header><h2>Sales invoice (scanned copy)</h2></header>
+          <div class="body" id="invoice-body"></div>
+        </div>
+
+        <div class="panel">
+          <header><h2>Change history</h2></header>
+          <div class="table-wrap" id="trail"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="tape" id="tape"></div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="/js/i18n.js"></script>
+<script src="/js/app.js"></script>
+<script>
+const id = new URLSearchParams(location.search).get('id');
+let bill, me, lines = [], latest = null, configuredRatio = null;
+
+const g = (x) => document.getElementById(x);
+const val = (x) => g(x).value;
+// Late payment interest is entered to finer precision than a printed peso amount
+// (it isn't rounded away on save) — show up to 4 decimal places for it here so the
+// calculation record matches what was actually typed and saved.
+const moneyFine = (n) => PESO + Number(n || 0).toLocaleString(LOCALE(), { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+
+function methodView() {
+  const m = val('method');
+  g('wrap-baseline').hidden = m === 'savings_pct';
+  g('wrap-pct').hidden = m !== 'savings_pct';
+  g('wrap-actual').hidden = m === 'operating_hours';
+  g('wrap-daily').hidden = m !== 'operating_hours';
+}
+
+function collect() {
+  const daily = [...document.querySelectorAll('#daily tbody tr')].map((tr) => ({
+    day_date: tr.dataset.date,
+    actual_kwh: tr.querySelector('.d-kwh').value,
+    operating_hours: tr.querySelector('.d-hours').value
+  }));
+  return {
+    baseline_method: val('method'),
+    dashboard_daily_baseline: val('dashboard_daily_baseline'),
+    agreed_savings_pct: val('agreed_savings_pct'),
+    actual_kwh: val('actual_kwh'),
+    daily,
+    rate_lines: lines,
+    ines_pct: val('ines_pct'),
+    client_pct: val('client_pct'),
+    previous_balance: val('previous_balance'),
+    interest_charged: val('interest_charged'),
+    bill_date: val('bill_date'),
+    due_date: val('due_date'),
+    notes: val('notes')
+  };
+}
+
+// Hours between two "HH:MM" clock times — mirrors the server-side calculation
+// in lib/billing.js so the worksheet can show the auto-split kWh instantly,
+// before the debounced /preview round trip comes back. Wraps past midnight
+// (e.g. 22:00–06:00 = 8 hours), matching a rate's active window on the project.
+function hoursFromRange(from, to) {
+  if (!from || !to) return null;
+  const [fh, fm] = from.split(':').map(Number);
+  const [th, tm] = to.split(':').map(Number);
+  if ([fh, fm, th, tm].some((n) => !isFinite(n))) return null;
+  let mins = (th * 60 + tm) - (fh * 60 + fm);
+  if (mins <= 0) mins += 24 * 60;
+  return mins / 60;
+}
+const round3 = (n) => Math.round((n + Number.EPSILON) * 1000) / 1000;
+const fmtHours = (n) => Number(n || 0).toLocaleString(LOCALE(), { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
+function renderLines() {
+  const body = document.querySelector('#rate-lines tbody');
+  body.innerHTML = lines.length ? lines.map((l, i) => {
+    const hours = hoursFromRange(l.time_from, l.time_to);
+    const auto = hours !== null;
+    const autoKwh = auto ? round3((latest?.energy_savings_kwh ?? 0) * (hours / 24)) : null;
+    return `<tr>
+      <td><input class="l-label" value="${esc(l.label || '')}" data-edit></td>
+      <td class="num"><input class="l-rate num" type="number" step="0.0001" value="${l.rate ?? ''}" data-edit></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap">
+          <input class="l-from" type="time" value="${esc(l.time_from || '')}" data-edit style="width:auto">
+          <span style="color:var(--ink-soft)">&ndash;</span>
+          <input class="l-to" type="time" value="${esc(l.time_to || '')}" data-edit style="width:auto">
+        </div>
+        ${auto ? `<div style="font-size:.78rem;color:var(--ink-soft);margin-top:2px">${fmtHours(hours)} hrs of 24 &middot; auto-split</div>` : ''}
+      </td>
+      <td class="num"><input class="l-kwh num" type="number" step="0.001" value="${auto ? autoKwh : (l.kwh ?? '')}" ${auto ? 'disabled title="Computed automatically from the active hours"' : ''} data-edit></td>
+      <td class="num">${money((Number(l.rate) || 0) * (auto ? autoKwh : (Number(l.kwh) || 0)))}</td>
+      <td class="num no-print"><button class="quiet danger" data-edit onclick="dropLine(${i})">Remove</button></td>
+    </tr>`;
+  }).join('')
+    : '<tr><td colspan="6" class="empty">No rate lines yet. Load the project rates or add one.</td></tr>';
+
+  body.querySelectorAll('input').forEach((input, n) => {
+    const row = Math.floor(n / 5), field = ['label', 'rate', 'time_from', 'time_to', 'kwh'][n % 5];
+    input.oninput = () => {
+      lines[row][field] = input.value;
+      preview();
+      scheduleAutosave();
+    };
+    // A full re-render (not just on every keystroke) once a time field is
+    // committed, so the kWh cell flips to computed/disabled and the "X hrs
+    // of 24" hint appears right away, without disrupting the time picker.
+    if (field === 'time_from' || field === 'time_to') {
+      input.onchange = () => { renderLines(); preview(); scheduleAutosave(); };
+    }
+  });
+  if (readOnly(me) || !bill.editable) disableEditing();
+}
+
+function dropLine(i) { lines.splice(i, 1); renderLines(); preview(); scheduleAutosave(); }
+
+let timer;
+function preview() {
+  clearTimeout(timer);
+  timer = setTimeout(async () => {
+    try {
+      latest = await api(`/api/bills/${id}/preview`, { method: 'POST', body: collect() });
+      renderTape(latest);
+      document.querySelectorAll('#rate-lines tbody tr').forEach((tr, i) => {
+        const line = lines[i];
+        if (!line) return;
+        const cells = tr.querySelectorAll('td');
+        const hours = hoursFromRange(line.time_from, line.time_to);
+        let kwhNum;
+        if (hours !== null) {
+          kwhNum = round3((latest.energy_savings_kwh ?? 0) * (hours / 24));
+          const kwhInput = cells[3]?.querySelector('input');
+          if (kwhInput) kwhInput.value = kwhNum;
+        } else {
+          kwhNum = Number(line.kwh) || 0;
+        }
+        if (cells[4]) cells[4].textContent = money((Number(line.rate) || 0) * kwhNum);
+      });
+    } catch (e) { /* keep the last good tape */ }
+  }, 300);
+}
+
+function renderTape(r) {
+  const warn = r.warnings.length
+    ? `<div class="step"><div class="notice warn" style="margin:0"><b>Check before approving</b><ul>${r.warnings.map((w) => `<li>${esc(w)}</li>`).join('')}</ul></div></div>`
+    : '';
+  g('tape').innerHTML = `
+    <header><h2>Calculation record</h2>
+      <span style="color:var(--ink-soft);font-size:.82rem">${r.days} days in period</span></header>
+    <div class="step"><h4>Step 1 — Baseline consumption</h4>
+      ${r.baseline_working.map((w) => `<div class="line"><span>${esc(w.label)}</span><span>${esc(w.value)}</span></div>`).join('')}
+    </div>
+    <div class="step"><h4>Step 2 — Energy savings</h4>
+      <div class="line"><span>Calculated baseline</span><span>${kwh(r.baseline_kwh)}</span></div>
+      <div class="line"><span>Actual consumption</span><span>− ${kwh(r.actual_kwh)}</span></div>
+      <div class="line total"><span>Energy savings</span><span>${kwh(r.energy_savings_kwh)}</span></div>
+    </div>
+    <div class="step"><h4>Step 3 — Gross energy cost savings</h4>
+      ${r.rate_lines.length ? r.rate_lines.map((l) => `<div class="line"><span>${esc(l.label)} · ${kwh(l.kwh)} × ${money(l.rate)}</span><span>${money(l.value)}</span></div>`).join('')
+        : '<div class="line"><span>No rate lines entered</span><span>—</span></div>'}
+      <div class="line total"><span>Gross cost savings</span><span>${money(r.gross_savings)}</span></div>
+    </div>
+    <div class="step"><h4>Step 4 — Sharing</h4>
+      <div class="line"><span>Mirae ESP share ${dec(val('ines_pct'))}%</span><span>${money(r.amount_billed)}</span></div>
+      <div class="line"><span>Client retained ${dec(val('client_pct'))}%</span><span>${money(r.client_retained)}</span></div>
+    </div>
+    <div class="step"><h4>Statement summary</h4>
+      <div class="line"><span>Current amount due</span><span>${money(r.amount_billed)}</span></div>
+      <div class="line"><span>Previous balance</span><span>${money(r.previous_balance)}</span></div>
+      <div class="line"><span>Late payment interest</span><span>${moneyFine(r.interest_charged)}</span></div>
+      <div class="line"><span>Adjustments</span><span>${money(r.adjustments_total)}</span></div>
+      <div class="line"><span>Payments received</span><span>− ${money(r.payments_total)}</span></div>
+    </div>
+    ${warn}
+    <div class="headline"><div class="line"><span>Total amount due</span><span>${money(r.total_due)}</span></div></div>`;
+}
+
+// Flow: Draft -> For review -> Finance / HR approval (Final, locked) -> Issued to client
+const STEP = {
+  draft:      { label: 'Send for review',                 roles: ['admin', 'billing_officer'], who: 'a billing officer or administrator' },
+  for_review: { label: 'Approve (Finance / HR)',          roles: ['finance_hr'],               who: 'finance / HR' },
+  approved:   { label: 'Approve (Finance / HR)',          roles: ['finance_hr'],               who: 'finance / HR' },
+  final:      { label: 'Issue to client',                 roles: ['admin', 'billing_officer', 'finance_hr'], who: 'a billing officer, administrator or finance / HR' }
+};
+const RETURN_ROLES = { for_review: ['admin', 'finance_hr'], approved: ['admin', 'finance_hr'] };
+
+function renderActions() {
+  const step = STEP[bill.status];
+  const mine = step && step.roles.includes(me.role);
+  const canVoid = me.role === 'admin' && ['draft', 'for_review', 'approved'].includes(bill.status);
+  const canReturn = (RETURN_ROLES[bill.status] || []).includes(me.role);
+  const parts = [];
+  if (bill.editable && !readOnly(me)) parts.push('<button class="primary" id="save">Save and compute</button>');
+  if (mine) parts.push(`<button id="advance">${step.label}</button>`);
+  if (canReturn) parts.push('<button id="send-back">Return to draft</button>');
+  if (['final', 'issued'].includes(bill.status) && !readOnly(me)) parts.push('<button id="revise">Create revision</button>');
+  parts.push(`<a class="btn" href="/statement.html?id=${bill.id}">View statement</a>`);
+  if (me.role === 'viewer' && bill.status === 'issued' && bill.online_pay_enabled && bill.balance_due > 0) {
+    parts.push(`<button class="primary" id="pay-online">Pay ${money(bill.balance_due)} online</button>`);
+  }
+  if (me.role !== 'viewer' || bill.invoice_ready) parts.push(`<a class="btn" href="/invoice.html?id=${bill.id}">View sales invoice</a>`);
+  if (canVoid) parts.push('<button class="danger" id="void">Void this bill</button>');
+  g('actions').innerHTML = parts.join('');
+
+  if (g('save')) g('save').onclick = save;
+  if (g('advance')) g('advance').onclick = advance;
+  if (g('send-back')) g('send-back').onclick = sendBack;
+  if (g('revise')) g('revise').onclick = revise;
+  if (g('void')) g('void').onclick = voidBill;
+  if (g('pay-online')) g('pay-online').onclick = payOnline;
+}
+
+function renderApprovals() {
+  const done = (by, at) => by ? `<b>${esc(by)}</b> · ${esc(at || '')}` : '';
+  const st = bill.status;
+  const rows = [
+    ['Prepared and sent for review', 'Billing officer / Administrator', st !== 'draft' && st !== 'void', ''],
+    ['Approval', 'Finance / HR', !!bill.finance_approved_by, done(bill.finance_approved_by, bill.finance_approved_at)],
+    ['Issued to client', 'Billing officer / Administrator / Finance / HR', st === 'issued', bill.issued_at ? esc(bill.issued_at) : '']
+  ];
+  const waiting = STEP[st] ? `Waiting for ${STEP[st].who}.` : '';
+  g('approvals-body').innerHTML = `<table><tbody>${rows.map(([name, role, ok, info]) => `<tr>
+      <td style="width:26px">${ok ? '✓' : '○'}</td><td><b>${name}</b><br><span style="font-size:.82rem;color:var(--ink-soft)">${role}</span></td>
+      <td style="text-align:right">${info || (ok ? '' : '<span style="color:var(--ink-soft)">Pending</span>')}</td></tr>`).join('')}</tbody></table>
+    ${st === 'void' ? '' : `<p style="margin:10px 0 0;color:var(--ink-soft);font-size:.86rem">Finance / HR approval is needed before a bill can be issued to the client. ${waiting}</p>`}`;
+}
+
+async function sendBack() {
+  const reason = prompt('Why is this bill being returned to draft? It will need to be approved again.');
+  if (reason === null) return;
+  if (!reason.trim()) return toast('A reason is required.', true);
+  try {
+    await api(`/api/bills/${id}/status`, { method: 'POST', body: { status: 'draft', reason: reason.trim() } });
+    toast('Returned to draft');
+    await load();
+  } catch (e) { toast(e.message, true); }
+}
+
+async function voidBill() {
+  const reason = prompt(`Void ${bill.statement_no}? This removes it from pending approval and billing lists — the record stays for the audit trail. Give a reason:`);
+  if (reason === null) return;
+  if (!reason.trim()) return toast('A reason is required to void a bill.', true);
+  try {
+    await api(`/api/bills/${id}/status`, { method: 'POST', body: { status: 'void', reason: reason.trim() } });
+    toast('Bill voided');
+    location.href = '/bills.html';
+  } catch (e) { toast(e.message, true); }
+}
+
+// Persists the whole worksheet (everything collect() gathers — baseline inputs,
+// rate lines, sharing split, balances, dates, notes). Used by the "Save and
+// compute" button, by a quiet autosave a moment after typing stops, and as a
+// flush right before recording a payment or adjustment, since that used to
+// reload the page's data and silently discard anything not yet saved.
+let autosaveTimer = null;
+
+function scheduleAutosave() {
+  if (!bill || !bill.editable || readOnly(me)) return;
+  g('wk-status').textContent = 'Unsaved changes…';
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(() => saveWorksheet(false), 900);
+}
+
+async function saveWorksheet(explicit) {
+  if (!bill.editable || readOnly(me)) return true; // fields are locked — nothing to lose
+  clearTimeout(autosaveTimer);
+  autosaveTimer = null;
+  const statusEl = g('wk-status');
+  statusEl.textContent = 'Saving…';
+  try {
+    latest = await api('/api/bills/' + id, { method: 'PUT', body: collect() });
+    statusEl.textContent = 'Saved ' + new Date().toLocaleTimeString(LOCALE(), { hour: '2-digit', minute: '2-digit' });
+    if (explicit) toast('Computation saved');
+    return true;
+  } catch (e) {
+    statusEl.textContent = 'Not saved — ' + e.message;
+    if (explicit) toast(e.message, true);
+    return false;
+  }
+}
+
+async function save() {
+  if (await saveWorksheet(true)) await load();
+}
+
+async function advance() {
+  try {
+    const r = await api(`/api/bills/${id}/status`, { method: 'POST', body: {} });
+    toast('Now ' + r.status_label.toLowerCase());
+    await load();
+  } catch (e) { toast(e.message, true); }
+}
+
+async function revise() {
+  const reason = prompt('Why is this statement being revised?');
+  if (!reason) return;
+  try {
+    const r = await api(`/api/bills/${id}/revise`, { method: 'POST', body: { reason } });
+    location.href = '/bill.html?id=' + r.id;
+  } catch (e) { toast(e.message, true); }
+}
+
+/* Electronic tax invoice (Bolta). Staff only. "Requested" means Bolta has it and is sending it to the NTS;
+   only "Issued" is final. Test-key invoices are never sent to the NTS and are labelled as such. */
+let taxInvTimer = null;
+async function renderTaxInvoice(me, vat) {
+  const panel = document.getElementById('taxinv-panel'), body = document.getElementById('taxinv-body');
+  if (!panel || !body || me.role === 'viewer') return;
+  clearTimeout(taxInvTimer);
+  let d;
+  try { d = await api('/api/tax-invoices/bills/' + id + (vat ? '?vat=' + vat : '')); } catch (e) { return; }
+  if (!d.enabled && !d.invoices.length) return;           // not set up and nothing to show: stay hidden
+  panel.hidden = false;
+  const won = (n) => '₩' + Number(n || 0).toLocaleString('ko-KR');
+  const label = { requested: 'Waiting for the NTS result', issued: 'Issued', failed: 'Failed', unknown: 'No answer from Bolta yet' };
+  const cls = { requested: 'for_review', issued: 'issued', failed: 'void', unknown: 'for_review' };
+  const rows = d.invoices.map((t) => `<div style="padding:8px 0;border-bottom:1px solid var(--rule)">
+      <span class="pill ${cls[t.status] || ''}">${esc(label[t.status] || t.status)}</span>
+      <b>${won(t.supply_cost + (t.tax || 0))}</b> <small style="color:var(--ink-soft)">(supply ${won(t.supply_cost)} + VAT ${won(t.tax)}) · ${esc(t.purpose === 'RECEIPT' ? '영수' : '청구')} · ${esc(t.write_date)}
+      ${t.environment === 'test' ? ' · <b>TEST — not sent to the NTS</b>' : ''}</small>
+      ${t.nts_transaction_id ? `<div><small>NTS approval no. ${esc(t.nts_transaction_id)}</small></div>` : ''}
+      ${t.tax_invoice_url ? `<div><a href="${esc(t.tax_invoice_url)}" target="_blank" rel="noopener">Open in Bolta</a></div>` : ''}
+      ${t.failure_message ? `<div style="color:var(--alert)"><small>${esc(t.failure_code || '')} ${esc(t.failure_message)}</small></div>` : ''}
+      ${(['requested', 'unknown'].includes(t.status) || (t.status === 'issued' && !t.nts_transaction_id)) && d.can_issue ? `<button type="button" class="quiet" data-refresh="${t.id}">Refresh</button>` : ''}
+    </div>`).join('') || '<div class="empty" style="padding:12px 0;text-align:left">No tax invoice requested yet.</div>';
+
+  let action = '';
+  if (!d.enabled) action = '<p style="margin:12px 0 0;color:var(--ink-soft)">Tax invoices are switched off (no Bolta API key is set).</p>';
+  else if (d.has_active) action = '';
+  else if (d.blocked_reason) action = `<p style="margin:12px 0 0;color:var(--ink-soft);font-size:.88rem">${esc(d.blocked_reason)}</p>`;
+  else if (!d.can_issue) action = '<p style="margin:12px 0 0;color:var(--ink-soft);font-size:.88rem">Only an administrator or finance can issue the tax invoice.</p>';
+  else if (d.problems.length) action = `<div class="notice" style="margin-top:12px"><b>Fix before issuing:</b><ul style="margin:6px 0 0 18px">${d.problems.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
+  else {
+    const p = d.preview;
+    action = `<div style="margin-top:12px" class="no-print">
+      <div class="field"><label for="ti-vat">VAT treatment</label><select id="ti-vat">${Object.entries(d.vat_modes).map(([k, v]) => `<option value="${k}"${k === p.vat_mode ? ' selected' : ''}>${esc(v)}</option>`).join('')}</select></div>
+      <p style="margin:8px 0">To <b>${esc(p.recipient.name)}</b> (${esc(p.recipient.brn)}): supply ${won(p.supply_cost)} + VAT ${won(p.tax)} = <b>${won(p.total)}</b>
+        · ${p.purpose === 'RECEIPT' ? '영수 (payment confirmed)' : '청구 (not yet paid)'} · dated ${esc(p.write_date)}</p>
+      ${d.environment === 'live' ? '<p style="margin:0 0 8px"><b>This is a LIVE key: it files a real invoice with the NTS and uses prepaid points.</b></p>' : '<p style="margin:0 0 8px;color:var(--ink-soft)">Test key: nothing is sent to the NTS.</p>'}
+      <button type="button" class="primary" id="ti-issue">Issue tax invoice</button></div>`;
+  }
+  body.innerHTML = rows + action;
+
+  const sel = body.querySelector('#ti-vat'); if (sel) sel.onchange = () => renderTaxInvoice(me, sel.value);
+  const btn = body.querySelector('#ti-issue');
+  if (btn) btn.onclick = async () => {
+    const p = d.preview;
+    if (!confirm(`Issue a ${d.environment === 'live' ? 'LIVE ' : 'test '}tax invoice for ${won(p.total)} to ${p.recipient.name}?` + (d.environment === 'live' ? '\nThis cannot be undone from here; corrections need an amended invoice.' : ''))) return;
+    btn.disabled = true;
+    try { await api(`/api/tax-invoices/bills/${id}/issue`, { method: 'POST', body: { vat_mode: body.querySelector('#ti-vat').value } }); toast('Sent to Bolta'); }
+    catch (e) { toast(e.message, true); }
+    renderTaxInvoice(me);
+  };
+  body.querySelectorAll('[data-refresh]').forEach((b) => (b.onclick = async () => {
+    b.disabled = true;
+    try { await api(`/api/tax-invoices/${b.dataset.refresh}/refresh`, { method: 'POST' }); } catch (e) { toast(e.message, true); }
+    renderTaxInvoice(me);
+  }));
+  // While something is waiting, quietly re-check (the webhook normally updates it first).
+  if (d.invoices.some((t) => t.status === 'requested')) taxInvTimer = setTimeout(() => renderTaxInvoice(me), 15000);
+}
+
+async function load() {
+  clearTimeout(autosaveTimer);
+  autosaveTimer = null;
+  bill = await api('/api/bills/' + id);
+  document.title = bill.statement_no + ' — M-Carbon Billing System';
+  g('title').textContent = bill.statement_no;
+  g('sub').innerHTML = `${esc(bill.client.name)} · ${esc(bill.project.name)} · ${dateText(bill.period_start)} – ${dateText(bill.period_end)}
+    &nbsp; <span class="pill ${bill.status}">${esc(bill.status_label)}</span>`;
+
+  g('source-tag').textContent = bill.source === 'dashboard' ? 'M-Carbon Dashboard source' : 'Standalone / manual source';
+  g('source-tag').className = 'pill ' + (bill.source === 'dashboard' ? 'approved' : 'draft');
+  g('synced-at').textContent = bill.dashboard_synced_at ? `Last pulled ${bill.dashboard_synced_at}` : '';
+
+  g('banner').innerHTML = bill.status === 'void'
+    ? '<div class="notice bad">This billing period was voided. It won’t appear in pending approvals and doesn’t count toward billing totals. See the change history below for the reason.</div>'
+    : !bill.editable
+    ? `<div class="notice warn">This statement is ${esc(bill.status_label.toLowerCase())} and locked from editing. Create a revision if a correction is needed — the original stays on record.</div>`
+    : (bill.revises_bill_id ? '<div class="notice good">This is a revision. The original statement remains on record.</div>' : '');
+
+  const i = bill.inputs || {};
+  const c = bill.contract;
+  g('method').value = bill.baseline_method;
+  g('dashboard_daily_baseline').value = i.dashboard_daily_baseline ?? c.dashboard_daily_baseline ?? '';
+  g('agreed_savings_pct').value = i.agreed_savings_pct ?? c.agreed_savings_pct ?? '';
+  g('actual_kwh').value = i.actual_kwh ?? bill.actual_kwh ?? '';
+  g('ines_pct').value = bill.ines_pct ?? '';
+  g('client_pct').value = bill.client_pct ?? '';
+  g('previous_balance').value = bill.previous_balance ?? 0;
+  g('interest_charged').value = bill.interest_charged ?? 0;
+  g('bill_date').value = bill.bill_date || '';
+  g('due_date').value = bill.due_date || '';
+  g('notes').value = bill.notes || '';
+  g('use-suggested').textContent = `Use calculated balance of ${money(bill.suggested_previous_balance)}`;
+  g('use-suggested').onclick = () => { g('previous_balance').value = bill.suggested_previous_balance; preview(); scheduleAutosave(); };
+  g('use-suggested-interest').textContent = `Use calculated interest of ${moneyFine(bill.suggested_interest)}`;
+  g('use-suggested-interest').onclick = () => { g('interest_charged').value = bill.suggested_interest; preview(); scheduleAutosave(); };
+
+  // Every sharing ratio configured on the project, oldest first, so the officer can
+  // apply any of them — not just the one matching this bill's period (that one is
+  // marked "current" using the same date resolution the server uses on bill creation).
+  const ratios = [...(bill.contract.sharing_ratios || [])].sort((a, b) => (a.effective_from < b.effective_from ? -1 : 1));
+  configuredRatio = ratios
+    .filter((r) => r.effective_from <= bill.period_end && (!r.effective_to || r.effective_to >= bill.period_end))
+    .sort((a, b) => (a.effective_from < b.effective_from ? 1 : -1))[0] || null;
+  const ratioSelect = g('use-ratio');
+  ratioSelect.hidden = !ratios.length;
+  ratioSelect.innerHTML = ['<option value="" selected>Apply a configured split…</option>']
+    .concat(ratios.map((r, i) => `<option value="${i}">${esc(r.label || 'Unlabeled')} — ${dateText(r.effective_from)}–${r.effective_to ? dateText(r.effective_to) : 'open'} (${dec(r.ines_pct)}% / ${dec(r.client_pct)}%)${configuredRatio === r ? ' · current' : ''}</option>`))
+    .join('');
+  ratioSelect.onchange = () => {
+    if (ratioSelect.value === '') return;
+    const r = ratios[Number(ratioSelect.value)];
+    g('ines_pct').value = r.ines_pct;
+    g('client_pct').value = r.client_pct;
+    preview();
+    scheduleAutosave();
+    ratioSelect.value = '';
+  };
+
+  document.querySelector('#daily tbody').innerHTML = bill.daily.map((d) => `<tr data-date="${d.day_date}">
+      <td>${dateText(d.day_date)}</td>
+      <td class="num"><input class="d-kwh num" type="number" step="0.001" value="${d.actual_kwh ?? ''}" data-edit></td>
+      <td class="num"><input class="d-hours num" type="number" step="0.25" min="0" max="24" value="${d.operating_hours ?? ''}" data-edit></td>
+    </tr>`).join('');
+  document.querySelectorAll('#daily input').forEach((el) => (el.oninput = () => { preview(); scheduleAutosave(); }));
+
+  lines = (bill.rate_breakdown || []).length ? bill.rate_breakdown.map((l) => ({ ...l }))
+    : (i.rate_lines || []).map((l) => ({ ...l }));
+  renderLines();
+  methodView();
+  renderActions();
+
+  g('payments').innerHTML = bill.payments.length ? `<div class="table-wrap"><table>
+      <tbody>${bill.payments.map((p) => `<tr><td>${dateText(p.paid_on)}<br><span style="font-size:.82rem;color:var(--ink-soft)">${esc(p.reference || '')}</span></td>
+        <td class="num">${money(p.amount)}</td></tr>`).join('')}</tbody></table></div>`
+    : '<div class="empty">No payments recorded.</div>';
+
+  renderPayConfirm();
+  watchReturnFromPayment();
+
+  g('adjustments').innerHTML = bill.adjustments.length ? `<div class="table-wrap"><table>
+      <tbody>${bill.adjustments.map((a) => `<tr><td>${dateText(a.adjusted_on)}<br><span style="font-size:.82rem;color:var(--ink-soft)">${esc(a.reason)}</span></td>
+        <td class="num">${money(a.amount)}</td></tr>`).join('')}</tbody></table></div>`
+    : '<div class="empty">No adjustments applied.</div>';
+
+  g('wk-status').textContent = '';
+
+  g('trail').innerHTML = bill.trail.length ? `<table>
+      <thead><tr><th>When</th><th>Who</th><th>Action</th><th>Detail</th></tr></thead>
+      <tbody>${bill.trail.map((t) => `<tr><td>${esc(t.at)}</td><td>${esc(t.username || '')}</td>
+        <td>${esc(t.action)}</td><td>${esc(t.detail || '')}</td></tr>`).join('')}</tbody></table>`
+    : '<div class="empty">No changes recorded yet.</div>';
+
+  renderApprovals();
+  renderInvoicePanel('bill', id, me);
+  renderTaxInvoice(me);
+  if (readOnly(me) || !bill.editable) disableEditing();
+  preview();
+}
+
+g('method').onchange = () => { methodView(); preview(); scheduleAutosave(); };
+['dashboard_daily_baseline','agreed_savings_pct','actual_kwh','ines_pct','client_pct','previous_balance','interest_charged']
+  .forEach((f) => (g(f).oninput = () => { preview(); scheduleAutosave(); }));
+['bill_date', 'due_date', 'notes'].forEach((f) => (g(f).oninput = scheduleAutosave));
+
+g('apply-hours').onclick = () => {
+  const h = g('bulk-hours').value;
+  document.querySelectorAll('#daily .d-hours').forEach((el) => (el.value = h));
+  preview();
+  scheduleAutosave();
+};
+
+g('pull-dashboard').onclick = async () => {
+  if (!bill.project.family_id) {
+    return toast('This project isn\u2019t linked to the dashboard yet — link it from the project page first.', true);
+  }
+  try {
+    const r = await api(`/api/bills/${id}/pull-dashboard`, { method: 'POST' });
+    g('actual_kwh').value = r.actual_kwh;
+    g('dashboard_daily_baseline').value = r.dashboard_daily_baseline;
+    // Leave the baseline method as-is — pulling consumption shouldn't change
+    // which method the billing officer already selected for this bill.
+    r.daily.forEach((d) => {
+      const row = document.querySelector(`#daily tr[data-date="${d.day_date}"]`);
+      if (row) row.querySelector('.d-kwh').value = d.actual_kwh;
+    });
+    methodView();
+    toast('Pulled from the M-Carbon Dashboard — review the baseline before saving.');
+    preview();
+    scheduleAutosave();
+  } catch (e) { toast(e.message, true); }
+};
+
+g('add-line').onclick = () => { lines.push({ label: '', rate: '', time_from: '', time_to: '', kwh: '' }); renderLines(); scheduleAutosave(); };
+
+g('load-rates').onclick = () => {
+  // Rates that carry an active-hours window on the project (e.g. Solar
+  // 08:00–16:00) come in ready to auto-split; a rate with no window falls
+  // back to manual kWh entry, same as before.
+  lines = (bill.contract.rates || []).map((r) => ({
+    label: r.label, rate: r.rate, time_from: r.time_from || '', time_to: r.time_to || '', kwh: ''
+  }));
+  if (!lines.length) return toast('This project has no rates configured yet.', true);
+  renderLines(); preview(); scheduleAutosave();
+};
+
+g('single-rate').onclick = () => {
+  const savings = latest?.energy_savings_kwh ?? 0;
+  const first = bill.contract.rates?.[0];
+  lines = [{ label: first?.label || 'Applicable rate', rate: first?.rate ?? '', time_from: '', time_to: '', kwh: savings }];
+  renderLines(); preview(); scheduleAutosave();
+};
+
+g('pay-form').onsubmit = async (e) => {
+  e.preventDefault();
+  if (!(await saveWorksheet(false))) return; // don't discard unsaved worksheet edits
+  try {
+    await api(`/api/bills/${id}/payments`, { method: 'POST', body: {
+      paid_on: g('pay-date').value, amount: g('pay-amount').value, reference: g('pay-ref').value
+    }});
+    e.target.reset(); await load(); toast('Payment recorded');
+  } catch (err) { toast(err.message, true); }
+};
+
+/* Online payment through PayMongo: the server works out the amount and returns the checkout URL. */
+async function payOnline() {
+  const btn = g('pay-online');
+  btn.disabled = true;
+  try {
+    const r = await api(`/api/online-payments/bills/${id}/checkout`, { method: 'POST' });
+    window.location.href = r.checkout_url;
+  } catch (err) { toast(err.message, true); btn.disabled = false; }
+}
+
+/* Back from the payment page (?paid=1). The redirect proves nothing - the payment only shows up once
+   PayMongo's confirmation reaches the server - so wait a little for it. */
+let paidWatch = 0;
+function watchReturnFromPayment() {
+  if (new URLSearchParams(location.search).get('paid') !== '1') return;
+  if (bill.balance_due <= 0) { toast('Payment received. Thank you!'); history.replaceState(null, '', '/bill.html?id=' + id); return; }
+  if (paidWatch++ === 0) toast('Waiting for the payment to be confirmed...');
+  if (paidWatch <= 10) setTimeout(async () => { await load(); }, 4000);
+}
+
+/* Finance confirms the money was received; only then can the client see the Sales Invoice. */
+function renderPayConfirm() {
+  const el = g('pay-confirm');
+  if (!el) return;
+  const canConfirm = ['admin', 'finance_hr'].includes(me.role);
+  if (bill.status !== 'issued') { el.hidden = true; return; }
+  el.hidden = false;
+  let html;
+  if (bill.invoice_ready) {
+    html = `<div class="notice good" style="margin:0 0 8px">Payment confirmed by ${esc(bill.payment_confirmed_by || 'finance')} on ${esc(String(bill.payment_confirmed_at || '').slice(0, 10))}. The client can now view the Sales Invoice.</div>`
+      + (canConfirm ? '<button type="button" class="quiet" id="unconfirm-pay">Withdraw confirmation</button>' : '');
+  } else if (canConfirm) {
+    html = bill.fully_paid
+      ? '<p style="margin:0 0 8px">The recorded payments cover this bill. Confirm the money was received to release the Sales Invoice to the client.</p><button type="button" class="primary" id="confirm-pay">Confirm payment received</button>'
+      : '<p style="margin:0;color:var(--ink-soft)">Once the full payment is recorded, you can confirm it here to release the Sales Invoice to the client.</p>';
+  } else {
+    html = '<p style="margin:0;color:var(--ink-soft)">The Sales Invoice is released once finance confirms the payment.</p>';
+  }
+  el.innerHTML = html;
+  if (g('confirm-pay')) g('confirm-pay').onclick = async () => {
+    if (!confirm('Confirm that the full payment for ' + bill.statement_no + ' has been received? The client will then be able to view the Sales Invoice.')) return;
+    try { await api(`/api/bills/${id}/confirm-payment`, { method: 'POST' }); await load(); toast('Payment confirmed'); } catch (err) { toast(err.message, true); }
+  };
+  if (g('unconfirm-pay')) g('unconfirm-pay').onclick = async () => {
+    if (!confirm('Withdraw the payment confirmation? The client will no longer see the Sales Invoice.')) return;
+    try { await api(`/api/bills/${id}/unconfirm-payment`, { method: 'POST' }); await load(); toast('Confirmation withdrawn'); } catch (err) { toast(err.message, true); }
+  };
+}
+
+g('adj-form').onsubmit = async (e) => {
+  e.preventDefault();
+  if (!(await saveWorksheet(false))) return; // don't discard unsaved worksheet edits
+  try {
+    await api(`/api/bills/${id}/adjustments`, { method: 'POST', body: {
+      adjusted_on: g('adj-date').value, amount: g('adj-amount').value, reason: g('adj-reason').value
+    }});
+    e.target.reset(); await load(); toast('Adjustment applied');
+  } catch (err) { toast(err.message, true); }
+};
+
+(async () => { me = await shell(); await load(); })().catch((e) => toast(e.message, true));
+</script>
+</body>
+</html>
