@@ -72,7 +72,10 @@ function build(bill, vatMode) {
   if (amount < 1) problems.push('The billed amount is zero, so there is nothing to invoice.');
 
   const today = bolta.kstToday();
-  const supplyDate = (bill.period_end && bill.period_end <= today) ? bill.period_end : today;
+  let supplyDate = (bill.period_end && bill.period_end <= today) ? bill.period_end : today;
+  // Bolta only accepts a supply date inside the month of the write date (first of the month .. today).
+  const monthStart = today.slice(0, 7) + '-01';
+  if (supplyDate < monthStart) supplyDate = monthStart;
   const purpose = invoiceReady(bill.id) ? 'RECEIPT' : 'CLAIM'; // paid & confirmed → 영수, otherwise 청구
   const itemName = clip(`M-Carbon LED 절감 정산 ${bill.statement_no} (${bill.period_start} ~ ${bill.period_end})`, 100);
 
