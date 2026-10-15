@@ -86,6 +86,7 @@ const NAV = [
   { href: '/monitor.html', label: 'Live monitor', icon: 'monitor' },
   { href: '/audit.html', label: 'Activity log', icon: 'activity' },
   { href: '/users.html', label: 'Users', icon: 'users', adminOnly: true },
+  { href: '/bank.html', label: 'Bank reconciliation', icon: 'payment', roles: ['admin', 'finance_hr'] },
   { href: '/payment-methods.html', label: 'Payment method', icon: 'payment' }
 ];
 
@@ -106,7 +107,7 @@ async function shell() {
   const roleText = { admin: 'Administrator', billing_officer: 'Billing officer', finance_hr: 'Finance / HR', viewer: 'Viewer' }[me.role] || me.role;
   rail.innerHTML = `
     <div class="mark"><b>M-Carbon System</b><span>Mirae ESP Solutions</span></div>
-    <nav>${NAV.filter((n) => (!n.adminOnly || me.role === 'admin') && (me.role !== 'viewer' || VIEWER_PAGES.includes(n.href)))
+    <nav>${NAV.filter((n) => (!n.adminOnly || me.role === 'admin') && (!n.roles || n.roles.includes(me.role)) && (me.role !== 'viewer' || VIEWER_PAGES.includes(n.href)))
       .map((n) => `<a href="${n.href}" class="${here === n.href || (n.also || []).includes(here) ? 'on' : ''}">${navIcon(n.icon)}<span>${n.label}</span></a>`)
       .join('')}</nav>
     <div class="who">

@@ -1,0 +1,3 @@
+Copy these files over the same paths in your project.
+Then DELETE routes/online-payments.js.
+(.env here has the PAYMONGO_* lines removed; everything else is unchanged.)

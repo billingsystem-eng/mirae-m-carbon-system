@@ -6,6 +6,7 @@ const { requireRole, viewerScope, notViewer } = require('../middleware/auth');
 const canEdit = requireRole('admin');
 const audit = require('../lib/audit');
 const notify = require('../lib/notify');
+const bolta = require('../lib/bolta');
 
 const router = express.Router();
 
@@ -79,6 +80,42 @@ router.patch('/:id', canEdit, (req, res) => {
     .run(...CLIENT_FIELDS.map((f) => (b[f] === undefined ? existing[f] : b[f])), existing.id);
   audit.log(req, 'client', existing.id, 'update', `Updated client ${existing.name}`);
   res.json({ ok: true });
+});
+
+// Check a client's business registration number against the National Tax Service through Bolta.
+// Uses the number in the request (so it can be checked before saving) or the stored one. The cheap local
+// checksum runs first, so a typo never costs Bolta points. Korean clients only.
+router.post('/:id/verify-brn', requireRole('admin', 'finance_hr'), async (req, res) => {
+  const client = db.prepare('SELECT * FROM clients WHERE id = ?').get(req.params.id);
+  if (!client) return res.status(404).json({ error: 'Client not found.' });
+  if (client.addr_country && !/korea|한국|대한민국/i.test(client.addr_country)) {
+    return res.status(400).json({ error: 'The NTS check only applies to clients registered in Korea.' });
+  }
+  if (!bolta.enabled()) return res.status(400).json({ error: 'Bolta is not set up (BOLTA_API_KEY is empty).' });
+  const number = bolta.digits((req.body && req.body.number) || client.tin);
+  if (!bolta.validBrn(number)) {
+    return res.status(400).json({ error: 'That is not a valid 10-digit business registration number (the check digit does not match).' });
+  }
+  let out;
+  try {
+    out = await bolta.checkBusinessStatus(number);
+  } catch (e) {
+    const test = bolta.environment() === 'test';
+    const msg = e.status === 402 || e.status === 409 ? 'Not enough Bolta points. Top up in the Bolta developer center.'
+      : e.status === 429 ? 'Bolta is rate limiting lookups. Try again in a minute.'
+      : e.status === 503 || !e.status ? 'Bolta could not check the NTS right now. Try again shortly.'
+      : e.status === 400 && test ? 'The test key only answers the fixed numbers in Bolta’s guide (for example 100-00-00014). Use a live key to check real numbers.'
+      : e.message;
+    return res.status(e.status && e.status < 500 ? 400 : 502).json({ error: msg });
+  }
+  const reg = out.registration || {};
+  const tax = out.taxation || {};
+  db.prepare(`UPDATE clients SET brn_checked_number = ?, brn_status = ?, brn_tax_type = ?, brn_closed_on = ?,
+              brn_checked_at = datetime('now') WHERE id = ?`)
+    .run(number, reg.status || 'UNKNOWN', tax.type || null, reg.closedOn || null, client.id);
+  audit.log(req, 'client', client.id, 'brn_check', `NTS check of ${number}: ${reg.status || 'UNKNOWN'}`);
+  const fresh = db.prepare('SELECT brn_checked_number, brn_status, brn_tax_type, brn_closed_on, brn_checked_at FROM clients WHERE id = ?').get(client.id);
+  res.json({ ok: true, client: fresh });
 });
 
 router.delete('/:id', canEdit, (req, res) => {

@@ -31,7 +31,8 @@
             <div class="grid3">
               <div class="field"><label for="account_no">Account number</label><input id="account_no" data-f data-edit></div>
               <div class="field"><label for="name">Client name</label><input id="name" data-f data-edit></div>
-              <div class="field"><label for="tin">Business registration no.</label><input id="tin" data-f data-edit></div>
+              <div class="field"><label for="tin">Business registration no.</label><input id="tin" data-f data-edit>
+                <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap"><button type="button" class="quiet" id="verify-brn" data-edit>Verify with NTS</button><small id="brn-result" style="color:var(--ink-soft);font-size:.8rem"></small></div></div>
               <div class="field"><label for="representative_name">Representative name (대표자)</label><input id="representative_name" data-f data-edit></div>
               <div class="field"><label for="status">Account status</label><select id="status" data-f data-edit></select></div>
             </div>
@@ -150,8 +151,32 @@ async function load() {
         <td class="num">${money(b.amount_billed)}</td></tr>`).join('')}</tbody></table></div>`
     : '<div class="empty">No statements yet.</div>';
 
+  renderBrn();
   if (readOnlySetup(me)) disableEditing();
 }
+
+const BRN_STATUS = { ACTIVE: 'Active', SUSPENDED: 'Suspended', CLOSED: 'Closed', NOT_REGISTERED: 'Not registered', UNKNOWN: 'Unknown' };
+const BRN_TAX = { GENERAL: 'General taxpayer', SIMPLIFIED_RECEIPT_ISSUER: 'Simplified (receipts only)', SIMPLIFIED_TAX_INVOICE_ISSUER: 'Simplified (can issue tax invoices)',
+  SPECIAL_TAXPAYER: 'Special taxpayer', TAX_FREE: 'Tax-exempt', NONPROFIT: 'Nonprofit', UNIQUE_NUMBER_ORGANIZATION: 'Unique-number organization' };
+function renderBrn() {
+  const el = document.getElementById('brn-result');
+  const typed = (document.getElementById('tin').value || '').replace(/\D/g, '');
+  el.style.color = 'var(--ink-soft)';
+  if (!client.brn_checked_at) { el.textContent = 'Not verified yet'; return; }
+  if (client.brn_checked_number !== typed) { el.textContent = 'Number changed since the last check'; return; }
+  const bad = ['CLOSED', 'NOT_REGISTERED'].includes(client.brn_status);
+  el.style.color = bad ? '#b3261e' : client.brn_status === 'ACTIVE' ? '#1b7a3d' : '#9a6700';
+  el.textContent = [BRN_STATUS[client.brn_status] || client.brn_status,
+    client.brn_closed_on ? 'closed ' + client.brn_closed_on : '',
+    BRN_TAX[client.brn_tax_type] || '', 'checked ' + client.brn_checked_at.slice(0, 10)].filter(Boolean).join(' · ');
+}
+document.getElementById('tin').addEventListener('input', renderBrn);
+document.getElementById('verify-brn').onclick = async () => {
+  try {
+    const r = await api(`/api/clients/${id}/verify-brn`, { method: 'POST', body: { number: document.getElementById('tin').value } });
+    Object.assign(client, r.client); renderBrn(); toast('Checked with the NTS');
+  } catch (e) { toast(e.message, true); }
+};
 
 async function removeContact(cid) {
   if (!confirm('Remove this contact?')) return;

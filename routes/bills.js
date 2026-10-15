@@ -3,7 +3,6 @@ const { randomUUID: uuid } = require('crypto'); // built in; the uuid package is
 const db = require('../db');
 const { canEdit, requireRole, viewerScope } = require('../middleware/auth');
 const { balanceDue, fullyPaid, invoiceReady } = require('../lib/invoice-ready');
-const onlinePayments = require('./online-payments');
 const audit = require('../lib/audit');
 const { daysOverdue } = require('../lib/notify');
 const { computeBill, daysBetween, dateRange, ratioFor, round } = require('../lib/billing');
@@ -221,7 +220,6 @@ router.get('/:id', (req, res) => {
   }
   bill.fully_paid = fullyPaid(bill.id);
   bill.balance_due = balanceDue(bill.id);
-  bill.online_pay_enabled = onlinePayments.enabled();
   bill.invoice_ready = invoiceReady(bill.id);
   bill.suggested_previous_balance = outstandingBefore(bill.client_id, bill.period_start, bill.id);
   bill.suggested_interest = suggestedInterest(

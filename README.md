@@ -39,21 +39,6 @@ wiped on every deploy.
 A finalised statement can't be edited. **Create revision** copies it into a new linked
 statement (`…-R001`) and leaves the original on record.
 
-## Online payment (PayMongo)
-
-Clients can pay an issued bill from their login: **Pay ₱… online** on the bill page opens
-PayMongo's hosted checkout (GCash, cards, QR Ph — whatever you enable in PayMongo).
-
-- The server works out the amount owed; the browser never sends it.
-- The payment is recorded only when PayMongo's signed webhook arrives
-  (`POST /api/online-payments/webhook`) — never from the redirect back to the site. Retried
-  deliveries are de-duplicated by event id.
-- It is recorded as a normal payment (method "PayMongo online") and shows in the audit trail.
-  Finance still confirms it before the client sees the Sales Invoice, unless
-  `PAYMONGO_AUTO_CONFIRM=true`.
-- Setup is in `.env.example`. Test with `sk_test_…` keys first. The webhook URL must be public
-  HTTPS (on localhost use a tunnel such as ngrok).
-
 ## Baseline methods
 
 | Method | Formula |

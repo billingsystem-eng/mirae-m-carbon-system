@@ -272,29 +272,6 @@ db.exec(`CREATE TABLE IF NOT EXISTS invoice_files (
 );
 CREATE INDEX IF NOT EXISTS idx_invoice_files ON invoice_files(entity, entity_id);`);
 
-// Online payments through the PayMongo hosted checkout. One row per checkout session we create;
-// the webhook marks it paid and records the payment on the bill. webhook_events de-duplicates
-// PayMongo's retried deliveries so a payment can never be recorded twice.
-db.exec(`CREATE TABLE IF NOT EXISTS online_payments (
-  id INTEGER PRIMARY KEY,
-  bill_id INTEGER NOT NULL REFERENCES bills(id) ON DELETE CASCADE,
-  reference TEXT NOT NULL UNIQUE,             -- reference_number we send to PayMongo
-  session_id TEXT,                            -- PayMongo checkout session id (cs_...)
-  amount REAL NOT NULL,                       -- pesos requested
-  status TEXT NOT NULL DEFAULT 'pending',     -- pending | paid
-  checkout_url TEXT,
-  created_by TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  paid_at TEXT,
-  provider_payment_id TEXT
-);
-CREATE INDEX IF NOT EXISTS idx_online_payments_bill ON online_payments(bill_id);
-CREATE INDEX IF NOT EXISTS idx_online_payments_session ON online_payments(session_id);
-CREATE TABLE IF NOT EXISTS webhook_events (
-  event_id TEXT PRIMARY KEY,
-  received_at TEXT NOT NULL DEFAULT (datetime('now'))
-);`);
-
 // Payment chat between ONE client login and Mirae ESP staff. A conversation is identified by
 // (bill, client login): client_user_id is the viewer who owns it. Two logins of the same client
 // never see each other's messages; staff see every conversation.
@@ -418,6 +395,38 @@ CREATE INDEX IF NOT EXISTS idx_tax_invoices_key ON tax_invoices(issuance_key);`)
 // Optional invoice details of a client (업태 / 종목).
 addColumn('clients', 'business_type TEXT');
 addColumn('clients', 'business_item TEXT');
+// Result of the last NTS business-status check (Bolta). brn_checked_number is the number that was checked,
+// so a later edit of the registration number makes the stored result stale instead of silently wrong.
+addColumn('clients', 'brn_checked_number TEXT');
+addColumn('clients', 'brn_status TEXT');       // ACTIVE | SUSPENDED | CLOSED | NOT_REGISTERED | UNKNOWN
+addColumn('clients', 'brn_tax_type TEXT');     // GENERAL | SIMPLIFIED_* | TAX_FREE | ...
+addColumn('clients', 'brn_closed_on TEXT');
+addColumn('clients', 'brn_checked_at TEXT');
+// Bank reconciliation: deposits read from the company bank accounts connected in Bolta. Rows from a test_ key
+// and from a live_ key are kept apart (id is '<env>:<Bolta id>'), so sample data never mixes with real deposits.
+db.exec(`CREATE TABLE IF NOT EXISTS bank_transactions (
+  id TEXT PRIMARY KEY,
+  env TEXT NOT NULL,                          -- test | live
+  bolta_id TEXT NOT NULL,
+  bank_account_id TEXT, bank_code TEXT, account_number TEXT,
+  transaction_at TEXT NOT NULL,               -- UTC, as Bolta sends it
+  paid_on TEXT NOT NULL,                      -- the same moment as a Korean (KST) date
+  type TEXT NOT NULL,                         -- DEPOSIT | WITHDRAW | OTHER
+  amount REAL NOT NULL DEFAULT 0, balance_after REAL, description TEXT, currency TEXT,
+  match_status TEXT NOT NULL DEFAULT 'unmatched',   -- unmatched | matched | ignored
+  bill_id INTEGER REFERENCES bills(id), payment_id INTEGER REFERENCES payments(id), applied_amount REAL,
+  matched_by TEXT, matched_at TEXT,
+  removed_at TEXT,                            -- Bolta later reported the transaction removed (kept if it was already matched)
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_bank_tx_status ON bank_transactions(env, match_status, transaction_at);
+CREATE TABLE IF NOT EXISTS bank_sync_state (key TEXT PRIMARY KEY, value TEXT, updated_at TEXT NOT NULL DEFAULT (datetime('now')));`);
+// Deleting a bill (only void bills can be deleted) also deletes its payments. Hand any bank deposit that was matched to it
+// back to "To match" first, so the deposit is not left pointing at a bill or payment that no longer exists.
+db.exec(`CREATE TRIGGER IF NOT EXISTS trg_bank_unmatch_on_bill_delete BEFORE DELETE ON bills BEGIN
+  UPDATE bank_transactions SET match_status = 'unmatched', bill_id = NULL, payment_id = NULL, applied_amount = NULL,
+    matched_by = NULL, matched_at = NULL WHERE bill_id = OLD.id;
+END;`);
 // Requests made with the first, console-only version of this integration were stored on the bill itself.
 // Carry each one over (once) so the new bill panel shows it and Refresh can ask Bolta how it ended.
 db.exec(`INSERT INTO tax_invoices (bill_id, client_reference_id, issuance_key, environment, status, write_date, tax_type, supply_cost, tax, purpose, created_by, created_at)

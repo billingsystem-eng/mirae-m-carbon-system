@@ -16,9 +16,9 @@ const paymentMethodsRouter = require('./routes/payment-methods');
 const psgcRouter = require('./routes/psgc');
 const quotationsRouter = require('./routes/quotations');
 const invoicesRouter = require('./routes/invoices');
-const onlinePayments = require('./routes/online-payments');
 const messagesRouter = require('./routes/messages');
 const taxInvoices = require('./routes/tax-invoices');
+const bankRouter = require('./routes/bank');
 
 const avatarsRouter = require('./routes/avatars');
 
@@ -32,9 +32,6 @@ const PORT = process.env.PORT || 3000;
 const PROD = process.env.NODE_ENV === 'production';
 
 app.set('trust proxy', 1);
-// PayMongo webhook: needs the RAW body (for the signature check), so it is mounted before express.json.
-// No session here - PayMongo calls it directly; the signature is what authenticates it.
-app.post('/api/online-payments/webhook', express.raw({ type: () => true, limit: '1mb' }), onlinePayments.webhook);
 
 // Bolta (tax invoice) result webhook: public, no session. The secret token in its address authenticates it:
 // /api/bolta/webhook/<token>  or  /api/bolta/webhook?token=<token>.
@@ -95,11 +92,10 @@ app.use('/api/quotations', requireAuth, quotationsRouter);
 app.use('/api/invoices', requireAuth, invoicesRouter);
 app.use('/api/notifications', requireAuth, notificationsRouter);   // payment reminders (due soon / overdue)
 app.use('/api/tax-invoices', requireAuth, taxInvoices.router);   // Korean electronic tax invoices via Bolta
+app.use('/api/bank', requireAuth, bankRouter);   // bank reconciliation (deposits from Bolta-connected accounts)
 app.use('/api/messages', requireAuth, messagesRouter);   // payment chat: client <-> finance, per bill
 
 app.use('/api/avatars', requireAuth, avatarsRouter);   // profile pictures
-
-app.use('/api/online-payments', requireAuth, onlinePayments.router);   // PayMongo checkout   // scanned Sales Invoice copies
 
 app.use(express.static(path.join(__dirname, 'public')));
 

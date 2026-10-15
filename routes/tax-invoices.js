@@ -61,6 +61,10 @@ function build(bill, vatMode) {
   const contacts = db.prepare('SELECT * FROM contacts WHERE client_id = ? ORDER BY is_primary DESC, id').all(bill.client_id);
   const clientBrn = bolta.digits(client.tin);
   if (!bolta.validBrn(clientBrn)) problems.push(`${client.name}: the business registration no. is missing or not a valid 10-digit number (edit it on the client page).`);
+  // Last NTS check (Clients → Verify with NTS). Only trusted if it was run on this exact number.
+  if (client.brn_checked_number === clientBrn && ['CLOSED', 'NOT_REGISTERED'].includes(client.brn_status)) {
+    problems.push(`${client.name}: the NTS says this business registration no. is ${client.brn_status === 'CLOSED' ? 'closed' + (client.brn_closed_on ? ' (' + client.brn_closed_on + ')' : '') : 'not registered'}. Check the number on the client page.`);
+  }
   if (!clip(client.representative_name, 30)) problems.push(`${client.name}: add the representative’s name (대표자명) on the client page.`);
   if (clip(client.name, 70).length !== String(client.name).trim().length) problems.push(`${client.name}: the company name is longer than 70 characters, which tax invoices do not allow.`);
   const managers = contacts.filter((c) => c.email && EMAIL_RE.test(c.email.trim()) && c.email.trim().length <= 40)

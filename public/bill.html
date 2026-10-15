@@ -367,9 +367,6 @@ function renderActions() {
   if (canReturn) parts.push('<button id="send-back">Return to draft</button>');
   if (['final', 'issued'].includes(bill.status) && !readOnly(me)) parts.push('<button id="revise">Create revision</button>');
   parts.push(`<a class="btn" href="/statement.html?id=${bill.id}">View statement</a>`);
-  if (me.role === 'viewer' && bill.status === 'issued' && bill.online_pay_enabled && bill.balance_due > 0) {
-    parts.push(`<button class="primary" id="pay-online">Pay ${money(bill.balance_due)} online</button>`);
-  }
   if (me.role !== 'viewer' || bill.invoice_ready) parts.push(`<a class="btn" href="/invoice.html?id=${bill.id}">View sales invoice</a>`);
   if (canVoid) parts.push('<button class="danger" id="void">Void this bill</button>');
   g('actions').innerHTML = parts.join('');
@@ -379,7 +376,6 @@ function renderActions() {
   if (g('send-back')) g('send-back').onclick = sendBack;
   if (g('revise')) g('revise').onclick = revise;
   if (g('void')) g('void').onclick = voidBill;
-  if (g('pay-online')) g('pay-online').onclick = payOnline;
 }
 
 function renderApprovals() {
@@ -610,7 +606,6 @@ async function load() {
     : '<div class="empty">No payments recorded.</div>';
 
   renderPayConfirm();
-  watchReturnFromPayment();
 
   g('adjustments').innerHTML = bill.adjustments.length ? `<div class="table-wrap"><table>
       <tbody>${bill.adjustments.map((a) => `<tr><td>${dateText(a.adjusted_on)}<br><span style="font-size:.82rem;color:var(--ink-soft)">${esc(a.reason)}</span></td>
@@ -695,26 +690,6 @@ g('pay-form').onsubmit = async (e) => {
     e.target.reset(); await load(); toast('Payment recorded');
   } catch (err) { toast(err.message, true); }
 };
-
-/* Online payment through PayMongo: the server works out the amount and returns the checkout URL. */
-async function payOnline() {
-  const btn = g('pay-online');
-  btn.disabled = true;
-  try {
-    const r = await api(`/api/online-payments/bills/${id}/checkout`, { method: 'POST' });
-    window.location.href = r.checkout_url;
-  } catch (err) { toast(err.message, true); btn.disabled = false; }
-}
-
-/* Back from the payment page (?paid=1). The redirect proves nothing - the payment only shows up once
-   PayMongo's confirmation reaches the server - so wait a little for it. */
-let paidWatch = 0;
-function watchReturnFromPayment() {
-  if (new URLSearchParams(location.search).get('paid') !== '1') return;
-  if (bill.balance_due <= 0) { toast('Payment received. Thank you!'); history.replaceState(null, '', '/bill.html?id=' + id); return; }
-  if (paidWatch++ === 0) toast('Waiting for the payment to be confirmed...');
-  if (paidWatch <= 10) setTimeout(async () => { await load(); }, 4000);
-}
 
 /* Finance confirms the money was received; only then can the client see the Sales Invoice. */
 function renderPayConfirm() {

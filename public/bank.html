@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bank reconciliation — M-Carbon System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/app.css">
+<link rel="icon" type="image/png" href="/favicon.png">
+<style>
+/* Bank reconciliation. Scoped under .bk so the other pages are untouched. */
+.bk .banner { padding: 10px 14px; border-radius: var(--radius); margin-bottom: 14px; font-size: .9rem; border: 1px solid var(--rule-strong); background: #f3f6f2; }
+.bk .banner.test { background: var(--amber-tint); color: var(--amber); border-color: #e2cf9f; }
+.bk .banner.bad { background: var(--alert-tint); color: var(--alert); border-color: #e3c4c0; }
+.bk .accts { display: flex; flex-wrap: wrap; gap: 10px; padding: 12px 16px; }
+.bk .acct { border: 1px solid var(--rule); border-radius: 8px; padding: 8px 12px; font-size: .86rem; min-width: 220px; }
+.bk .acct b { display: block; font-weight: 600; }
+.bk .acct span { color: var(--ink-soft); }
+.bk .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.bk .chip { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--surface); color: var(--ink-soft); font-weight: 500; font-size: .88rem; cursor: pointer; box-shadow: none !important; transform: none !important; }
+.bk .chip:hover { background: #f4f7f3; color: var(--ink); border-color: var(--rule-strong); }
+.bk .chip[aria-pressed="true"], .bk .chip[aria-pressed="true"]:hover { background: var(--ink); border-color: var(--ink); color: #fff; }
+.bk td.desc small { display: block; color: var(--ink-soft); font-size: .8rem; }
+.bk .sug { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.bk .sug button { text-align: left; }
+.bk .why { color: var(--ink-soft); font-size: .78rem; display: block; margin-top: 2px; }
+.bk .tag { display: inline-block; font-size: .72rem; font-weight: 600; padding: 1px 7px; border-radius: 999px; margin-right: 6px; border: 1px solid var(--rule-strong); }
+.bk .tag.strong { background: var(--signal); color: #fff; border-color: var(--signal); }
+.bk .tag.likely { background: var(--signal-tint); color: var(--signal); border-color: #b6d5cc; }
+.bk .tag.name { background: var(--amber-tint); color: var(--amber); border-color: #e2cf9f; }
+.bk .out { color: var(--alert); }
+.bk .meta { color: var(--ink-soft); font-size: .84rem; }
+.bk dialog { border: 1px solid var(--rule-strong); border-radius: var(--radius); padding: 18px; width: min(480px, 92vw); }
+.bk dialog::backdrop { background: rgba(20, 30, 25, .35); }
+.bk dialog .field { margin-bottom: 12px; }
+.bk dialog select, .bk dialog input[type="number"] { width: 100%; }
+.bk dialog .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+.bk dialog .sum { background: #f3f6f2; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; font-size: .9rem; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="rail"></aside>
+  <main class="bk">
+    <div class="page-head">
+      <div>
+        <h1>Bank reconciliation</h1>
+        <p>Deposits from the bank accounts connected in Bolta, matched to issued bills. Nothing is recorded until you confirm a match.</p>
+      </div>
+      <div class="actions">
+        <button type="button" id="sync" title="Asks Bolta to re-read the bank. Bolta allows this once every 30 minutes; new data appears about 5 minutes later.">Refresh from bank</button>
+        <button type="button" class="primary" id="pull">Fetch new transactions</button>
+      </div>
+    </div>
+
+    <div id="notices"></div>
+
+    <div class="panel" id="accounts-panel" hidden>
+      <header><h2>Connected accounts</h2></header>
+      <div class="accts" id="accounts"></div>
+    </div>
+
+    <div class="chips" id="chips" role="group" aria-label="Show"></div>
+    <div class="panel" id="list"></div>
+  </main>
+</div>
+
+<dialog id="md">
+  <h2 style="margin:0 0 10px">Match this deposit</h2>
+  <div class="sum" id="md-sum"></div>
+  <div class="field"><label for="md-bill">Bill</label><select id="md-bill"></select></div>
+  <div class="field"><label for="md-amount">Amount to apply to the bill (₩)</label><input id="md-amount" type="number" min="1" step="1">
+    <small class="meta" id="md-note"></small></div>
+  <label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="md-confirm" style="margin-top:3px">
+    <span>Also confirm the payment as received (releases the Sales Invoice to the client once the bill is fully paid)</span></label>
+  <div class="row"><button type="button" id="md-cancel">Cancel</button><button type="button" class="primary" id="md-ok">Record payment</button></div>
+</dialog>
+
+<script src="/js/i18n.js"></script>
+<script src="/js/app.js"></script>
+<script>
+(() => {
+const $ = (id) => document.getElementById(id);
+const TABS = [['unmatched', 'To match'], ['matched', 'Matched'], ['ignored', 'Ignored'], ['other', 'Withdrawals & other']];
+let OV = null, TAB = 'unmatched', ROWS = [], OPEN = null, CUR = null, BUSY = false;
+
+const kstTime = (iso) => new Date(new Date(iso).getTime() + 9 * 3600 * 1000).toISOString().slice(0, 16).replace('T', ' ');
+const when = (iso) => (iso ? new Date(iso).toLocaleString(LOCALE()) : 'never');
+
+function renderTop() {
+  const n = [];
+  if (!OV.enabled) n.push('<div class="banner bad">Bolta is not set up yet. Add <b>BOLTA_API_KEY</b> to the server settings, and connect your bank account in the Bolta dashboard (Standard plan or higher).</div>');
+  if (OV.enabled && OV.environment === 'test') n.push('<div class="banner test"><b>Test key:</b> these are Bolta’s fixed sample transactions, not your bank. Matching one still records a real payment in this system, so only try it on a test bill.</div>');
+  if (OV.accountsError) n.push(`<div class="banner bad">${esc(OV.accountsError)}</div>`);
+  $('notices').innerHTML = n.join('');
+  $('accounts-panel').hidden = !OV.accounts.length;
+  $('accounts').innerHTML = OV.accounts.map((a) => `<div class="acct"><b>${esc(a.name || a.bankName)}</b>
+    <span>${esc(a.bankName)} · ${esc(a.accountNumber)}</span><br>
+    <span>${a.syncStatus === 'IN_PROGRESS' ? 'Refreshing from the bank…' : a.syncStatus === 'FAILED' ? 'Last refresh failed' : 'Bolta last read the bank'} ${a.lastSyncedAt ? when(a.lastSyncedAt) : '(not yet)'}</span></div>`).join('');
+  $('chips').innerHTML = TABS.map(([k, label]) => `<button type="button" class="chip" data-k="${k}" aria-pressed="${k === TAB}">${label}${OV.counts[k] ? ` (${OV.counts[k]})` : ''}</button>`).join('') +
+    `<span class="meta" style="margin-left:auto;align-self:center">${OV.lastPulledAt ? 'Fetched ' + when(OV.lastPulledAt) : 'Nothing fetched yet — press “Fetch new transactions”'}</span>`;
+}
+
+function sugCell(r) {
+  if (!r.suggestions.length) return '<span class="meta">No obvious bill — choose one by hand</span>';
+  return '<div class="sug">' + r.suggestions.map((s) => `<div><button type="button" class="quiet" data-match="${esc(r.id)}" data-bill="${s.bill_id}">
+      <span class="tag ${s.confidence}">${{ strong: 'Strong', likely: 'Likely', name: 'Name only' }[s.confidence]}</span>${esc(s.statement_no)} · ${esc(s.client_name)} · owes ${money(s.due)}</button>
+      <span class="why">${esc(s.reasons.join(' · '))}</span></div>`).join('') + '</div>';
+}
+
+function renderRows() {
+  if (!ROWS.length) { $('list').innerHTML = `<div class="empty">${{ unmatched: 'No deposits waiting to be matched.', matched: 'Nothing matched yet.', ignored: 'Nothing ignored.', other: 'No withdrawals or other transactions.' }[TAB]}</div>`; return; }
+  const head = { unmatched: ['Date', 'Bank line', 'Amount', 'Likely bill', ''], matched: ['Date', 'Bank line', 'Deposit', 'Matched to', ''], ignored: ['Date', 'Bank line', 'Amount', '', ''], other: ['Date', 'Bank line', 'Amount', '', ''] }[TAB];
+  $('list').innerHTML = `<div class="table-wrap"><table><thead><tr>${head.map((h, i) => `<th${i === 2 ? ' class="num"' : ''}>${h}</th>`).join('')}</tr></thead><tbody>` + ROWS.map((r) => {
+    const out = r.type !== 'DEPOSIT';
+    const amt = `<td class="num${out ? ' out' : ''}">${out ? '−' : ''}${money(r.amount)}</td>`;
+    const base = `<td>${esc(kstTime(r.transaction_at))}</td><td class="desc">${esc(r.description || '—')}<small>${esc(r.account_number || '')}</small></td>${amt}`;
+    if (TAB === 'unmatched') return `<tr>${base}<td>${sugCell(r)}</td><td class="num"><button type="button" class="quiet" data-match="${esc(r.id)}">Choose bill…</button> <button type="button" class="quiet" data-ignore="${esc(r.id)}">Not a client payment</button></td></tr>`;
+    if (TAB === 'matched') return `<tr>${base}<td><a href="/bill.html?id=${r.bill_id}">${esc(r.statement_no || '')}</a> · ${esc(r.client_name || '')}<br><span class="meta">${money(r.applied_amount)} applied${r.applied_amount < r.amount ? ` · ${money(r.amount - r.applied_amount)} not applied (VAT or overpayment)` : ''} · by ${esc(r.matched_by || '')}</span>${r.removed_at ? '<br><span class="tag name">Bolta later removed this transaction — check the payment</span>' : ''}</td><td></td></tr>`;
+    if (TAB === 'ignored') return `<tr>${base}<td></td><td class="num"><button type="button" class="quiet" data-restore="${esc(r.id)}">Put back</button></td></tr>`;
+    return `<tr>${base}<td></td><td></td></tr>`;
+  }).join('') + '</tbody></table></div>';
+}
+
+async function load() {
+  const [ov, tx] = await Promise.all([api('/api/bank/overview'), api('/api/bank/transactions?status=' + TAB)]);
+  OV = ov; ROWS = tx.transactions; renderTop(); renderRows();
+}
+const guard = (fn) => async (...a) => { if (BUSY) return; BUSY = true; try { await fn(...a); } catch (e) { toast(e.message, true); } BUSY = false; };
+
+$('chips').addEventListener('click', guard(async (e) => { const b = e.target.closest('.chip'); if (!b) return; TAB = b.dataset.k; await load(); }));
+
+$('pull').onclick = guard(async () => {
+  const r = await api('/api/bank/pull', { method: 'POST' });
+  toast(r.changed || r.removed ? `${r.changed} new or changed, ${r.removed} removed` : 'Already up to date');
+  await load();
+});
+$('sync').onclick = guard(async () => {
+  await api('/api/bank/sync-request', { method: 'POST' });
+  toast('Bolta is re-reading the bank. Press “Fetch new transactions” in about 5 minutes.');
+  await load();
+});
+
+// ---- matching dialog
+async function openMatch(id, billId) {
+  CUR = ROWS.find((r) => r.id === id); if (!CUR) return;
+  if (!OPEN) OPEN = (await api('/api/bank/open-bills')).bills;
+  const sug = new Map((CUR.suggestions || []).map((s) => [s.bill_id, s]));
+  const opt = (b) => `<option value="${b.id}" data-due="${b.due}">${esc(b.statement_no)} · ${esc(b.client_name)} · owes ${money(b.due)}</option>`;
+  $('md-bill').innerHTML = (sug.size ? `<optgroup label="Suggested">${[...sug.keys()].map((k) => opt(OPEN.find((b) => b.id === k) || { id: k, statement_no: sug.get(k).statement_no, client_name: sug.get(k).client_name, due: sug.get(k).due })).join('')}</optgroup>` : '') +
+    `<optgroup label="Other open bills">${OPEN.filter((b) => !sug.has(b.id)).map(opt).join('')}</optgroup>`;
+  if (billId) $('md-bill').value = String(billId);
+  $('md-sum').innerHTML = `<b>${money(CUR.amount)}</b> on ${esc(kstTime(CUR.transaction_at))}<br>${esc(CUR.description || 'no description')}`;
+  $('md-confirm').checked = false;
+  syncAmount();
+  $('md').showModal();
+}
+function syncAmount() {
+  const o = $('md-bill').selectedOptions[0];
+  const due = o ? Number(o.dataset.due) : 0;
+  $('md-amount').value = o ? Math.min(CUR.amount, due) : '';
+  const extra = o ? CUR.amount - Math.min(CUR.amount, due) : 0;
+  $('md-note').textContent = o ? (extra > 0 ? `${money(extra)} of the deposit will not be applied to the bill (for example the VAT on the tax invoice, or an overpayment).` : (CUR.amount < due ? 'A part payment — the bill will still owe the rest.' : '')) : 'No open bills.';
+}
+$('md-bill').onchange = syncAmount;
+$('md-cancel').onclick = () => $('md').close();
+$('md-ok').onclick = guard(async () => {
+  if (!$('md-bill').value) { toast('Choose a bill first.', true); return; }
+  if (OV.environment === 'test' && !confirm('This is Bolta test data. Recording it adds a real payment to the bill you chose. Continue?')) return;
+  const r = await api(`/api/bank/transactions/${encodeURIComponent(CUR.id)}/match`, { method: 'POST',
+    body: { bill_id: Number($('md-bill').value), amount: Number($('md-amount').value), confirm: $('md-confirm').checked } });
+  $('md').close(); OPEN = null;
+  toast(r.total_due <= 0 ? 'Payment recorded — the bill is fully paid' + (r.confirmed ? ' and confirmed' : '') : 'Payment recorded');
+  await load();
+});
+
+$('list').addEventListener('click', guard(async (e) => {
+  const m = e.target.closest('[data-match]'), ig = e.target.closest('[data-ignore]'), rs = e.target.closest('[data-restore]');
+  if (m) return openMatch(m.dataset.match, m.dataset.bill ? Number(m.dataset.bill) : null);
+  if (ig) { if (!confirm('Mark this deposit as not a client payment? It stays available under “Ignored”.')) return; await api(`/api/bank/transactions/${encodeURIComponent(ig.dataset.ignore)}/ignore`, { method: 'POST' }); await load(); }
+  if (rs) { await api(`/api/bank/transactions/${encodeURIComponent(rs.dataset.restore)}/restore`, { method: 'POST' }); await load(); }
+}));
+
+(async () => {
+  const me = await shell();
+  if (!['admin', 'finance_hr'].includes(me.role)) { location.href = '/dashboard.html'; return; }
+  await load();
+})().catch((e) => toast(e.message, true));
+})();
+</script>
+</body>
+</html>
