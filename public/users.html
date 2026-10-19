@@ -52,6 +52,7 @@
 .um .ucon div { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .um .ucon .sub { color: var(--ink-soft); font-size: .84rem; }
 .um .ucon .warn { color: var(--amber); font-weight: 500; }
+.um .ucon a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 .um .uact { grid-area: act; display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
 .um .urow.off .av, .um .urow.off .uname, .um .urow.off .urole, .um .urow.off .ucon { opacity: .55; }
 .um .urow:has(.edit:not([hidden])) { background: #f7f9f6; }
@@ -104,7 +105,7 @@
     <div class="roles" id="roles" role="group" aria-label="Filter users by role"></div>
 
     <div class="bar">
-      <input type="search" id="q" placeholder="Search name, username, email or client" aria-label="Search users" autocomplete="off">
+      <input type="search" id="q" placeholder="Search name, username, email, site or client" aria-label="Search users" autocomplete="off">
       <span class="meta" id="meta" aria-live="polite"></span>
     </div>
 
@@ -121,7 +122,7 @@
           <select id="n-role"></select>
           <p class="hint" id="n-role-hint"></p>
         </div>
-        <div class="field" id="n-client-wrap" hidden><label for="n-client">Client this login can see</label><select id="n-client"></select></div>
+        <div class="field" id="n-site-wrap" hidden><label for="n-site">Site this login can see</label><select id="n-site"></select><p class="hint">They only see this site’s issued billing statements, chat and live monitor.</p></div>
         <div class="field">
           <label for="n-pass">Temporary password</label>
           <div class="pwrow"><input id="n-pass" required minlength="8" autocapitalize="none" spellcheck="false"><button type="button" id="n-gen">Generate</button></div>
@@ -143,17 +144,27 @@ const ROLES = {
   admin:          { label: 'Administrator',  plural: 'Administrators',  desc: 'Configure the system, manage users and finalise bills.' },
   billing_officer:{ label: 'Billing officer', plural: 'Billing officers', desc: 'Compute and generate bills.' },
   finance_hr:     { label: 'Finance / HR',   plural: 'Finance / HR',    desc: 'Approve bills and quotations, and receive payment reminders.' },
-  viewer:         { label: 'Viewer',         plural: 'Viewers',         desc: 'Client logins. Read-only, limited to one client.' },
+  viewer:         { label: 'Viewer',         plural: 'Viewers',         desc: 'Client logins. Read-only, limited to one site.' },
 };
 const ORDER = ['admin', 'billing_officer', 'finance_hr', 'viewer'];
 
-let ME = null, CLIENTS = [], USERS = [];
+let ME = null, SITES = [], USERS = [];
 let ROLE = 'all', QUERY = '';
 const OPEN = new Set(); // ids of rows whose editor is open
 
 const initials = (name) => (String(name).trim().split(/\s+/).slice(0, 2).map((w) => w[0] || '').join('') || '?').toUpperCase();
-const clientOptions = (sel) => '<option value="">No client assigned (sees nothing)</option>' +
-  CLIENTS.map((c) => `<option value="${c.id}"${String(c.id) === String(sel) ? ' selected' : ''}>${esc(c.name)}</option>`).join('');
+// The sites on the Live monitor. `selName` keeps the current site in the list even if the dashboard didn't return it.
+// `legacyClient` is set for an older login that was given a whole client.
+const siteOptions = (sel, legacyClient, selName) => {
+  const list = SITES.slice();
+  if (sel && !list.some((p) => String(p.id) === String(sel))) list.push({ id: sel, name: selName || String(sel) });
+  const first = legacyClient
+    ? `<option value="">All sites of ${esc(legacyClient)} — pick one to narrow</option>`
+    : '<option value="">No site assigned (sees nothing)</option>';
+  return first + list.map((p) => `<option value="${esc(p.id)}" data-name="${esc(p.name)}"${String(p.id) === String(sel) ? ' selected' : ''}>${esc(p.name)}</option>`).join('');
+};
+const isLegacy = (u) => u.role === 'viewer' && !u.site_id && !!(u.client_id || u.project_id);
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 const roleOptions = (sel) => ORDER.map((r) => `<option value="${r}"${r === sel ? ' selected' : ''}>${ROLES[r].label}</option>`).join('');
 
 /* ---------- role strip ---------- */
@@ -172,7 +183,7 @@ function visible() {
   const words = QUERY.toLowerCase().split(/\s+/).filter(Boolean);
   return USERS.filter((u) => {
     if (ROLE !== 'all' && u.role !== ROLE) return false;
-    const hay = [u.full_name, u.username, u.email, u.client_name, (ROLES[u.role] || {}).label].filter(Boolean).join(' ').toLowerCase();
+    const hay = [u.full_name, u.username, u.email, u.site_name, u.client_name, (ROLES[u.role] || {}).label].filter(Boolean).join(' ').toLowerCase();
     return words.every((w) => hay.includes(w));
   });
 }
@@ -183,7 +194,8 @@ function editHtml(u, mine) {
     <div class="field"><label for="en${id}">Full name</label><input id="en${id}" name="full_name" value="${esc(u.full_name)}" required></div>
     <div class="field"><label for="em${id}">Email</label><input id="em${id}" name="email" type="email" value="${esc(u.email || '')}" placeholder="name@company.com"></div>
     <div class="field"><label for="er${id}">Role</label><select id="er${id}" name="role"${mine ? ' disabled' : ''}>${roleOptions(u.role)}</select>${mine ? '<p class="hint">You can’t change your own role.</p>' : ''}</div>
-    <div class="field" data-clientwrap${u.role === 'viewer' ? '' : ' hidden'}><label for="ec${id}">Client this login can see</label><select id="ec${id}" name="client_id">${clientOptions(u.client_id)}</select></div>
+    <div class="field" data-sitewrap${u.role === 'viewer' ? '' : ' hidden'}><label for="ec${id}">Site this login can see</label><select id="ec${id}" name="site_id" data-legacy="${isLegacy(u) ? 1 : 0}">${siteOptions(u.site_id, isLegacy(u) ? (u.client_name || 'this client') : '', u.site_name)}</select>
+      <p class="hint">${isLegacy(u) ? 'This login was set up for a whole client. Pick a site to limit it to that site’s statements.' : 'They only see this site’s issued billing statements, chat and live monitor.'}</p></div>
     <div class="field full"><label for="ep${id}">New password</label><input id="ep${id}" name="password" type="password" minlength="8" placeholder="Leave blank to keep the current password" autocomplete="new-password"></div>
     <div class="full row-actions">
       <button class="primary" type="submit">Save changes</button>
@@ -195,9 +207,14 @@ function editHtml(u, mine) {
 
 function rowHtml(u) {
   const mine = u.id === ME.id, open = OPEN.has(u.id), role = ROLES[u.role] || { label: u.role };
+  const legacy = isLegacy(u);
+  const link = u.site_id ? `/bills.html?site_id=${encodeURIComponent(u.site_id)}` : `/bills.html?client_id=${u.client_id || ''}`;
+  const stm = u.site_id || legacy ? ` · <a href="${link}" title="Open ${u.site_id ? 'this site’s' : 'this client’s'} statements">${plural(u.statement_count, 'statement')}</a>` : '';
   const con = u.role === 'viewer'
-    ? (u.client_name ? `<div>${esc(u.client_name)}</div>` : '<div class="warn">No client assigned</div>')
-      + `<div class="sub">${u.email ? esc(u.email) : 'No email'}</div>`
+    ? (u.site_id ? `<div>${esc(u.site_name || u.site_id)}</div>`
+        : legacy ? `<div class="warn">All sites of ${esc(u.client_name || 'this client')} — pick a site</div>`
+        : '<div class="warn">No site assigned</div>')
+      + `<div class="sub">${u.email ? esc(u.email) : 'No email'}${stm}</div>`
     : `<div>${u.email ? esc(u.email) : '<span class="soft">No email</span>'}</div><div class="sub">Sees every client</div>`;
   return `<article class="urow${u.active ? '' : ' off'}" data-id="${u.id}">
     <div class="usum">
@@ -272,7 +289,7 @@ byId('list').addEventListener('click', async (e) => {
 // Switching a user to or from Viewer shows or hides the client picker.
 byId('list').addEventListener('change', (e) => {
   if (e.target.name !== 'role') return;
-  const wrap = e.target.closest('form').querySelector('[data-clientwrap]');
+  const wrap = e.target.closest('form').querySelector('[data-sitewrap]');
   wrap.hidden = e.target.value !== 'viewer';
 });
 
@@ -282,7 +299,12 @@ byId('list').addEventListener('submit', async (e) => {
   const body = { full_name: f.full_name.value.trim(), email: f.email.value.trim() };
   if (!f.role.disabled) {
     body.role = f.role.value;
-    body.client_id = body.role === 'viewer' && f.client_id.value ? Number(f.client_id.value) : null;
+    if (body.role !== 'viewer') body.site_id = null;
+    // An older login with a whole client and no site picked is left as it is, rather than silently cut off.
+    else if (f.site_id.value || f.site_id.dataset.legacy !== '1') {
+      body.site_id = f.site_id.value || null;
+      body.site_name = f.site_id.selectedOptions[0]?.dataset.name || null;
+    }
   }
   if (f.password.value) body.password = f.password.value;
   try {
@@ -307,12 +329,12 @@ const dlg = byId('ndlg');
 function syncNewRole() {
   const r = byId('n-role').value;
   byId('n-role-hint').textContent = ROLES[r].desc;
-  byId('n-client-wrap').hidden = r !== 'viewer';
+  byId('n-site-wrap').hidden = r !== 'viewer';
 }
 function openNew(role) {
   byId('nform').reset();
   byId('n-role').innerHTML = roleOptions(role || 'billing_officer');
-  byId('n-client').innerHTML = clientOptions('');
+  byId('n-site').innerHTML = siteOptions('');
   syncNewRole();
   dlg.showModal();
   byId('n-username').focus();
@@ -336,7 +358,8 @@ byId('nform').addEventListener('submit', async (e) => {
       full_name: byId('n-name').value.trim(),
       email: byId('n-email').value.trim() || null,
       role,
-      client_id: role === 'viewer' ? byId('n-client').value || null : null,
+      site_id: role === 'viewer' ? byId('n-site').value || null : null,
+      site_name: role === 'viewer' ? byId('n-site').selectedOptions[0]?.dataset.name || null : null,
       password: byId('n-pass').value,
     } });
     dlg.close();
@@ -348,7 +371,8 @@ byId('nform').addEventListener('submit', async (e) => {
 
 (async () => {
   ME = await shell();
-  CLIENTS = (await api('/api/clients')).clients;
+  SITES = (await api('/api/monitor/projects').catch((e) => { toast('Could not load the site list: ' + e.message, true); return []; }))
+    .sort((a, b) => String(a.name).localeCompare(String(b.name), 'ko'));
   await load();
 })().catch((e) => toast(e.message, true));
 })();

@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
-const { requireAuth, requireRole, viewerScope } = require('../middleware/auth');
+const { requireAuth, requireRole, viewerScope, covers } = require('../middleware/auth');
 const audit = require('../lib/audit');
 
 const router = express.Router();
@@ -36,6 +36,7 @@ router.get('/me', (req, res) => {
     full_name: req.session.fullName,
     role: req.session.role,
     client_id: scope ? scope.clientId : null,
+    site_id: scope ? scope.siteId : null,
     avatar_v: (db.prepare('SELECT avatar_v FROM users WHERE id = ?').get(req.session.userId) || {}).avatar_v || 0
   });
 });
@@ -56,77 +57,108 @@ router.post('/password', requireAuth, (req, res) => {
 
 // --- User management (administrators only) ---
 
-router.get('/users', requireRole('admin'), (req, res) => {
-  res.json(db.prepare(`SELECT u.id, u.username, u.full_name, u.role, u.active, u.created_at, u.client_id, u.email, u.avatar_v, c.name AS client_name
-    FROM users u LEFT JOIN clients c ON c.id = u.client_id ORDER BY u.username`).all());
-});
-
-router.post('/users', requireRole('admin'), (req, res) => {
-  const { username, full_name, role, password, client_id, email } = req.body || {};
-  const mail = String(email || '').trim();
-  if (mail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) return res.status(400).json({ error: 'Enter a valid email address.' });
-  if (!username || !full_name || !password) {
-    return res.status(400).json({ error: 'Username, full name and password are required.' });
-  }
-  if (password.length < 8) return res.status(400).json({ error: 'Use a password of at least 8 characters.' });
-  if (!['admin', 'billing_officer', 'finance_hr', 'viewer'].includes(role)) {
-    return res.status(400).json({ error: 'Pick a valid role.' });
-  }
-  let clientId = null;
-  if (role === 'viewer' && client_id) {
-    if (!db.prepare('SELECT 1 FROM clients WHERE id = ?').get(client_id)) {
-      return res.status(400).json({ error: 'That client does not exist.' });
-    }
-    clientId = Number(client_id);
-  }
+// The site a client login is assigned to: one of the dashboard sites on the Live monitor (the picker on the Users
+// page lists those). The statements it sees are those of the billing projects linked to that site, so linking a
+// project later takes effect straight away. Older logins that only have a client keep seeing that client.
+// Returns { siteId, siteName } or { error }.
+async function resolveSite(site_id, site_name) {
+  if (!site_id) return { siteId: null, siteName: null };
+  const id = String(site_id);
+  let name = String(site_name || '').trim() || null;
   try {
-    const info = db
-      .prepare('INSERT INTO users (username, password_hash, full_name, role, client_id, email) VALUES (?,?,?,?,?,?)')
-      .run(username.trim(), bcrypt.hashSync(password, 10), full_name.trim(), role, clientId, mail || null);
-    audit.log(req, 'user', info.lastInsertRowid, 'create', `Created user ${username} (${role})`);
-    res.json({ id: info.lastInsertRowid });
+    const list = await require('./monitor').listSites();
+    const hit = list.find((s) => String(s.id) === id);
+    if (!hit) return { error: 'That site does not exist.' };
+    name = hit.name;
+  } catch (e) { /* the dashboard can't be reached right now: keep the id and the name the page sent */ }
+  return { siteId: id, siteName: name };
+}
+
+router.get('/users', requireRole('admin'), (req, res) => {
+  // statement_count: the statements this login is looking at (everything but voided; staff see every stage).
+  const rows = db.prepare(`SELECT u.id, u.username, u.full_name, u.role, u.active, u.created_at, u.client_id, u.project_id, u.site_id, u.email, u.avatar_v,
+      c.name AS client_name, u.site_name,
+      (SELECT COUNT(*) FROM bills b WHERE b.status != 'void' AND ${covers()}) AS statement_count
+    FROM users u LEFT JOIN clients c ON c.id = u.client_id
+    ORDER BY u.username`).all();
+  res.json(rows);
+});
+
+router.post('/users', requireRole('admin'), async (req, res) => {
+  try {
+    const { username, full_name, role, password, site_id, site_name, email } = req.body || {};
+    const mail = String(email || '').trim();
+    if (mail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) return res.status(400).json({ error: 'Enter a valid email address.' });
+    if (!username || !full_name || !password) {
+      return res.status(400).json({ error: 'Username, full name and password are required.' });
+    }
+    if (password.length < 8) return res.status(400).json({ error: 'Use a password of at least 8 characters.' });
+    if (!['admin', 'billing_officer', 'finance_hr', 'viewer'].includes(role)) {
+      return res.status(400).json({ error: 'Pick a valid role.' });
+    }
+    let site = { siteId: null, siteName: null };
+    if (role === 'viewer') {
+      site = await resolveSite(site_id, site_name);
+      if (site.error) return res.status(400).json({ error: site.error });
+    }
+    try {
+      const info = db
+        .prepare('INSERT INTO users (username, password_hash, full_name, role, site_id, site_name, email) VALUES (?,?,?,?,?,?,?)')
+        .run(username.trim(), bcrypt.hashSync(password, 10), full_name.trim(), role, site.siteId, site.siteName, mail || null);
+      audit.log(req, 'user', info.lastInsertRowid, 'create', `Created user ${username} (${role})` + (site.siteId ? ` for site ${site.siteName || site.siteId}` : ''));
+      res.json({ id: info.lastInsertRowid });
+    } catch (e) {
+      res.status(400).json({ error: 'That username is already taken.' });
+    }
   } catch (e) {
-    res.status(400).json({ error: 'That username is already taken.' });
+    console.error(e);
+    res.status(500).json({ error: 'The server could not complete that request.' });
   }
 });
 
-router.patch('/users/:id', requireRole('admin'), (req, res) => {
-  const id = Number(req.params.id);
-  const { full_name, role, active, password, client_id, email } = req.body || {};
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
-  if (!user) return res.status(404).json({ error: 'User not found.' });
-  if (id === req.session.userId && active === 0) {
-    return res.status(400).json({ error: 'You cannot deactivate your own account.' });
-  }
-  let mail = user.email;
-  if (email !== undefined) {
-    mail = String(email || '').trim() || null;
-    if (mail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) return res.status(400).json({ error: 'Enter a valid email address.' });
-  }
-  let clientId = user.client_id;
-  if (client_id !== undefined) {
-    if (client_id && !db.prepare('SELECT 1 FROM clients WHERE id = ?').get(client_id)) {
-      return res.status(400).json({ error: 'That client does not exist.' });
+router.patch('/users/:id', requireRole('admin'), async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { full_name, role, active, password, site_id, site_name, email } = req.body || {};
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+    if (id === req.session.userId && active === 0) {
+      return res.status(400).json({ error: 'You cannot deactivate your own account.' });
     }
-    clientId = client_id ? Number(client_id) : null;
+    let mail = user.email;
+    if (email !== undefined) {
+      mail = String(email || '').trim() || null;
+      if (mail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) return res.status(400).json({ error: 'Enter a valid email address.' });
+    }
+    if (role !== undefined && !['admin', 'billing_officer', 'finance_hr', 'viewer'].includes(role)) {
+      return res.status(400).json({ error: 'Pick a valid role.' });
+    }
+    if (password && password.length < 8) return res.status(400).json({ error: 'Use a password of at least 8 characters.' });
+    const newRole = role ?? user.role;
+    let clientId = user.client_id, projectId = user.project_id, siteId = user.site_id, siteName = user.site_name;
+    if (newRole !== 'viewer') {
+      clientId = null; projectId = null; siteId = null; siteName = null;   // only client logins are tied to a site
+    } else if (site_id !== undefined) {
+      const site = await resolveSite(site_id, site_name);
+      if (site.error) return res.status(400).json({ error: site.error });
+      siteId = site.siteId; siteName = site.siteName;
+      clientId = null; projectId = null;                                     // the site replaces any older client / project assignment
+    }
+    db.prepare('UPDATE users SET full_name = ?, role = ?, active = ?, client_id = ?, project_id = ?, site_id = ?, site_name = ?, email = ? WHERE id = ?').run(
+      full_name ?? user.full_name,
+      newRole,
+      active === undefined ? user.active : active ? 1 : 0,
+      clientId, projectId, siteId, siteName,
+      mail,
+      id
+    );
+    if (password) db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(bcrypt.hashSync(password, 10), id);
+    audit.log(req, 'user', id, 'update', `Updated user ${user.username}` + (site_id !== undefined ? ` (site ${siteId ? (siteName || siteId) : 'cleared'})` : ''));
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'The server could not complete that request.' });
   }
-  if (role !== undefined && !['admin', 'billing_officer', 'finance_hr', 'viewer'].includes(role)) {
-    return res.status(400).json({ error: 'Pick a valid role.' });
-  }
-  db.prepare('UPDATE users SET full_name = ?, role = ?, active = ?, client_id = ?, email = ? WHERE id = ?').run(
-    full_name ?? user.full_name,
-    role ?? user.role,
-    active === undefined ? user.active : active ? 1 : 0,
-    clientId,
-    mail,
-    id
-  );
-  if (password) {
-    if (password.length < 8) return res.status(400).json({ error: 'Use a password of at least 8 characters.' });
-    db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(bcrypt.hashSync(password, 10), id);
-  }
-  audit.log(req, 'user', id, 'update', `Updated user ${user.username}` + (client_id !== undefined ? ` (client assignment ${clientId || 'cleared'})` : ''));
-  res.json({ ok: true });
 });
 
 router.delete('/users/:id', requireRole('admin'), (req, res) => {

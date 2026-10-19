@@ -1,7 +1,7 @@
 const express = require('express');
 const { randomUUID: uuid } = require('crypto'); // built in; the uuid package is ESM-only in v12+ and can't be require()d on Node 18
 const db = require('../db');
-const { canEdit, requireRole, viewerScope } = require('../middleware/auth');
+const { canEdit, requireRole, viewerScope, ownsBill, billScopeSql } = require('../middleware/auth');
 const { balanceDue, fullyPaid, invoiceReady } = require('../lib/invoice-ready');
 const audit = require('../lib/audit');
 const { daysOverdue } = require('../lib/notify');
@@ -182,13 +182,14 @@ router.get('/', (req, res) => {
   // drafts, reviews, approved and final bills stay hidden. Enforced here, not in the page.
   const scope = viewerScope(req);
   if (scope) {
-    if (!scope.clientId) return res.json({ bills: [], labels: LABELS });
-    client_id = scope.clientId;
+    if (scope.projectIds ? !scope.projectIds.length : !scope.clientId) return res.json({ bills: [], labels: LABELS });
+    client_id = undefined;                               // what a login sees comes from its site (billScopeSql), not from the page
     status = 'issued';
   }
   let sql = `SELECT b.*, c.name AS client_name, c.account_no, p.name AS project_name
              FROM bills b JOIN clients c ON c.id = b.client_id JOIN projects p ON p.id = b.project_id WHERE 1=1`;
   const args = [];
+  if (scope) sql += billScopeSql(scope);
   if (client_id) { sql += ' AND b.client_id = ?'; args.push(client_id); }
   if (project_id) { sql += ' AND b.project_id = ?'; args.push(project_id); }
   if (status) { sql += ' AND b.status = ?'; args.push(status); }
@@ -258,7 +259,7 @@ router.get('/:id', (req, res) => {
   const scope = viewerScope(req);
   if (scope) {
     // Same 404 as a missing bill, so a viewer can't tell a hidden bill from a nonexistent one.
-    if (!scope.clientId || bill.client_id !== scope.clientId || bill.status !== 'issued') {
+    if (!ownsBill(scope, bill) || bill.status !== 'issued') {
       return res.status(404).json({ error: 'Bill not found.' });
     }
     bill.trail = []; // internal activity log is for staff

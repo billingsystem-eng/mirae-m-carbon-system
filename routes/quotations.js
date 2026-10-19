@@ -228,7 +228,7 @@ router.patch('/:id/status', requireRole('admin', 'billing_officer', 'finance_hr'
       target === 'approved' ? `Finance accepted ${q.quote_no}. Finance will send it to the client.`
         : `Finance declined ${q.quote_no}.\nReason: ${reason}\nFix it and send it for review again.`);
   } else if (target === 'sent') {
-    notifyUsers(ids("SELECT id FROM users WHERE active = 1 AND role = 'viewer' AND client_id = ?", q.client_id), q, `New quotation: ${q.quote_no}`,
+    notifyUsers(ids("SELECT id FROM users WHERE active = 1 AND role = 'viewer' AND (client_id = ? OR site_id IN (SELECT family_id FROM projects WHERE client_id = ? AND family_id IS NOT NULL))", q.client_id, q.client_id), q, `New quotation: ${q.quote_no}`,
       `Mirae ESP has sent you quotation ${q.quote_no} (${peso(q.total)}), valid until ${q.valid_until}. Open the Quotations page to view or print it.`);
   }
   audit.log(req, 'quotation', id, 'status', `Quotation ${cur.quote_no}: ${LABELS[cur.status]} \u2192 ${LABELS[target]}${reason ? ` (${reason})` : ''}`);

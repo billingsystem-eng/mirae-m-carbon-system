@@ -30,15 +30,16 @@ const wrap = (fn) => (req, res) =>
 const round = (n, d = 1) => Number(Number(n).toFixed(d));
 const sum = (rows) => rows.reduce((s, p) => s + p.kwh, 0);
 
-/* A client login (viewer) only sees the dashboard sites linked to its own client's projects
+/* A client login (viewer) only sees the dashboard site linked to its own site (or, for older logins, its client's sites)
    (projects.family_id). Anything else answers 404, whatever the page asks for. */
 router.use((req, res, next) => {
   const scope = viewerScope(req);
   if (!scope) return next();
-  req.allowedSites = new Set(scope.clientId
-    ? db.prepare('SELECT family_id FROM projects WHERE client_id = ? AND family_id IS NOT NULL').all(scope.clientId)
-        .map((r) => String(r.family_id))
-    : []);
+  const sites = scope.siteId ? [{ family_id: scope.siteId }]
+    : scope.projectIds ? (scope.projectIds.length ? db.prepare(`SELECT family_id FROM projects WHERE id IN (${scope.projectIds.map(Number).join(',')}) AND family_id IS NOT NULL`).all() : [])
+    : !scope.clientId ? []
+    : db.prepare('SELECT family_id FROM projects WHERE client_id = ? AND family_id IS NOT NULL').all(scope.clientId);
+  req.allowedSites = new Set(sites.map((r) => String(r.family_id)));
   next();
 });
 router.param('id', (req, res, next, id) => {
@@ -172,4 +173,5 @@ router.get('/projects/:id/stream', async (req, res) => {
 
 router.use((req, res) => res.status(404).json({ error: 'Not found' }));
 
+router.listSites = () => provider.listProjects();   // used by the Users page to validate a login's site
 module.exports = router;

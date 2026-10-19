@@ -16,7 +16,7 @@ const db = require('../db');
 const audit = require('../lib/audit');
 const bolta = require('../lib/bolta');
 const { invoiceReady } = require('../lib/invoice-ready');
-const { requireRole, notViewer, viewerScope } = require('../middleware/auth');
+const { requireRole, notViewer, viewerScope, ownsBill } = require('../middleware/auth');
 
 const router = express.Router();
 const canIssue = requireRole('admin', 'finance_hr');
@@ -137,10 +137,10 @@ function eligibility(bill) {
 // (the same rule the old Sales Invoice followed). Only the issued invoice, and only fields the client needs.
 router.get('/bills/:id/client', (req, res) => {
   if (!req.session || req.session.role !== 'viewer') return res.status(403).json({ error: 'Your role does not allow this.' });
-  const bill = db.prepare('SELECT id, client_id, status FROM bills WHERE id = ?').get(Number(req.params.id));
+  const bill = db.prepare('SELECT id, client_id, project_id, status FROM bills WHERE id = ?').get(Number(req.params.id));
   const scope = viewerScope(req);
   // Same 404 as a missing bill, so a client can't tell a hidden bill from a nonexistent one.
-  if (!bill || !scope || !scope.clientId || bill.client_id !== scope.clientId || bill.status !== 'issued') {
+  if (!bill || !ownsBill(scope, bill) || bill.status !== 'issued') {
     return res.status(404).json({ error: 'Bill not found.' });
   }
   if (!invoiceReady(bill.id)) return res.json({ released: false, invoice: null });

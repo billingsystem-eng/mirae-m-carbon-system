@@ -15,7 +15,7 @@
 const express = require('express');
 const db = require('../db');
 const audit = require('../lib/audit');
-const { viewerScope } = require('../middleware/auth');
+const { viewerScope, ownsBill, billScopeSql, covers } = require('../middleware/auth');
 const { balanceDue } = require('../lib/invoice-ready');
 const { ensureNotices } = require('../lib/chat-notice');
 
@@ -31,17 +31,17 @@ const otherSide = (role) => (role === 'viewer' ? 'staff' : 'client');
 
 /** Resolves { bill, threadUserId } if this session may use that conversation, otherwise null. */
 function openThread(req, billId, staffUserId) {
-  const bill = db.prepare('SELECT id, client_id, status, statement_no FROM bills WHERE id = ?').get(Number(billId));
+  const bill = db.prepare('SELECT id, client_id, project_id, status, statement_no FROM bills WHERE id = ?').get(Number(billId));
   if (!bill) return null;
   if (isViewer(req)) {
     const scope = viewerScope(req);
-    if (!scope || !scope.clientId || bill.client_id !== scope.clientId || bill.status !== 'issued') return null;
+    if (!ownsBill(scope, bill) || bill.status !== 'issued') return null;
     return { bill, threadUserId: req.session.userId };   // always their own; anything they send is ignored
   }
   if (!STAFF_ROLES.includes(req.session.role)) return null;
   const who = Number(staffUserId);
   if (!who) return null;
-  const login = db.prepare("SELECT id FROM users WHERE id = ? AND role = 'viewer' AND client_id = ?").get(who, bill.client_id);
+  const login = db.prepare(`SELECT u.id FROM users u JOIN bills b ON b.id = ? WHERE u.id = ? AND u.role = 'viewer' AND ${covers()}`).get(bill.id, who);
   return login ? { bill, threadUserId: login.id } : null;
 }
 
@@ -71,9 +71,9 @@ function unreadFor(req) {
   let scopeSql = '';
   if (isViewer(req)) {
     const scope = viewerScope(req);
-    if (!scope || !scope.clientId) return { total: 0, threads: {} };
-    scopeSql = 'AND m.client_user_id = ? AND b.client_id = ?';
-    params.push(req.session.userId, scope.clientId);
+    if (!scope) return { total: 0, threads: {} };
+    scopeSql = 'AND m.client_user_id = ?' + billScopeSql(scope);
+    params.push(req.session.userId);
   } else if (!STAFF_ROLES.includes(role)) {
     return { total: 0, threads: {} };
   }
@@ -104,12 +104,12 @@ router.get('/threads', (req, res) => {
   let where = "b.status = 'issued'";
   if (isViewer(req)) {
     const scope = viewerScope(req);
-    if (!scope || !scope.clientId) return res.json({ threads: [], total_unread: 0 });
+    if (!scope) return res.json({ threads: [], total_unread: 0 });
     joinUser = 'JOIN users u ON u.id = ?';
-    params.push(req.session.userId, scope.clientId);
-    where += ' AND b.client_id = ?';
+    params.push(req.session.userId);
+    where += billScopeSql(scope);
   } else if (STAFF_ROLES.includes(req.session.role)) {
-    joinUser = "JOIN users u ON u.client_id = b.client_id AND u.role = 'viewer'";
+    joinUser = `JOIN users u ON u.role = 'viewer' AND ${covers()}`;
     where += ' AND (u.active = 1 OR lm.id IS NOT NULL)';   // a deactivated login stays reachable if it has history
   } else {
     return res.json({ threads: [], total_unread: 0 });
@@ -137,7 +137,9 @@ router.get('/threads', (req, res) => {
   const pending = db.prepare(`
     SELECT p.id AS project_id, p.name AS project_name, c.name AS client_name,
            u.id AS client_user_id, u.full_name AS client_user_name, u.avatar_v AS client_user_avatar_v
-    FROM projects p JOIN clients c ON c.id = p.client_id JOIN users u ON u.client_id = c.id
+    FROM projects p JOIN clients c ON c.id = p.client_id JOIN users u ON ((u.site_id IS NOT NULL AND u.site_id = p.family_id)
+      OR (u.site_id IS NULL AND u.project_id IS NOT NULL AND u.project_id = p.id)
+      OR (u.site_id IS NULL AND u.project_id IS NULL AND u.client_id = p.client_id))
     WHERE ${pendWhere} ORDER BY c.name, p.name, u.full_name LIMIT 300`).all(...pendParams);
 
   // Staff only: issued statements whose client has no active login, so nobody can receive a message yet.
@@ -145,7 +147,7 @@ router.get('/threads', (req, res) => {
     SELECT b.id AS bill_id, b.statement_no, c.name AS client_name, p.name AS project_name
     FROM bills b JOIN clients c ON c.id = b.client_id LEFT JOIN projects p ON p.id = b.project_id
     WHERE b.status = 'issued'
-      AND NOT EXISTS (SELECT 1 FROM users u WHERE u.client_id = b.client_id AND u.role = 'viewer' AND u.active = 1)
+      AND NOT EXISTS (SELECT 1 FROM users u WHERE ${covers()} AND u.role = 'viewer' AND u.active = 1)
     ORDER BY b.id DESC LIMIT 100`).all();
 
   const unread = unreadFor(req);

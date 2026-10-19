@@ -13,7 +13,7 @@ const express = require('express');
 const crypto = require('crypto');
 const db = require('../db');
 const audit = require('../lib/audit');
-const { viewerScope } = require('../middleware/auth');
+const { viewerScope, ownsBill } = require('../middleware/auth');
 const { balanceDue, fullyPaid } = require('../lib/invoice-ready');
 
 const router = express.Router();
@@ -37,7 +37,7 @@ router.post('/bills/:id/checkout', async (req, res) => {
 
   // A client login can only pay its own issued bills (same 404 as a missing bill).
   const scope = viewerScope(req);
-  if (scope && (!scope.clientId || bill.client_id !== scope.clientId || bill.status !== 'issued')) {
+  if (scope && (!ownsBill(scope, bill) || bill.status !== 'issued')) {
     return res.status(404).json({ error: 'Bill not found.' });
   }
   if (bill.status !== 'issued') return res.status(400).json({ error: 'Only an issued bill can be paid online.' });

@@ -1,0 +1,574 @@
+--- a/db/index.js
++++ b/db/index.js
+@@ -219,6 +219,13 @@
+ addColumn('contracts', 'contract_no TEXT');          // 계약번호, printed on the billing statement
+ // A viewer is a client login: they only ever see data belonging to this client.
+ addColumn('users', 'client_id INTEGER REFERENCES clients(id)');
++// ...narrowed to one site (a project). users.client_id is kept equal to that site's client so the existing
++// client joins keep working; project_id is what actually limits a login. NULL = the whole client (older logins).
++addColumn('users', 'project_id INTEGER REFERENCES projects(id)');
++// One time per login: a client login whose client has exactly one site is pinned to that site.
++db.exec(`UPDATE users SET project_id = (SELECT p.id FROM projects p WHERE p.client_id = users.client_id)
++  WHERE role = 'viewer' AND project_id IS NULL AND client_id IS NOT NULL
++    AND (SELECT COUNT(*) FROM projects p WHERE p.client_id = users.client_id) = 1`);
+ // Payment-method approval: only an admin can approve. Existing rows default to
+ // 'approved' so statements keep printing them; new rows are inserted explicitly.
+ addColumn('payment_methods', "approval_status TEXT NOT NULL DEFAULT 'approved'"); // pending | approved
+--- a/middleware/auth.js
++++ b/middleware/auth.js
+@@ -16,14 +16,25 @@
+   };
+ }
+ 
+-/** For a viewer (client login) returns { clientId } — null if no client is assigned yet.
+- *  Returns null for every other role. Read from the database each time so a change
+- *  of assignment by an admin applies immediately, without the viewer signing in again. */
++/** For a viewer (client login) returns { clientId, projectId }. projectId is the one site this login is
++ *  assigned to; it is null for older logins that were given a whole client (they still see all of that
++ *  client's sites). Both are null if nothing is assigned yet. Returns null for every other role.
++ *  Read from the database each time so a change of assignment by an admin applies immediately,
++ *  without the viewer signing in again. */
+ function viewerScope(req) {
+   if (!req.session || req.session.role !== 'viewer') return null;
+   const db = require('../db');
+-  const row = db.prepare('SELECT client_id FROM users WHERE id = ? AND active = 1').get(req.session.userId);
+-  return { clientId: row ? row.client_id : null };
++  const row = db.prepare(`SELECT u.client_id, u.project_id, p.client_id AS site_client_id
++    FROM users u LEFT JOIN projects p ON p.id = u.project_id WHERE u.id = ? AND u.active = 1`).get(req.session.userId);
++  if (!row) return { clientId: null, projectId: null };
++  if (row.project_id) return { clientId: row.site_client_id, projectId: row.project_id };
++  return { clientId: row.client_id, projectId: null };
++}
++
++/** True when a viewer's scope covers this bill (needs bill.client_id and bill.project_id). */
++function ownsBill(scope, bill) {
++  return !!(scope && scope.clientId && bill && bill.client_id === scope.clientId
++    && (!scope.projectId || bill.project_id === scope.projectId));
+ }
+ 
+ /** Blocks viewers from routes that expose other clients' or internal data. */
+@@ -37,4 +48,4 @@
+ /** Anyone who may change billing data. Viewers are read-only. */
+ const canEdit = requireRole('admin', 'billing_officer');
+ 
+-module.exports = { requireAuth, requireRole, canEdit, viewerScope, notViewer };
++module.exports = { requireAuth, requireRole, canEdit, viewerScope, ownsBill, notViewer };
+--- a/routes/auth.js
++++ b/routes/auth.js
+@@ -36,6 +36,7 @@
+     full_name: req.session.fullName,
+     role: req.session.role,
+     client_id: scope ? scope.clientId : null,
++    project_id: scope ? scope.projectId : null,
+     avatar_v: (db.prepare('SELECT avatar_v FROM users WHERE id = ?').get(req.session.userId) || {}).avatar_v || 0
+   });
+ });
+@@ -56,13 +57,37 @@
+ 
+ // --- User management (administrators only) ---
+ 
++// Which site (project) a client login can see. A login is assigned to one site; its client follows from it.
++// Older logins that only have a client (project_id NULL) still see that whole client until an admin picks a site.
++// Returns { clientId, projectId } or { error }.
++function resolveAssignment({ project_id, client_id }) {
++  if (project_id) {
++    const p = db.prepare('SELECT id, client_id FROM projects WHERE id = ?').get(project_id);
++    if (!p) return { error: 'That site does not exist.' };
++    return { clientId: p.client_id, projectId: p.id };
++  }
++  if (client_id) {
++    if (!db.prepare('SELECT 1 FROM clients WHERE id = ?').get(client_id)) return { error: 'That client does not exist.' };
++    return { clientId: Number(client_id), projectId: null };
++  }
++  return { clientId: null, projectId: null };
++}
++
+ router.get('/users', requireRole('admin'), (req, res) => {
+-  res.json(db.prepare(`SELECT u.id, u.username, u.full_name, u.role, u.active, u.created_at, u.client_id, u.email, u.avatar_v, c.name AS client_name
+-    FROM users u LEFT JOIN clients c ON c.id = u.client_id ORDER BY u.username`).all());
++  // statement_count / latest_statement_id: the statements this login is looking at (everything but voided,
++  // limited to its site, or to its client for an older login). Staff can see these in any stage.
++  res.json(db.prepare(`SELECT u.id, u.username, u.full_name, u.role, u.active, u.created_at, u.client_id, u.project_id, u.email, u.avatar_v,
++      c.name AS client_name, p.name AS project_name,
++      (SELECT COUNT(*) FROM bills b WHERE b.status != 'void' AND b.client_id = u.client_id
++         AND (u.project_id IS NULL OR b.project_id = u.project_id)) AS statement_count,
++      (SELECT COUNT(*) FROM bills b WHERE b.status = 'issued' AND b.client_id = u.client_id
++         AND (u.project_id IS NULL OR b.project_id = u.project_id)) AS issued_count
++    FROM users u LEFT JOIN clients c ON c.id = u.client_id LEFT JOIN projects p ON p.id = u.project_id
++    ORDER BY u.username`).all());
+ });
+ 
+ router.post('/users', requireRole('admin'), (req, res) => {
+-  const { username, full_name, role, password, client_id, email } = req.body || {};
++  const { username, full_name, role, password, client_id, project_id, email } = req.body || {};
+   const mail = String(email || '').trim();
+   if (mail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) return res.status(400).json({ error: 'Enter a valid email address.' });
+   if (!username || !full_name || !password) {
+@@ -72,17 +97,15 @@
+   if (!['admin', 'billing_officer', 'finance_hr', 'viewer'].includes(role)) {
+     return res.status(400).json({ error: 'Pick a valid role.' });
+   }
+-  let clientId = null;
+-  if (role === 'viewer' && client_id) {
+-    if (!db.prepare('SELECT 1 FROM clients WHERE id = ?').get(client_id)) {
+-      return res.status(400).json({ error: 'That client does not exist.' });
+-    }
+-    clientId = Number(client_id);
++  let asg = { clientId: null, projectId: null };
++  if (role === 'viewer') {
++    asg = resolveAssignment({ project_id, client_id });
++    if (asg.error) return res.status(400).json({ error: asg.error });
+   }
+   try {
+     const info = db
+-      .prepare('INSERT INTO users (username, password_hash, full_name, role, client_id, email) VALUES (?,?,?,?,?,?)')
+-      .run(username.trim(), bcrypt.hashSync(password, 10), full_name.trim(), role, clientId, mail || null);
++      .prepare('INSERT INTO users (username, password_hash, full_name, role, client_id, project_id, email) VALUES (?,?,?,?,?,?,?)')
++      .run(username.trim(), bcrypt.hashSync(password, 10), full_name.trim(), role, asg.clientId, asg.projectId, mail || null);
+     audit.log(req, 'user', info.lastInsertRowid, 'create', `Created user ${username} (${role})`);
+     res.json({ id: info.lastInsertRowid });
+   } catch (e) {
+@@ -92,7 +115,7 @@
+ 
+ router.patch('/users/:id', requireRole('admin'), (req, res) => {
+   const id = Number(req.params.id);
+-  const { full_name, role, active, password, client_id, email } = req.body || {};
++  const { full_name, role, active, password, client_id, project_id, email } = req.body || {};
+   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+   if (!user) return res.status(404).json({ error: 'User not found.' });
+   if (id === req.session.userId && active === 0) {
+@@ -103,21 +126,24 @@
+     mail = String(email || '').trim() || null;
+     if (mail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) return res.status(400).json({ error: 'Enter a valid email address.' });
+   }
+-  let clientId = user.client_id;
+-  if (client_id !== undefined) {
+-    if (client_id && !db.prepare('SELECT 1 FROM clients WHERE id = ?').get(client_id)) {
+-      return res.status(400).json({ error: 'That client does not exist.' });
+-    }
+-    clientId = client_id ? Number(client_id) : null;
+-  }
+   if (role !== undefined && !['admin', 'billing_officer', 'finance_hr', 'viewer'].includes(role)) {
+     return res.status(400).json({ error: 'Pick a valid role.' });
+   }
+-  db.prepare('UPDATE users SET full_name = ?, role = ?, active = ?, client_id = ?, email = ? WHERE id = ?').run(
++  const newRole = role ?? user.role;
++  let clientId = user.client_id, projectId = user.project_id;
++  if (newRole !== 'viewer') {
++    clientId = null; projectId = null;            // only client logins are tied to a site
++  } else if (project_id !== undefined || client_id !== undefined) {
++    const asg = resolveAssignment({ project_id, client_id });
++    if (asg.error) return res.status(400).json({ error: asg.error });
++    clientId = asg.clientId; projectId = asg.projectId;
++  }
++  db.prepare('UPDATE users SET full_name = ?, role = ?, active = ?, client_id = ?, project_id = ?, email = ? WHERE id = ?').run(
+     full_name ?? user.full_name,
+-    role ?? user.role,
++    newRole,
+     active === undefined ? user.active : active ? 1 : 0,
+     clientId,
++    projectId,
+     mail,
+     id
+   );
+@@ -125,7 +151,7 @@
+     if (password.length < 8) return res.status(400).json({ error: 'Use a password of at least 8 characters.' });
+     db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(bcrypt.hashSync(password, 10), id);
+   }
+-  audit.log(req, 'user', id, 'update', `Updated user ${user.username}` + (client_id !== undefined ? ` (client assignment ${clientId || 'cleared'})` : ''));
++  audit.log(req, 'user', id, 'update', `Updated user ${user.username}` + (project_id !== undefined || client_id !== undefined ? ` (site assignment ${projectId ? 'project ' + projectId : clientId ? 'client ' + clientId + ' (all sites)' : 'cleared'})` : ''));
+   res.json({ ok: true });
+ });
+ 
+--- a/routes/bills.js
++++ b/routes/bills.js
+@@ -1,7 +1,7 @@
+ const express = require('express');
+ const { randomUUID: uuid } = require('crypto'); // built in; the uuid package is ESM-only in v12+ and can't be require()d on Node 18
+ const db = require('../db');
+-const { canEdit, requireRole, viewerScope } = require('../middleware/auth');
++const { canEdit, requireRole, viewerScope, ownsBill } = require('../middleware/auth');
+ const { balanceDue, fullyPaid, invoiceReady } = require('../lib/invoice-ready');
+ const audit = require('../lib/audit');
+ const { daysOverdue } = require('../lib/notify');
+@@ -184,6 +184,7 @@
+   if (scope) {
+     if (!scope.clientId) return res.json({ bills: [], labels: LABELS });
+     client_id = scope.clientId;
++    if (scope.projectId) project_id = scope.projectId;   // a login assigned to one site never sees the others
+     status = 'issued';
+   }
+   let sql = `SELECT b.*, c.name AS client_name, c.account_no, p.name AS project_name
+@@ -258,7 +259,7 @@
+   const scope = viewerScope(req);
+   if (scope) {
+     // Same 404 as a missing bill, so a viewer can't tell a hidden bill from a nonexistent one.
+-    if (!scope.clientId || bill.client_id !== scope.clientId || bill.status !== 'issued') {
++    if (!ownsBill(scope, bill) || bill.status !== 'issued') {
+       return res.status(404).json({ error: 'Bill not found.' });
+     }
+     bill.trail = []; // internal activity log is for staff
+--- a/routes/messages.js
++++ b/routes/messages.js
+@@ -15,7 +15,7 @@
+ const express = require('express');
+ const db = require('../db');
+ const audit = require('../lib/audit');
+-const { viewerScope } = require('../middleware/auth');
++const { viewerScope, ownsBill } = require('../middleware/auth');
+ const { balanceDue } = require('../lib/invoice-ready');
+ const { ensureNotices } = require('../lib/chat-notice');
+ 
+@@ -31,17 +31,17 @@
+ 
+ /** Resolves { bill, threadUserId } if this session may use that conversation, otherwise null. */
+ function openThread(req, billId, staffUserId) {
+-  const bill = db.prepare('SELECT id, client_id, status, statement_no FROM bills WHERE id = ?').get(Number(billId));
++  const bill = db.prepare('SELECT id, client_id, project_id, status, statement_no FROM bills WHERE id = ?').get(Number(billId));
+   if (!bill) return null;
+   if (isViewer(req)) {
+     const scope = viewerScope(req);
+-    if (!scope || !scope.clientId || bill.client_id !== scope.clientId || bill.status !== 'issued') return null;
++    if (!ownsBill(scope, bill) || bill.status !== 'issued') return null;
+     return { bill, threadUserId: req.session.userId };   // always their own; anything they send is ignored
+   }
+   if (!STAFF_ROLES.includes(req.session.role)) return null;
+   const who = Number(staffUserId);
+   if (!who) return null;
+-  const login = db.prepare("SELECT id FROM users WHERE id = ? AND role = 'viewer' AND client_id = ?").get(who, bill.client_id);
++  const login = db.prepare("SELECT id FROM users WHERE id = ? AND role = 'viewer' AND client_id = ? AND (project_id IS NULL OR project_id = ?)").get(who, bill.client_id, bill.project_id);
+   return login ? { bill, threadUserId: login.id } : null;
+ }
+ 
+@@ -72,8 +72,8 @@
+   if (isViewer(req)) {
+     const scope = viewerScope(req);
+     if (!scope || !scope.clientId) return { total: 0, threads: {} };
+-    scopeSql = 'AND m.client_user_id = ? AND b.client_id = ?';
+-    params.push(req.session.userId, scope.clientId);
++    scopeSql = 'AND m.client_user_id = ? AND b.client_id = ? AND (? IS NULL OR b.project_id = ?)';
++    params.push(req.session.userId, scope.clientId, scope.projectId, scope.projectId);
+   } else if (!STAFF_ROLES.includes(role)) {
+     return { total: 0, threads: {} };
+   }
+@@ -108,8 +108,9 @@
+     joinUser = 'JOIN users u ON u.id = ?';
+     params.push(req.session.userId, scope.clientId);
+     where += ' AND b.client_id = ?';
++    if (scope.projectId) { where += ' AND b.project_id = ?'; params.push(scope.projectId); }
+   } else if (STAFF_ROLES.includes(req.session.role)) {
+-    joinUser = "JOIN users u ON u.client_id = b.client_id AND u.role = 'viewer'";
++    joinUser = "JOIN users u ON u.client_id = b.client_id AND (u.project_id IS NULL OR u.project_id = b.project_id) AND u.role = 'viewer'";
+     where += ' AND (u.active = 1 OR lm.id IS NOT NULL)';   // a deactivated login stays reachable if it has history
+   } else {
+     return res.json({ threads: [], total_unread: 0 });
+@@ -137,7 +138,7 @@
+   const pending = db.prepare(`
+     SELECT p.id AS project_id, p.name AS project_name, c.name AS client_name,
+            u.id AS client_user_id, u.full_name AS client_user_name, u.avatar_v AS client_user_avatar_v
+-    FROM projects p JOIN clients c ON c.id = p.client_id JOIN users u ON u.client_id = c.id
++    FROM projects p JOIN clients c ON c.id = p.client_id JOIN users u ON u.client_id = c.id AND (u.project_id IS NULL OR u.project_id = p.id)
+     WHERE ${pendWhere} ORDER BY c.name, p.name, u.full_name LIMIT 300`).all(...pendParams);
+ 
+   // Staff only: issued statements whose client has no active login, so nobody can receive a message yet.
+@@ -145,7 +146,7 @@
+     SELECT b.id AS bill_id, b.statement_no, c.name AS client_name, p.name AS project_name
+     FROM bills b JOIN clients c ON c.id = b.client_id LEFT JOIN projects p ON p.id = b.project_id
+     WHERE b.status = 'issued'
+-      AND NOT EXISTS (SELECT 1 FROM users u WHERE u.client_id = b.client_id AND u.role = 'viewer' AND u.active = 1)
++      AND NOT EXISTS (SELECT 1 FROM users u WHERE u.client_id = b.client_id AND (u.project_id IS NULL OR u.project_id = b.project_id) AND u.role = 'viewer' AND u.active = 1)
+     ORDER BY b.id DESC LIMIT 100`).all();
+ 
+   const unread = unreadFor(req);
+--- a/routes/monitor.js
++++ b/routes/monitor.js
+@@ -30,15 +30,15 @@
+ const round = (n, d = 1) => Number(Number(n).toFixed(d));
+ const sum = (rows) => rows.reduce((s, p) => s + p.kwh, 0);
+ 
+-/* A client login (viewer) only sees the dashboard sites linked to its own client's projects
++/* A client login (viewer) only sees the dashboard site linked to its own site (or, for older logins, its client's sites)
+    (projects.family_id). Anything else answers 404, whatever the page asks for. */
+ router.use((req, res, next) => {
+   const scope = viewerScope(req);
+   if (!scope) return next();
+-  req.allowedSites = new Set(scope.clientId
+-    ? db.prepare('SELECT family_id FROM projects WHERE client_id = ? AND family_id IS NOT NULL').all(scope.clientId)
+-        .map((r) => String(r.family_id))
+-    : []);
++  const sites = !scope.clientId ? []
++    : scope.projectId ? db.prepare('SELECT family_id FROM projects WHERE id = ? AND family_id IS NOT NULL').all(scope.projectId)
++    : db.prepare('SELECT family_id FROM projects WHERE client_id = ? AND family_id IS NOT NULL').all(scope.clientId);
++  req.allowedSites = new Set(sites.map((r) => String(r.family_id)));
+   next();
+ });
+ router.param('id', (req, res, next, id) => {
+--- a/routes/online-payments.js
++++ b/routes/online-payments.js
+@@ -13,7 +13,7 @@
+ const crypto = require('crypto');
+ const db = require('../db');
+ const audit = require('../lib/audit');
+-const { viewerScope } = require('../middleware/auth');
++const { viewerScope, ownsBill } = require('../middleware/auth');
+ const { balanceDue, fullyPaid } = require('../lib/invoice-ready');
+ 
+ const router = express.Router();
+@@ -37,7 +37,7 @@
+ 
+   // A client login can only pay its own issued bills (same 404 as a missing bill).
+   const scope = viewerScope(req);
+-  if (scope && (!scope.clientId || bill.client_id !== scope.clientId || bill.status !== 'issued')) {
++  if (scope && (!ownsBill(scope, bill) || bill.status !== 'issued')) {
+     return res.status(404).json({ error: 'Bill not found.' });
+   }
+   if (bill.status !== 'issued') return res.status(400).json({ error: 'Only an issued bill can be paid online.' });
+--- a/routes/projects.js
++++ b/routes/projects.js
+@@ -39,7 +39,7 @@
+   const rows = db.prepare(`
+     SELECT p.*, c.name AS client_name, c.account_no
+     FROM projects p JOIN clients c ON c.id = p.client_id
+-    ${scope ? 'WHERE p.client_id = ' + Number(scope.clientId || 0) : ''}
++    ${scope ? (scope.projectId ? 'WHERE p.id = ' + Number(scope.projectId) : 'WHERE p.client_id = ' + Number(scope.clientId || 0)) : ''}
+     ORDER BY c.name, p.name`).all();
+   res.json({ lighting_types: LIGHTING_TYPES, projects: rows });
+ });
+--- a/routes/tax-invoices.js
++++ b/routes/tax-invoices.js
+@@ -16,7 +16,7 @@
+ const audit = require('../lib/audit');
+ const bolta = require('../lib/bolta');
+ const { invoiceReady } = require('../lib/invoice-ready');
+-const { requireRole, notViewer, viewerScope } = require('../middleware/auth');
++const { requireRole, notViewer, viewerScope, ownsBill } = require('../middleware/auth');
+ 
+ const router = express.Router();
+ const canIssue = requireRole('admin', 'finance_hr');
+@@ -137,10 +137,10 @@
+ // (the same rule the old Sales Invoice followed). Only the issued invoice, and only fields the client needs.
+ router.get('/bills/:id/client', (req, res) => {
+   if (!req.session || req.session.role !== 'viewer') return res.status(403).json({ error: 'Your role does not allow this.' });
+-  const bill = db.prepare('SELECT id, client_id, status FROM bills WHERE id = ?').get(Number(req.params.id));
++  const bill = db.prepare('SELECT id, client_id, project_id, status FROM bills WHERE id = ?').get(Number(req.params.id));
+   const scope = viewerScope(req);
+   // Same 404 as a missing bill, so a client can't tell a hidden bill from a nonexistent one.
+-  if (!bill || !scope || !scope.clientId || bill.client_id !== scope.clientId || bill.status !== 'issued') {
++  if (!bill || !ownsBill(scope, bill) || bill.status !== 'issued') {
+     return res.status(404).json({ error: 'Bill not found.' });
+   }
+   if (!invoiceReady(bill.id)) return res.json({ released: false, invoice: null });
+--- a/lib/notify.js
++++ b/lib/notify.js
+@@ -31,7 +31,7 @@
+ 
+ function recipients(b) {
+   const all = (sql, ...a) => db.prepare(sql).all(...a);
+-  const clientUsers = all("SELECT id, email FROM users WHERE active = 1 AND role = 'viewer' AND client_id = ?", b.client_id);
++  const clientUsers = all("SELECT id, email FROM users WHERE active = 1 AND role = 'viewer' AND client_id = ? AND (project_id IS NULL OR project_id = ?)", b.client_id, b.project_id);
+   let finance = all("SELECT id, email FROM users WHERE active = 1 AND role = 'finance_hr'");
+   if (!finance.length) finance = all("SELECT id, email FROM users WHERE active = 1 AND role = 'admin'");
+   const contacts = all('SELECT name, phone, email, is_primary FROM contacts WHERE client_id = ? ORDER BY is_primary DESC, id', b.client_id);
+--- a/lib/chat-notice.js
++++ b/lib/chat-notice.js
+@@ -11,7 +11,7 @@
+   const missing = db.prepare(`
+     SELECT b.id, b.statement_no, b.period_start, b.period_end, b.due_date, b.issued_at, p.name AS project_name, u.id AS user_id
+     FROM bills b
+-    JOIN users u ON u.client_id = b.client_id AND u.role = 'viewer' AND u.active = 1
++    JOIN users u ON u.client_id = b.client_id AND (u.project_id IS NULL OR u.project_id = b.project_id) AND u.role = 'viewer' AND u.active = 1
+     LEFT JOIN projects p ON p.id = b.project_id
+     WHERE b.status = 'issued' ${billId ? 'AND b.id = ?' : ''}
+       AND NOT EXISTS (SELECT 1 FROM bill_messages m WHERE m.bill_id = b.id AND m.client_user_id = u.id AND m.sender_role = 'system')`)
+--- a/public/users.html
++++ b/public/users.html
+@@ -52,6 +52,7 @@
+ .um .ucon div { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+ .um .ucon .sub { color: var(--ink-soft); font-size: .84rem; }
+ .um .ucon .warn { color: var(--amber); font-weight: 500; }
++.um .ucon a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+ .um .uact { grid-area: act; display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+ .um .urow.off .av, .um .urow.off .uname, .um .urow.off .urole, .um .urow.off .ucon { opacity: .55; }
+ .um .urow:has(.edit:not([hidden])) { background: #f7f9f6; }
+@@ -104,7 +105,7 @@
+     <div class="roles" id="roles" role="group" aria-label="Filter users by role"></div>
+ 
+     <div class="bar">
+-      <input type="search" id="q" placeholder="Search name, username, email or client" aria-label="Search users" autocomplete="off">
++      <input type="search" id="q" placeholder="Search name, username, email, site or client" aria-label="Search users" autocomplete="off">
+       <span class="meta" id="meta" aria-live="polite"></span>
+     </div>
+ 
+@@ -121,7 +122,7 @@
+           <select id="n-role"></select>
+           <p class="hint" id="n-role-hint"></p>
+         </div>
+-        <div class="field" id="n-client-wrap" hidden><label for="n-client">Client this login can see</label><select id="n-client"></select></div>
++        <div class="field" id="n-site-wrap" hidden><label for="n-site">Site this login can see</label><select id="n-site"></select><p class="hint">They only see this site’s issued billing statements, chat and live monitor.</p></div>
+         <div class="field">
+           <label for="n-pass">Temporary password</label>
+           <div class="pwrow"><input id="n-pass" required minlength="8" autocapitalize="none" spellcheck="false"><button type="button" id="n-gen">Generate</button></div>
+@@ -143,17 +144,27 @@
+   admin:          { label: 'Administrator',  plural: 'Administrators',  desc: 'Configure the system, manage users and finalise bills.' },
+   billing_officer:{ label: 'Billing officer', plural: 'Billing officers', desc: 'Compute and generate bills.' },
+   finance_hr:     { label: 'Finance / HR',   plural: 'Finance / HR',    desc: 'Approve bills and quotations, and receive payment reminders.' },
+-  viewer:         { label: 'Viewer',         plural: 'Viewers',         desc: 'Client logins. Read-only, limited to one client.' },
++  viewer:         { label: 'Viewer',         plural: 'Viewers',         desc: 'Client logins. Read-only, limited to one site.' },
+ };
+ const ORDER = ['admin', 'billing_officer', 'finance_hr', 'viewer'];
+ 
+-let ME = null, CLIENTS = [], USERS = [];
++let ME = null, SITES = [], USERS = [];
+ let ROLE = 'all', QUERY = '';
+ const OPEN = new Set(); // ids of rows whose editor is open
+ 
+ const initials = (name) => (String(name).trim().split(/\s+/).slice(0, 2).map((w) => w[0] || '').join('') || '?').toUpperCase();
+-const clientOptions = (sel) => '<option value="">No client assigned (sees nothing)</option>' +
+-  CLIENTS.map((c) => `<option value="${c.id}"${String(c.id) === String(sel) ? ' selected' : ''}>${esc(c.name)}</option>`).join('');
++// Sites (projects) grouped by the client they bill. `legacyClient` is set for an older login that was given a whole client.
++const siteOptions = (sel, legacyClient) => {
++  const groups = new Map();
++  SITES.forEach((p) => { if (!groups.has(p.client_name)) groups.set(p.client_name, []); groups.get(p.client_name).push(p); });
++  const first = legacyClient
++    ? `<option value="">All sites of ${esc(legacyClient)} — pick one to narrow</option>`
++    : '<option value="">No site assigned (sees nothing)</option>';
++  return first + [...groups].map(([client, list]) => `<optgroup label="${esc(client)}">` +
++    list.map((p) => `<option value="${p.id}"${String(p.id) === String(sel) ? ' selected' : ''}>${esc(p.name)}</option>`).join('') + '</optgroup>').join('');
++};
++const isLegacy = (u) => u.role === 'viewer' && !u.project_id && !!u.client_id;
++const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+ const roleOptions = (sel) => ORDER.map((r) => `<option value="${r}"${r === sel ? ' selected' : ''}>${ROLES[r].label}</option>`).join('');
+ 
+ /* ---------- role strip ---------- */
+@@ -172,7 +183,7 @@
+   const words = QUERY.toLowerCase().split(/\s+/).filter(Boolean);
+   return USERS.filter((u) => {
+     if (ROLE !== 'all' && u.role !== ROLE) return false;
+-    const hay = [u.full_name, u.username, u.email, u.client_name, (ROLES[u.role] || {}).label].filter(Boolean).join(' ').toLowerCase();
++    const hay = [u.full_name, u.username, u.email, u.project_name, u.client_name, (ROLES[u.role] || {}).label].filter(Boolean).join(' ').toLowerCase();
+     return words.every((w) => hay.includes(w));
+   });
+ }
+@@ -183,7 +194,8 @@
+     <div class="field"><label for="en${id}">Full name</label><input id="en${id}" name="full_name" value="${esc(u.full_name)}" required></div>
+     <div class="field"><label for="em${id}">Email</label><input id="em${id}" name="email" type="email" value="${esc(u.email || '')}" placeholder="name@company.com"></div>
+     <div class="field"><label for="er${id}">Role</label><select id="er${id}" name="role"${mine ? ' disabled' : ''}>${roleOptions(u.role)}</select>${mine ? '<p class="hint">You can’t change your own role.</p>' : ''}</div>
+-    <div class="field" data-clientwrap${u.role === 'viewer' ? '' : ' hidden'}><label for="ec${id}">Client this login can see</label><select id="ec${id}" name="client_id">${clientOptions(u.client_id)}</select></div>
++    <div class="field" data-sitewrap${u.role === 'viewer' ? '' : ' hidden'}><label for="ec${id}">Site this login can see</label><select id="ec${id}" name="project_id" data-legacy="${isLegacy(u) ? 1 : 0}">${siteOptions(u.project_id, isLegacy(u) ? u.client_name : '')}</select>
++      <p class="hint">${isLegacy(u) ? 'This login was set up for a whole client. Pick a site to limit it to that site’s statements.' : 'They only see this site’s issued billing statements, chat and live monitor.'}</p></div>
+     <div class="field full"><label for="ep${id}">New password</label><input id="ep${id}" name="password" type="password" minlength="8" placeholder="Leave blank to keep the current password" autocomplete="new-password"></div>
+     <div class="full row-actions">
+       <button class="primary" type="submit">Save changes</button>
+@@ -195,9 +207,13 @@
+ 
+ function rowHtml(u) {
+   const mine = u.id === ME.id, open = OPEN.has(u.id), role = ROLES[u.role] || { label: u.role };
++  const link = u.project_id ? `/bills.html?project_id=${u.project_id}` : `/bills.html?client_id=${u.client_id}`;
++  const stm = u.client_id ? ` · <a href="${link}" title="Open ${u.project_id ? 'this site’s' : 'this client’s'} statements">${plural(u.statement_count, 'statement')}</a>` : '';
+   const con = u.role === 'viewer'
+-    ? (u.client_name ? `<div>${esc(u.client_name)}</div>` : '<div class="warn">No client assigned</div>')
+-      + `<div class="sub">${u.email ? esc(u.email) : 'No email'}</div>`
++    ? (u.project_id ? `<div>${esc(u.project_name)}</div><div class="sub">${esc(u.client_name || '')}</div>`
++        : u.client_id ? `<div class="warn">All sites of ${esc(u.client_name || 'this client')} — pick a site</div>`
++        : '<div class="warn">No site assigned</div>')
++      + `<div class="sub">${u.email ? esc(u.email) : 'No email'}${stm}</div>`
+     : `<div>${u.email ? esc(u.email) : '<span class="soft">No email</span>'}</div><div class="sub">Sees every client</div>`;
+   return `<article class="urow${u.active ? '' : ' off'}" data-id="${u.id}">
+     <div class="usum">
+@@ -272,7 +288,7 @@
+ // Switching a user to or from Viewer shows or hides the client picker.
+ byId('list').addEventListener('change', (e) => {
+   if (e.target.name !== 'role') return;
+-  const wrap = e.target.closest('form').querySelector('[data-clientwrap]');
++  const wrap = e.target.closest('form').querySelector('[data-sitewrap]');
+   wrap.hidden = e.target.value !== 'viewer';
+ });
+ 
+@@ -282,7 +298,9 @@
+   const body = { full_name: f.full_name.value.trim(), email: f.email.value.trim() };
+   if (!f.role.disabled) {
+     body.role = f.role.value;
+-    body.client_id = body.role === 'viewer' && f.client_id.value ? Number(f.client_id.value) : null;
++    if (body.role !== 'viewer') body.project_id = null;
++    // An older login with a whole client and no site picked is left as it is, rather than silently cut off.
++    else if (f.project_id.value || f.project_id.dataset.legacy !== '1') body.project_id = f.project_id.value ? Number(f.project_id.value) : null;
+   }
+   if (f.password.value) body.password = f.password.value;
+   try {
+@@ -307,12 +325,12 @@
+ function syncNewRole() {
+   const r = byId('n-role').value;
+   byId('n-role-hint').textContent = ROLES[r].desc;
+-  byId('n-client-wrap').hidden = r !== 'viewer';
++  byId('n-site-wrap').hidden = r !== 'viewer';
+ }
+ function openNew(role) {
+   byId('nform').reset();
+   byId('n-role').innerHTML = roleOptions(role || 'billing_officer');
+-  byId('n-client').innerHTML = clientOptions('');
++  byId('n-site').innerHTML = siteOptions('');
+   syncNewRole();
+   dlg.showModal();
+   byId('n-username').focus();
+@@ -336,7 +354,7 @@
+       full_name: byId('n-name').value.trim(),
+       email: byId('n-email').value.trim() || null,
+       role,
+-      client_id: role === 'viewer' ? byId('n-client').value || null : null,
++      project_id: role === 'viewer' ? byId('n-site').value || null : null,
+       password: byId('n-pass').value,
+     } });
+     dlg.close();
+@@ -348,7 +366,7 @@
+ 
+ (async () => {
+   ME = await shell();
+-  CLIENTS = (await api('/api/clients')).clients;
++  SITES = (await api('/api/projects')).projects;
+   await load();
+ })().catch((e) => toast(e.message, true));
+ })();
+--- a/public/bills.html
++++ b/public/bills.html
+@@ -196,6 +196,14 @@
+     clients.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+   refreshSiteOptions();
+ 
++  // Arriving from the Users page (?project_id= or ?client_id=): start with that site or client selected.
++  const want = new URLSearchParams(location.search);
++  const wantSite = allProjects.find((p) => String(p.id) === want.get('project_id'));
++  if (wantSite) fclient.value = String(wantSite.client_id);
++  else if (want.get('client_id') && !fclient.parentElement.hidden) fclient.value = want.get('client_id');
++  refreshSiteOptions();
++  if (wantSite) fproject.value = String(wantSite.id);
++
+   // Default to last month, which is the usual billing period.
+   const now = new Date();
+   const first = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+--- a/public/js/i18n.js
++++ b/public/js/i18n.js
+@@ -698,6 +698,15 @@
+   "New user": "새 사용자",
+   "Email (used for payment reminders)": "이메일 (납부 알림에 사용)",
+   "Client this login can see": "이 계정이 볼 수 있는 고객",
++  "Site this login can see": "이 계정이 볼 수 있는 사이트",
++  "They only see this site’s issued billing statements, chat and live monitor.": "이 사이트의 발행된 청구 명세서, 채팅, 실시간 모니터만 볼 수 있습니다.",
++  "This login was set up for a whole client. Pick a site to limit it to that site’s statements.": "이 계정은 고객 전체로 설정되어 있습니다. 사이트를 선택하면 해당 사이트의 명세서로 제한됩니다.",
++  "No site assigned (sees nothing)": "배정된 사이트 없음 (아무것도 볼 수 없음)",
++  "No site assigned": "배정된 사이트 없음",
++  "Search name, username, email, site or client": "이름, 사용자 이름, 이메일, 사이트 또는 고객 검색",
++  "Client logins. Read-only, limited to one site.": "고객 계정입니다. 읽기 전용이며 한 사이트로 제한됩니다.",
++  "Open this site’s statements": "이 사이트의 명세서 열기",
++  "Open this client’s statements": "이 고객의 명세서 열기",
+   "Generate": "생성",
+   "At least 8 characters. Share it with them; they can change it after signing in.": "8자 이상. 사용자에게 전달하세요. 로그인 후 직접 변경할 수 있습니다.",
+   "Filter users by role": "역할별 사용자 필터",
+@@ -1236,6 +1245,8 @@
+     [/^(\d+) project sites?$/, '프로젝트 사이트 $1개'],
+     [/^(\d+) meters? reporting$/, '계량기 $1개 보고 중'],
+     [/^(\d+) statements?$/, '명세서 $1건'],
++    [/^All sites of (.+) — pick one to narrow$/, '$1의 모든 사이트 — 선택하여 좁히기'],
++    [/^All sites of (.+) — pick a site$/, '$1의 모든 사이트 — 사이트를 선택하세요'],
+     [/^(\d+) hrs of 24 · auto-split$/, '24시간 중 $1시간 · 자동 분할'],
+     [/^(.+) kWh saved$/, '$1 kWh 절감'],
+     [/^Permanently delete (.+)\?\n\nThis erases the bill and its daily data\. It can't be undone \(a line stays in the activity log\)\.$/, '$1을(를) 영구 삭제하시겠습니까?\n\n청구서와 일별 데이터가 삭제되며 되돌릴 수 없습니다. (활동 기록에는 한 줄이 남습니다.)'],

@@ -219,6 +219,25 @@ addColumn('bills', 'dashboard_synced_at TEXT');
 addColumn('contracts', 'contract_no TEXT');          // 계약번호, printed on the billing statement
 // A viewer is a client login: they only ever see data belonging to this client.
 addColumn('users', 'client_id INTEGER REFERENCES clients(id)');
+// ...narrowed to one site (a project). users.client_id is kept equal to that site's client so the existing
+// client joins keep working; project_id is what actually limits a login. NULL = the whole client (older logins).
+addColumn('users', 'project_id INTEGER REFERENCES projects(id)');
+// The site a client login is assigned to is a dashboard site (the ones on the Live monitor): users.site_id holds
+// its id (= projects.family_id of the billing project linked to it), site_name a snapshot of its name. This is what
+// limits a login; the billing projects linked to that site decide which statements it sees. project_id/client_id
+// are only used by logins made before sites existed.
+addColumn('users', 'site_id TEXT');
+addColumn('users', 'site_name TEXT');
+// One time per login: a client login whose client has exactly one site linked to the dashboard is pinned to it.
+db.exec(`UPDATE users SET site_id = (SELECT p.family_id FROM projects p WHERE p.id = users.project_id),
+                         site_name = (SELECT COALESCE(p.family_id_name, p.name) FROM projects p WHERE p.id = users.project_id)
+  WHERE role = 'viewer' AND site_id IS NULL AND project_id IS NOT NULL
+    AND (SELECT p.family_id FROM projects p WHERE p.id = users.project_id) IS NOT NULL`);
+db.exec(`UPDATE users SET site_id = (SELECT p.family_id FROM projects p WHERE p.client_id = users.client_id),
+                         site_name = (SELECT COALESCE(p.family_id_name, p.name) FROM projects p WHERE p.client_id = users.client_id)
+  WHERE role = 'viewer' AND site_id IS NULL AND project_id IS NULL AND client_id IS NOT NULL
+    AND (SELECT COUNT(*) FROM projects p WHERE p.client_id = users.client_id) = 1
+    AND (SELECT p.family_id FROM projects p WHERE p.client_id = users.client_id) IS NOT NULL`);
 // Payment-method approval: only an admin can approve. Existing rows default to
 // 'approved' so statements keep printing them; new rows are inserted explicitly.
 addColumn('payment_methods', "approval_status TEXT NOT NULL DEFAULT 'approved'"); // pending | approved

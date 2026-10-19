@@ -196,6 +196,14 @@ fclient.onchange = () => { refreshSiteOptions(); load(); };
     clients.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
   refreshSiteOptions();
 
+  // Arriving from the Users page (?project_id= or ?client_id=): start with that site or client selected.
+  const want = new URLSearchParams(location.search);
+  const wantSite = allProjects.find((p) => want.get('site_id') ? String(p.family_id) === want.get('site_id') : String(p.id) === want.get('project_id'));
+  if (wantSite) fclient.value = String(wantSite.client_id);
+  else if (want.get('client_id') && !fclient.parentElement.hidden) fclient.value = want.get('client_id');
+  refreshSiteOptions();
+  if (wantSite) fproject.value = String(wantSite.id);
+
   // Default to last month, which is the usual billing period.
   const now = new Date();
   const first = new Date(now.getFullYear(), now.getMonth() - 1, 1);

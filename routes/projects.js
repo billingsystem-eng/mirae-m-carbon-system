@@ -39,7 +39,7 @@ router.get('/', (req, res) => {
   const rows = db.prepare(`
     SELECT p.*, c.name AS client_name, c.account_no
     FROM projects p JOIN clients c ON c.id = p.client_id
-    ${scope ? 'WHERE p.client_id = ' + Number(scope.clientId || 0) : ''}
+    ${scope ? (scope.projectIds ? 'WHERE p.id IN (' + (scope.projectIds.map(Number).join(',') || '0') + ')' : 'WHERE p.client_id = ' + Number(scope.clientId || 0)) : ''}
     ORDER BY c.name, p.name`).all();
   res.json({ lighting_types: LIGHTING_TYPES, projects: rows });
 });
