@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>절감액 정산 고지서 — M-Carbon</title>
+<link rel="stylesheet" href="/css/app.css">
+<style>
+  main { max-width: 900px; margin: 0 auto; }
+
+  /* ---- 절감액 정산 고지서: two A4 portrait sheets (notice + monthly annex) ---- */
+  .sheets { overflow-x: auto; padding-bottom: 8px; }
+  .sheet {
+    --navy: #12397a; --rule-blue: #b6c4e4; --tint: #e9eefa; --green: #2f8f3e;
+    position: relative; display: flex; flex-direction: column;
+    width: 210mm; height: 297mm; margin: 0 auto 18px; padding: 10mm 12mm 8mm;
+    background: #fff; color: #222; border: 1px solid var(--rule); box-shadow: 0 2px 10px rgba(0,0,0,.08);
+    font: 12px/1.35 "Noto Sans KR", "Noto Sans CJK KR", "Malgun Gothic", "Apple SD Gothic Neo", "Nanum Gothic", sans-serif;
+    overflow: hidden; box-sizing: border-box; word-break: keep-all;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .sheet * { box-sizing: border-box; }
+
+  .hd { display: flex; justify-content: space-between; align-items: center; height: 48px; }
+  .hd .lg-mc { height: 46px; width: auto; display: block; }
+  .hd .lg-me { height: 27px; width: auto; display: block; }
+  .rule { margin-top: 8px; border-top: 4px solid #1e4f86; border-bottom: 2px solid var(--green); height: 0; }
+
+  .title { margin: 14px 0 2px; text-align: center; font-size: 30px; line-height: 1.2; font-weight: 800; color: var(--navy); letter-spacing: -0.5px; }
+  .sub { text-align: center; color: #555; font-size: 12px; margin-bottom: 12px; }
+  .draft-flag { text-align: center; color: #b00020; font-weight: 700; margin: -6px 0 8px; font-size: 12px; }
+
+  .sheet table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+  .sheet th, .sheet td { border: 1px solid var(--rule-blue); padding: 3px 10px; height: 25px; vertical-align: middle; font-weight: 400; }
+  .sheet th { background: var(--tint); color: var(--navy); font-weight: 700; text-align: center; }
+  .sheet td.r { text-align: right; white-space: nowrap; }
+  .sheet td.c { text-align: center; }
+  .sheet td.mut { color: #666; font-size: 11px; text-align: center; }
+  .sheet .ul { display: inline-block; min-width: 190px; padding: 0 6px; border-bottom: 1px solid #222; text-align: center; margin-right: 6px; }
+  .sheet .small { font-size: 10.5px; color: #666; margin-left: 6px; }
+  .sheet .gap { height: 12px; }
+
+  .sec { display: flex; align-items: center; gap: 8px; margin: 13px 0 6px; font-size: 15px; font-weight: 800; color: var(--navy); }
+  .sec .no { width: 21px; height: 21px; border-radius: 50%; background: var(--navy); color: #fff; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+
+  /* calculation tables */
+  .calc td:first-child { text-align: center; font-weight: 800; color: var(--navy); }
+  .calc tr.key td:first-child { background: var(--tint); }
+  .calc tr.key td { font-weight: 700; }
+  .calc tr.key td.mut { font-weight: 400; }
+  .calc .green { color: var(--green); font-weight: 700; }
+  .calc tr.total td { background: var(--navy); color: #fff; border-color: var(--navy); font-weight: 800; }
+  .calc tr.total td.r { background: #eceff6; color: var(--navy); font-size: 14px; }
+  .calc tr.total td.mut { color: #fff; font-size: 12px; font-weight: 800; }
+
+  /* pay + cumulative boxes */
+  .two { display: grid; grid-template-columns: 1.1fr 1fr; gap: 18px; margin-top: 14px; }
+  .card { border: 1px solid var(--rule-blue); border-radius: 12px; padding: 10px 14px 12px; }
+  .card h3 { margin: 0 0 7px; font-size: 13.5px; font-weight: 800; color: var(--navy); }
+  .card th { width: 38%; white-space: nowrap; }
+  .card td { white-space: pre-line; }
+  .carry td:first-child { text-align: left; font-weight: 400; color: #222; }
+
+  .notes { margin-top: 10px; font-size: 10.5px; line-height: 1.45; color: #444; }
+  .notes p { margin: 0 0 2px; }
+
+  .sign { margin-top: 12px; }
+  .sign th { width: 17%; line-height: 1.25; padding: 4px 8px; height: 46px; }
+  .sign td { color: #888; text-align: right; }
+
+  .ft { margin-top: auto; padding-top: 8px; border-top: 1px solid var(--rule-blue); display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #333; }
+  .ft b { font-weight: 700; }
+  .ft img { height: 28px; width: auto; }
+
+  /* compact mode: used when the 미납·조정 block is added, so page 1 still ends with its footer */
+  .sheet.tight th, .sheet.tight td { height: 22px; padding-top: 2px; padding-bottom: 2px; }
+  .sheet.tight .sec { margin: 9px 0 5px; }
+  .sheet.tight .title { margin-top: 10px; }
+  .sheet.tight .sub { margin-bottom: 8px; }
+  .sheet.tight .two { margin-top: 10px; }
+  .sheet.tight .notes { margin-top: 7px; }
+  .sheet.tight .sign { margin-top: 8px; }
+  .sheet.tight .sign th { height: 40px; }
+
+  /* annex */
+  .chartbox { border: 1px solid var(--rule-blue); border-radius: 12px; padding: 4px 6px 2px; }
+  .chartbox svg { display: block; width: 100%; height: auto; }
+  .month td { font-size: 11.5px; }
+  .month th { height: 26px; }
+  .month td:first-child { text-align: center; font-weight: 800; color: var(--navy); }
+  .month tr.sum td { background: var(--tint); color: var(--navy); font-weight: 800; }
+  .month tr.sum td:first-child { background: var(--navy); color: #fff; }
+
+  @page { size: A4 portrait; margin: 0; }
+  @media print {
+    html, body { height: auto; background: #fff; }
+    main { max-width: none; padding: 0; }
+    .sheets { overflow: visible; padding: 0; }
+    .sheet { margin: 0; border: 0; box-shadow: none; break-after: page; page-break-after: always; }
+    .sheet:last-child { break-after: auto; page-break-after: auto; }
+  }
+</style>
+<link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail"></aside>
+  <main>
+    <div class="page-head no-print">
+      <div>
+        <div class="crumb"><a href="/bills.html">Billing</a> / <a id="back" href="#">Worksheet</a></div>
+        <h1>Billing statement</h1>
+      </div>
+      <div class="actions">
+        <button class="primary" onclick="window.print()">Print or save as PDF</button>
+        <div style="font-size:11px;color:#666;margin-top:6px;max-width:260px;">A4 2장으로 인쇄됩니다: 정산 고지서 + 월별 현황 별첨.</div>
+      </div>
+    </div>
+    <div class="sheets" id="doc"></div>
+  </main>
+</div>
+<script src="/js/i18n.js"></script>
+<script src="/js/app.js"></script>
+<script>
+const id = new URLSearchParams(location.search).get('id');
+
+/* ---------- formatting (this notice is always printed in Korean, whatever the UI language) ---------- */
+const KO = 'ko-KR';
+const won = (v) => Math.round(Number(v) || 0).toLocaleString(KO);
+const num = (v, dp = 2) => (Number(v) || 0).toLocaleString(KO, { maximumFractionDigits: dp });
+const pct = (v) => +(Number(v) || 0).toFixed(2);
+const dots = (d) => (d ? d.replace(/-/g, '. ') + '.' : '');                 // 2026-10-25 -> 2026. 10. 25.
+const parts = (d) => (d ? d.split('-').map(Number) : [null, null, null]);
+const STATUS_KO = { draft: '초안', for_review: '검토 대기', approved: '승인됨', void: '무효' };
+const DAY_MS = 86400000, AVG_MONTH_DAYS = 30.4375;
+const daysBetween = (a, b) => Math.round((new Date(b + 'T00:00:00Z') - new Date(a + 'T00:00:00Z')) / DAY_MS) + 1;
+const monthsBetween = (a, b) => Math.round(daysBetween(a, b) / AVG_MONTH_DAYS);
+
+/* The blank next to 수신 holds the apartment's name, so a trailing "아파트" is dropped to avoid saying it twice. */
+const aptName = (n) => String(n || '').replace(/\s*아파트\s*$/, '');
+
+/* Plain-won cell: the PDF prints "원" / "kWh" / "%" right after each number. */
+const cell = (v, unit, dp) => {
+  if (unit === '원') return `${won(v)} 원`;
+  if (unit === '%') return `${(Number(v) || 0).toLocaleString(KO, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`;
+  return `${num(v, dp === undefined ? 2 : dp)} ${unit}`;
+};
+
+/* "1~3년차 20:80 · 4~7년차 60:40" from the contract's sharing-ratio schedule (client : Mirae), if one is set up. */
+function ratioSchedule(c, termMonths) {
+  if (!c || !c.start_date || !(c.sharing_ratios || []).length) return '';
+  const termYears = termMonths ? Math.ceil(termMonths / 12) : null;
+  const startsIn = (d) => Math.floor(Math.max(Math.round((daysBetween(c.start_date, d) - 1) / AVG_MONTH_DAYS), 0) / 12) + 1;
+  const endsIn = (d) => Math.ceil(Math.max(monthsBetween(c.start_date, d), 1) / 12);
+  return '(' + c.sharing_ratios.map((r) => {
+    const a = startsIn(r.effective_from);
+    const z = r.effective_to ? endsIn(r.effective_to) : termYears;
+    const span = z && z !== a ? `${a}~${z}년차` : `${a}년차`;
+    return `${span} ${pct(r.client_pct)}:${pct(r.ines_pct)}`;
+  }).join(' · ') + ')';
+}
+
+/* ---------- annex chart: bars = baseline / actual, line = savings ---------- */
+function niceStep(x) {
+  const p = Math.pow(10, Math.floor(Math.log10(x)));
+  const f = x / p;
+  return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p;
+}
+function chart(ym) {
+  const W = 730, H = 300, L = 62, R = 14, T = 46, B = 34, N = 12;
+  const vals = ym.months.flatMap((m) => (m ? [m.baseline_kwh, m.actual_kwh, m.energy_savings_kwh] : [])).map((v) => Number(v) || 0);
+  const rawMax = Math.max(...vals, 0);
+  const step = niceStep((rawMax || 10) / 10);
+  const ticks = Math.max(Math.ceil(rawMax / step), 4);
+  const max = step * ticks;
+  const y = (v) => T + (H - T - B) * (1 - Math.max(v, 0) / max);
+  const slot = (W - L - R) / N, bw = Math.min(18, slot * 0.28);
+  let g = '';
+  for (let i = 0; i <= ticks; i++) {
+    const yy = y(step * i);
+    g += `<line x1="${L}" y1="${yy}" x2="${W - R}" y2="${yy}" stroke="${i === 0 ? '#8a96ad' : '#cdd6e8'}" stroke-width="1" ${i === 0 ? '' : 'stroke-dasharray="4 3"'}/>
+          <text x="${L - 6}" y="${yy + 3}" text-anchor="end" font-size="9" fill="#555">${esc(Math.round(step * i).toLocaleString(KO))}</text>`;
+  }
+  g += `<line x1="${L}" y1="${T}" x2="${L}" y2="${H - B}" stroke="#8a96ad"/>`;
+  const pts = [];
+  ym.months.forEach((m, i) => {
+    const cx = L + slot * i + slot / 2;
+    g += `<text x="${cx}" y="${H - B + 15}" text-anchor="middle" font-size="10.5" fill="#333">${i + 1}월</text>`;
+    if (!m) return;
+    const b = Number(m.baseline_kwh) || 0, a = Number(m.actual_kwh) || 0, s = Number(m.energy_savings_kwh) || 0;
+    g += `<rect x="${cx - bw - 1}" y="${y(b)}" width="${bw}" height="${Math.max(H - B - y(b), 0)}" fill="#b9c3d6"/>
+          <rect x="${cx + 1}" y="${y(a)}" width="${bw}" height="${Math.max(H - B - y(a), 0)}" fill="#2262b8"/>`;
+    pts.push([cx, y(s)]);
+  });
+  if (pts.length > 1) g += `<polyline points="${pts.map((p) => p.join(',')).join(' ')}" fill="none" stroke="#2f9d4a" stroke-width="2.2"/>`;
+  pts.forEach((p) => { g += `<circle cx="${p[0]}" cy="${p[1]}" r="3.6" fill="#3a3f55" stroke="#fff" stroke-width="1"/>`; });
+  const lx = W - 392;
+  g += `<text x="${L - 6}" y="${T - 12}" text-anchor="end" font-size="9.5" fill="#555">(kWh)</text>
+        <rect x="${lx}" y="12" width="13" height="9" fill="#b9c3d6"/><text x="${lx + 18}" y="21" font-size="10.5" fill="#444">교체 전 기준 사용량</text>
+        <rect x="${lx + 128}" y="12" width="13" height="9" fill="#2262b8"/><text x="${lx + 146}" y="21" font-size="10.5" fill="#444">당월 사용량 (교체 후)</text>
+        <line x1="${lx + 268}" y1="16.5" x2="${lx + 292}" y2="16.5" stroke="#2f9d4a" stroke-width="2.2"/><circle cx="${lx + 280}" cy="16.5" r="3.6" fill="#3a3f55"/><text x="${lx + 298}" y="21" font-size="10.5" fill="#444">절감량</text>
+        <text x="${W - R}" y="${H - 6}" text-anchor="end" font-size="10" fill="#555">${ym.year} 년</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" font-family="'Noto Sans KR','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif" role="img" aria-label="월별 전력 사용량 및 절감량 그래프">${g}</svg>`;
+}
+
+const HEAD = `<div class="hd"><img class="lg-mc" src="/img/m-carbon-logo.png" alt="M-Carbon Solutions"><img class="lg-me" src="/img/mirae-esp-logo-kr.png" alt="미래이에스피(주)"></div><div class="rule"></div>`;
+
+(async () => {
+  await shell();
+  const b = await api('/api/bills/' + id);
+  const configured = await api('/api/payment-methods?active=1').catch(() => []);
+  document.getElementById('back').href = '/bill.html?id=' + b.id;
+  document.title = b.statement_no + ' — 절감액 정산 고지서';
+
+  const c = b.contract || {};
+  const isDraft = ['draft', 'for_review', 'approved', 'void'].includes(b.status);
+
+  /* --- contract term / current year --- */
+  const termMonths = c.start_date && c.end_date ? monthsBetween(c.start_date, c.end_date) : null;
+  let nowMonth = null;
+  if (c.start_date) nowMonth = Math.min(Math.max(monthsBetween(c.start_date, b.period_end), 1), termMonths || Infinity);
+  const termText = termMonths ? (termMonths % 12 === 0 ? `${termMonths / 12}년` : `${termMonths}개월`) : '';
+  const termYears = termMonths ? Math.round(termMonths / 12) : null;
+
+  /* --- figures --- */
+  const A = Number(b.baseline_kwh) || 0, B = Number(b.actual_kwh) || 0;
+  const C = Number(b.energy_savings_kwh) || 0;
+  const D = A > 0 ? (C / A) * 100 : 0;
+  const F = Number(b.gross_savings) || 0;
+  const E = C > 0 ? F / C : (b.rate_breakdown && b.rate_breakdown[0] ? Number(b.rate_breakdown[0].rate) || 0 : 0);
+  const G = Number(b.client_retained) || 0;
+  const H = Math.round(Number(b.amount_billed) || 0);          // 공급가액 (same figure the 전자세금계산서 uses)
+  const I = Math.round(H * 0.1);                               // 부가가치세 10%
+  const J = H + I;
+  const cum = b.cumulative || { energy_savings_kwh: 0, gross_savings: 0, client_retained: 0 };
+
+  const baseFormula = { fixed: '사전 계측 데이터', savings_pct: '약정 절감률 기준', operating_hours: '운영시간 반영 기준' }[b.baseline_method] || '사전 계측 데이터';
+
+  /* --- carry-over: not on the original form, so it only appears when there is something to show --- */
+  const carry = [
+    ['미납 잔액', Number(b.previous_balance) || 0],
+    ['연체 이자', Number(b.interest_charged) || 0],
+    ['조정', Number(b.adjustments_total) || 0],
+    ['기납부 · 선납 (차감)', -(Number(b.payments_total) || 0)]
+  ].filter((r) => Math.round(r[1]) !== 0);
+  const payable = J + carry.reduce((s, r) => s + r[1], 0);
+  const carryHtml = carry.length ? `
+    <div class="sec" style="margin-top:10px"><span class="no">+</span>미납 · 조정 내역</div>
+    <table class="calc carry">
+      ${carry.map((r) => `<tr><td>${esc(r[0])}</td><td class="r" style="width:30%">${won(r[1])} 원</td></tr>`).join('')}
+      <tr class="key"><td>총 납부 예정 금액 (당월 청구 금액 포함)</td><td class="r">${won(payable)} 원</td></tr>
+    </table>` : '';
+
+  /* --- payment info: every approved, active payment method --- */
+  const accounts = configured.length
+    ? configured.map((m) => esc(m.name) + (m.details ? '\n' + esc(m.details) : '')).join('\n')
+    : '—';
+
+  const [py, pm] = parts(b.period_end);
+  const [iy, im, idd] = parts(b.bill_date);
+  const client = b.client || {};
+
+  /* ===== page 1 ===== */
+  const page1 = `
+  <section class="sheet${carry.length ? ' tight' : ''}">
+    ${HEAD}
+    <div class="title">지하주차장 전기절약사업 절감액 정산 고지서</div>
+    <div class="sub">고효율 LED 조명 교체 ESCO 사업 · 월별 전력 절감 실적 및 정산 내역</div>
+    ${isDraft ? `<div class="draft-flag">${esc(STATUS_KO[b.status] || b.status_label)} — 발행용 아님</div>` : ''}
+
+    <table>
+      <colgroup><col style="width:14%"><col style="width:36%"><col style="width:14%"><col style="width:36%"></colgroup>
+      <tr><th>고지번호</th><td>${esc(b.statement_no)}</td><th>발행일자</th><td class="r">${iy ? `${iy} 년 ${im} 월 ${idd} 일` : '20 &nbsp; 년 &nbsp; 월 &nbsp; 일'}</td></tr>
+      <tr><th>수 신</th><td colspan="3"><span class="ul">${esc(aptName(client.name))}</span>아파트 관리사무소장 / 입주자대표회의 회장 귀하</td></tr>
+      <tr><th>정산 대상월</th><td class="r">${py} 년 ${pm} 월분</td><th>측정 기간</th><td class="r">${dots(b.period_start)} ~ ${dots(b.period_end)}</td></tr>
+    </table>
+
+    <div class="sec"><span class="no">1</span>계약 정보</div>
+    <table>
+      <colgroup><col style="width:14%"><col style="width:36%"><col style="width:14%"><col style="width:36%"></colgroup>
+      <tr><th>계약번호</th><td>${esc(c.contract_no || '')}</td><th>계약기간</th><td class="r">${c.start_date ? `${dots(c.start_date)} ~ ${dots(c.end_date)}${termText ? ` (${termText})` : ''}` : ''}</td></tr>
+      <tr><th>설치 수량</th><td class="r">${b.project && b.project.lighting_qty != null ? `${won(b.project.lighting_qty)} EA` : 'EA'}</td><th>현재 차수</th><td class="r">${nowMonth ? `${Math.ceil(nowMonth / 12)}년차 ( ${nowMonth} / ${termMonths || '—'}개월)` : '—'}</td></tr>
+      <tr><th>적용 배분율</th><td colspan="3">아파트 귀속 <b>${pct(b.client_pct)}</b> % &nbsp;/&nbsp; 미래이에스피(주) <b>${pct(b.ines_pct)}</b> % <span class="small">${esc(ratioSchedule(c, termMonths))}</span></td></tr>
+    </table>
+
+    <div class="sec"><span class="no">2</span>전력 사용량 및 절감액 산정</div>
+    <table class="calc">
+      <colgroup><col style="width:9%"><col style="width:43%"><col style="width:24%"><col style="width:24%"></colgroup>
+      <tr><th>구분</th><th>항 목</th><th>산 식</th><th>금액 / 수량</th></tr>
+      <tr><td>A</td><td>기준 사용량 (교체 전, 계측 기준)</td><td class="mut">${baseFormula}</td><td class="r">${cell(A, 'kWh')}</td></tr>
+      <tr><td>B</td><td>당월 사용량 (교체 후, 계측기 측정)</td><td class="mut">M-Carbon 관제 시스템</td><td class="r">${cell(B, 'kWh')}</td></tr>
+      <tr class="key"><td>C</td><td>전력 절감량</td><td class="c">A − B</td><td class="r">${cell(C, 'kWh')}</td></tr>
+      <tr><td>D</td><td>절감률</td><td class="c">C ÷ A × 100</td><td class="r">${cell(D, '%', 1)}</td></tr>
+      <tr><td>E</td><td>적용 전력 단가 (공용전기 평균단가)</td><td class="mut">한전 고지서 기준</td><td class="r">${cell(E, '원/kWh')}</td></tr>
+      <tr class="key"><td>F</td><td>당월 전기료 절감액</td><td class="c">C × E</td><td class="r">${cell(F, '원')}</td></tr>
+    </table>
+
+    <div class="sec"><span class="no">3</span>절감액 배분 및 청구 금액</div>
+    <table class="calc">
+      <colgroup><col style="width:9%"><col style="width:43%"><col style="width:24%"><col style="width:24%"></colgroup>
+      <tr><td>G</td><td><span class="green">아파트 귀속 이익</span> (관리비 절감분)</td><td class="c">F × 아파트 배분율</td><td class="r">${cell(G, '원')}</td></tr>
+      <tr><td>H</td><td>미래이에스피(주) 서비스 이용료 (공급가액)</td><td class="c">F − G</td><td class="r">${cell(H, '원')}</td></tr>
+      <tr><td>I</td><td>부가가치세</td><td class="c">H × 10%</td><td class="r">${cell(I, '원')}</td></tr>
+      <tr class="total"><td>J</td><td>당월 청구 금액</td><td class="c">H + I</td><td class="r">${cell(J, '원')}</td></tr>
+    </table>
+    ${carryHtml}
+
+    <div class="two">
+      <div class="card">
+        <h3>납부 안내</h3>
+        <table>
+          <tr><th>납부기한</th><td>${b.due_date ? dots(b.due_date) + ' 까지' : ''}</td></tr>
+          <tr><th>입금계좌</th><td>${accounts}</td></tr>
+          <tr><th>예금주</th><td>미래이에스피 주식회사</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3>누적 실적 (계약 개시 후)</h3>
+        <table>
+          <tr><th>누적 절감량</th><td class="r">${cell(cum.energy_savings_kwh, 'kWh')}</td></tr>
+          <tr><th>누적 절감액</th><td class="r">${cell(cum.gross_savings, '원')}</td></tr>
+          <tr><th>누적 아파트 이익</th><td class="r">${cell(cum.client_retained, '원')}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="notes">
+      <p>※ 당월 사용량은 등기구별 전력량 계측기 데이터로 산정하며, 시간대별 상세 내역은 M-Carbon 실시간 관제 시스템 및 스마트폰 앱에서 확인하실 수 있습니다.</p>
+      <p>※ 계약기간${termYears ? `(${termYears}년)` : ''} 동안 등기구 고장·교체는 전면 무상 A/S이며, 계약 종료 후 설비 일체는 아파트에 무상 양도되어 절감액 100%가 단지에 귀속됩니다.</p>
+      ${b.notes ? `<p>※ 비고: ${esc(b.notes)}</p>` : ''}
+    </div>
+
+    <table class="sign">
+      <colgroup><col style="width:13%"><col style="width:20%"><col style="width:17%"><col style="width:20%"><col style="width:13%"><col style="width:17%"></colgroup>
+      <tr><th>발행</th><td>(인)</td><th>관리사무소장<br>확인</th><td>(인)</td><th>입주자대표<br>회장 확인</th><td>(인)</td></tr>
+    </table>
+
+    <div class="ft">
+      <span><b>미래이에스피(주)</b> &nbsp;☎ 02-6265-0414 · mirae@mirae-esp.com · 서울시 금천구 두산로 70, 현대지식산업센터 A동 1712호</span>
+      <img src="/img/m-carbon-logo.png" alt="M-Carbon Solutions">
+    </div>
+  </section>`;
+
+  /* ===== page 2: monthly annex ===== */
+  const ym = b.year_months || { year: Number(py), months: Array(12).fill(null) };
+  const have = ym.months.filter(Boolean);
+  const sum = (k) => have.reduce((s, m) => s + (Number(m[k]) || 0), 0);
+  const tBase = sum('baseline_kwh'), tAct = sum('actual_kwh'), tSav = sum('energy_savings_kwh');
+  const tRate = tBase > 0 ? (tSav / tBase) * 100 : 0;
+  const monthRows = ym.months.map((m, i) => {
+    if (!m) return `<tr><td>${i + 1}월</td>${'<td class="c" style="color:#999">—</td>'.repeat(6)}</tr>`;
+    const base = Number(m.baseline_kwh) || 0, sav = Number(m.energy_savings_kwh) || 0;
+    return `<tr><td>${i + 1}월</td><td class="r">${cell(base, 'kWh')}</td><td class="r">${cell(m.actual_kwh, 'kWh')}</td><td class="r">${cell(sav, 'kWh')}</td>
+      <td class="r">${cell(base > 0 ? (sav / base) * 100 : 0, '%', 1)}</td><td class="r">${cell(m.gross_savings, '원')}</td><td class="r">${cell(m.client_retained, '원')}</td></tr>`;
+  }).join('');
+
+  const page2 = `
+  <section class="sheet">
+    ${HEAD}
+    <div class="title">월별 에너지 사용량 및 절감량 현황</div>
+    <div class="sub">절감액 정산 고지서 별첨 · M-Carbon 실시간 관제 시스템 계측 데이터 기준</div>
+    <table>
+      <colgroup><col style="width:14%"><col style="width:36%"><col style="width:14%"><col style="width:36%"></colgroup>
+      <tr><th>아파트명</th><td>${esc(client.name || '')}</td><th>집계 기간</th><td class="r">${ym.year}. 01. ~ ${ym.year}. 12.</td></tr>
+    </table>
+
+    <div class="sec"><span class="no">1</span>월별 전력 사용량 및 절감량 그래프</div>
+    <div class="chartbox">${chart(ym)}</div>
+
+    <div class="sec"><span class="no">2</span>월별 실적표</div>
+    <table class="month">
+      <colgroup><col style="width:7%"><col style="width:16%"><col style="width:16%"><col style="width:15%"><col style="width:10%"><col style="width:18%"><col style="width:18%"></colgroup>
+      <tr><th>월</th><th>기준 사용량</th><th>당월 사용량</th><th>절감량</th><th>절감률</th><th>절감액</th><th>아파트 귀속 이익</th></tr>
+      ${monthRows}
+      <tr class="sum"><td>합계</td><td class="r">${cell(tBase, 'kWh')}</td><td class="r">${cell(tAct, 'kWh')}</td><td class="r">${cell(tSav, 'kWh')}</td>
+        <td class="r">${cell(tRate, '%', 1)}</td><td class="r">${cell(sum('gross_savings'), '원')}</td><td class="r">${cell(sum('client_retained'), '원')}</td></tr>
+    </table>
+    <div class="notes"><p>※ 그래프는 막대(기준·당월 사용량)와 꺾은선(절감량)으로 표기하며, 시간대별·구역별 상세 데이터는 M-Carbon 관제 시스템 및 스마트폰 앱에서 확인하실 수 있습니다.</p></div>
+
+    <div class="ft">
+      <span><b>미래이에스피(주)</b> &nbsp;☎ 02-6265-0414 · mirae@mirae-esp.com · www.mirae-esp.com</span>
+      <img src="/img/m-carbon-logo.png" alt="M-Carbon Solutions">
+    </div>
+  </section>`;
+
+  document.getElementById('doc').innerHTML = page1 + page2;
+})().catch((e) => toast(e.message, true));
+</script>
+</body>
+</html>

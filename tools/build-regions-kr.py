@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+"""Builds public/js/kr-regions.js (South Korea by province, plus one district map per province) from
+southkorea/southkorea-maps (KOSTAT 2018 boundaries). Run:
+  python3 tools/build-regions-kr.py <dir with prov.json and muni.json>
+  prov.json = kostat/2018/json/skorea-provinces-2018-geo.json
+  muni.json = kostat/2018/json/skorea-municipalities-2018-geo.json
+Not needed at runtime; the generated file is committed."""
+import json, math, os, re, sys
+
+SRC = sys.argv[1] if len(sys.argv) > 1 else 'geo'
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public', 'js', 'kr-regions.js')
+MIN_DEG2 = 0.01  # drops tiny islands (Ulleung-do, Dokdo) that would stretch the map far to the east
+
+def merc(lon, lat):
+    return math.radians(lon), -math.log(math.tan(math.pi / 4 + math.radians(lat) / 2))
+
+def dp(pts, tol):
+    if len(pts) < 3: return pts
+    keep = [False] * len(pts); keep[0] = keep[-1] = True
+    stack = [(0, len(pts) - 1)]
+    while stack:
+        a, b = stack.pop()
+        (x1, y1), (x2, y2) = pts[a], pts[b]
+        dx, dy = x2 - x1, y2 - y1; L = math.hypot(dx, dy) or 1e-9
+        best, bi = 0, -1
+        for i in range(a + 1, b):
+            d = abs(dy * pts[i][0] - dx * pts[i][1] + x2 * y1 - y2 * x1) / L
+            if d > best: best, bi = d, i
+        if best > tol: keep[bi] = True; stack += [(a, bi), (bi, b)]
+    return [p for p, k in zip(pts, keep) if k]
+
+def outer_rings(geom):
+    polys = [geom['coordinates']] if geom['type'] == 'Polygon' else geom['coordinates']
+    return [poly[0] for poly in polys]
+
+def ring_area(r):
+    a = 0
+    for i in range(len(r) - 1):
+        a += r[i][0] * r[i + 1][1] - r[i + 1][0] * r[i][1]
+    return abs(a) / 2
+
+def area_centroid(r):
+    a = cx = cy = 0
+    for i in range(len(r) - 1):
+        x0, y0 = r[i]; x1, y1 = r[i + 1]; c = x0 * y1 - x1 * y0
+        a += c; cx += (x0 + x1) * c; cy += (y0 + y1) * c
+    if abs(a) < 1e-12: return r[0][0], r[0][1], 0
+    return cx / (3 * a), cy / (3 * a), abs(a) / 2
+
+def clean_en(s):
+    s = re.sub(r'^(.+?)si([a-z]+)gu$', lambda m: f'{m.group(1)} {m.group(2).capitalize()}-gu', s) if re.match(r'^[A-Z][a-z]+si[a-z]+gu$', s) else s
+    if re.match(r'^[A-Z][a-z]+(si|gun|gu)$', s) and '-' not in s:
+        s = re.sub(r'(si|gun|gu)$', r'-\1', s)
+    return {'Sejongsi': 'Sejong', 'Sejong-si': 'Sejong', 'Dae-gu': 'Daegu'}.get(s, s)
+
+def build(features, width, tol, ids_names, offshore=False):
+    kept = []
+    cents = []
+    for f in features:
+        rs = sorted(outer_rings(f['geometry']), key=ring_area, reverse=True)
+        c = area_centroid(rs[0]); cents.append((c[0], c[1]))
+    med = (sorted(c[0] for c in cents)[len(cents) // 2], sorted(c[1] for c in cents)[len(cents) // 2])
+    for f, c in zip(features, cents):
+        if offshore and math.hypot(c[0] - med[0], c[1] - med[1]) > 1.6:  # an island far offshore (Ulleung-do) would shrink everything else
+            print('  dropped (far offshore):', f['properties']['name_eng']); continue
+        rs = sorted(outer_rings(f['geometry']), key=ring_area, reverse=True)
+        kept.append((f, [r for i, r in enumerate(rs) if i == 0 or ring_area(r) >= MIN_DEG2]))
+    pts = [merc(*p[:2]) for f, rs in kept for r in rs for p in r]
+    x0, x1 = min(p[0] for p in pts), max(p[0] for p in pts)
+    y0, y1 = min(p[1] for p in pts), max(p[1] for p in pts)
+    pad = 0.04 * (x1 - x0)
+    k = width / ((x1 - x0) + 2 * pad)
+    W = width; H = ((y1 - y0) + 2 * pad) * k
+    proj = lambda lon, lat: ((merc(lon, lat)[0] - x0 + pad) * k, (merc(lon, lat)[1] - y0 + pad) * k)
+    out = []
+    for f, rings in kept:
+        d = []; best = (0, 0, 0)
+        for r in rings:
+            xy = [proj(*p[:2]) for p in r]
+            cx, cy, ar = area_centroid(xy)
+            if ar > best[2]: best = (cx, cy, ar)
+            m = max(range(len(xy)), key=lambda i: math.hypot(xy[i][0] - xy[0][0], xy[i][1] - xy[0][1]))
+            s = dp(xy[:m + 1], tol)[:-1] + dp(xy[m:], tol)
+            if len(s) < 4: continue
+            d.append('M' + 'L'.join(f'{x:.1f},{y:.1f}' for x, y in s) + 'Z')
+        p = f['properties']
+        out.append({'id': p['code'], 'name': ids_names(p), 'ko': p['name'], 'd': ''.join(d), 'cx': round(best[0], 1), 'cy': round(best[1], 1)})
+    return {'w': round(W, 1), 'h': round(H, 1), 'k': round(k, 4), 'ox': round(x0 - pad, 6), 'oy': round(y0 - pad, 6), 'items': out}
+
+prov = json.load(open(os.path.join(SRC, 'prov.json')))['features']
+muni = json.load(open(os.path.join(SRC, 'muni.json')))['features']
+out = {}
+print('country')
+out['country'] = build(prov, 560, 0.7, lambda p: clean_en(p['name_eng']))
+for p in prov:
+    code = p['properties']['code']
+    ms = [m for m in muni if m['properties']['code'][:2] == code]
+    if len(ms) < 2: continue
+    print(code, p['properties']['name_eng'], len(ms))
+    out['p' + code] = build(ms, 640, 0.75, lambda q: clean_en(q['name_eng']), offshore=True)
+js = '// Generated by tools/build-regions-kr.py from KOSTAT 2018 boundaries (southkorea/southkorea-maps). Do not edit by hand.\n'
+js += 'window.KR_REGIONS = ' + json.dumps(out, separators=(',', ':'), ensure_ascii=False) + ';\n'
+open(OUT, 'w', encoding='utf-8').write(js)
+print(len(js) // 1024, 'KB;', len(out['country']['items']), 'provinces;', len(out) - 1, 'district maps')

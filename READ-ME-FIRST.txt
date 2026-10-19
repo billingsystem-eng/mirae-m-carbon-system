@@ -1,0 +1,3 @@
+Copy these files over the same paths in your project.
+Then DELETE public/invoice.html (the old Sales Invoice page; /invoice.html now redirects to the bill page).
+No .env change. On first start the server clears any Sales Invoice scans attached to bills (quotation scans are kept).

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Clients — M-Carbon System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/app.css">
+<link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail"></aside>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>Clients & projects</h1>
+        <p>Each client holds one or more M-Carbon project sites. Billing configuration lives on the project.</p>
+      </div>
+      <button class="primary" id="add" data-edit>Add client</button>
+    </div>
+
+    <div class="panel">
+      <div class="body">
+        <div class="inline-form">
+          <div><label for="q">Search</label><input id="q" placeholder="Name or account number"></div>
+          <div><label for="status">Account status</label><select id="status"><option value="">All statuses</option></select></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="new-client" hidden>
+      <header><h2>New client</h2></header>
+      <div class="body">
+        <form id="client-form">
+          <div class="grid3">
+            <div class="field"><label for="c-account">Account number</label><input id="c-account" required></div>
+            <div class="field"><label for="c-name">Client or company name</label><input id="c-name" required></div>
+            <div class="field"><label for="c-tin">Business registration no.</label><input id="c-tin"></div>
+            <div class="field"><label for="c-rep">Representative (대표자명)</label><input id="c-rep" maxlength="30"></div>
+          </div>
+          <h3 style="margin-bottom:8px">Billing address</h3>
+          <div class="grid3">
+            <div class="field"><label for="a-zip">Postal code</label><input id="a-zip" inputmode="numeric" maxlength="5" pattern="[0-9]{5}" placeholder="08502"></div>
+            <div class="field">
+              <label for="a-region">Province / metropolitan city</label>
+              <select id="a-region"><option value="">— Select province / city —</option></select>
+            </div>
+            <div class="field"><label for="a-city">City / county / district</label><input id="a-city"></div>
+            <div class="field"><label for="a-street">Road name address</label><input id="a-street"></div>
+            <div class="field"><label for="a-unit">Detailed address (building no., unit)</label><input id="a-unit"></div>
+            <div class="field"><label for="a-building">Building name</label><input id="a-building"></div>
+            <div class="field"><label for="a-barangay">Neighborhood (eup/myeon/dong)</label><input id="a-barangay"></div>
+            <div class="field"><label for="a-country">Country</label><input id="a-country" value="South Korea"></div>
+          </div>
+          <div class="actions">
+            <button class="primary" type="submit">Save client</button>
+            <button type="button" id="cancel">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="table-wrap" id="list"></div>
+    </div>
+  </main>
+</div>
+<script src="/js/i18n.js"></script>
+<script src="/js/app.js"></script>
+<script>
+let me;
+const statusSelect = document.getElementById('status'); // "status" alone collides with window.status
+
+async function load() {
+  const params = new URLSearchParams({ q: q.value, status: statusSelect.value });
+  const d = await api('/api/clients?' + params);
+  if (statusSelect.options.length === 1) {
+    d.statuses.forEach((s) => statusSelect.add(new Option(s, s)));
+  }
+  document.getElementById('list').innerHTML = d.clients.length ? `<table>
+      <thead><tr><th>Account</th><th>Client</th><th>City</th><th>Status</th><th>Added</th><th class="num">Sites</th><th class="num">Statements</th><th></th></tr></thead>
+      <tbody>${d.clients.map((c) => `<tr>
+        <td>${esc(c.account_no)}</td>
+        <td><a href="/client.html?id=${c.id}">${esc(c.name)}</a></td>
+        <td>${esc(c.addr_city || '—')}</td>
+        <td><span class="pill ${esc((c.status || '').replace(/\s/g, ''))}">${esc(c.status)}</span></td>
+        <td>${addedText(c.created_at)}</td>
+        <td class="num">${c.project_count}</td>
+        <td class="num">${c.bill_count}</td>
+        <td class="num">${c.bill_count
+          ? `<button class="quiet" disabled title="Clients with billing records can’t be deleted.">Delete</button>`
+          : `<button class="quiet danger remove-client" data-edit data-id="${c.id}" data-name="${esc(c.name)}" data-count="${c.project_count}">Delete</button>`}</td>
+        </tr>`).join('')}</tbody></table>`
+    : '<div class="empty">No clients match. Add one to get started.</div>';
+  document.querySelectorAll('.remove-client').forEach((btn) => {btn.onclick = () => removeClient(Number(btn.dataset.id), btn.dataset.name, Number(btn.dataset.count));});
+  if (readOnlySetup(me)) disableEditing();
+}
+
+async function removeClient(id, name, projectCount) {
+  const extra = projectCount ? ` This also removes its ${projectCount} project site${projectCount === 1 ? '' : 's'}, rates and sharing ratios.` : '';
+  if (!confirm(`Delete ${name}?${extra} This can’t be undone.`)) return;
+  try {
+    await api('/api/clients/' + id, { method: 'DELETE' });
+    toast('Client deleted');
+    await load();
+  } catch (e) { toast(e.message, true); }
+}
+
+
+// --- Billing address in Korean format: 시/도 (select) -> 시/군/구 -> 도로명주소 -> 상세주소 ---
+const KR_PROVINCES = ['서울특별시','부산광역시','대구광역시','인천광역시','광주광역시','대전광역시','울산광역시','세종특별자치시',
+  '경기도','강원특별자치도','충청북도','충청남도','전북특별자치도','전라남도','경상북도','경상남도','제주특별자치도'];
+const regionSel = document.getElementById('a-region');
+KR_PROVINCES.forEach((p) => regionSel.add(new Option(p, p)));
+const loadRegions = () => {};
+if (LANG === 'ko') document.getElementById('a-country').value = '대한민국';
+
+document.getElementById('add').onclick = () => {
+  document.getElementById('new-client').hidden = false;
+  document.getElementById('c-account').focus();
+  loadRegions();
+};
+document.getElementById('cancel').onclick = () => (document.getElementById('new-client').hidden = true);
+
+// Region and City selects use PSGC codes as their `value` (needed to drive the
+// next dropdown) — read the visible option text instead, so what gets saved is
+// a readable name like "Pasig City", not a numeric PSGC code.
+const selText = (sel) => (sel.selectedIndex > 0 ? sel.options[sel.selectedIndex].text : '');
+
+document.getElementById('client-form').onsubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const { id } = await api('/api/clients', {
+      method: 'POST',
+      body: {
+        account_no: document.getElementById('c-account').value.trim(),
+        name: document.getElementById('c-name').value.trim(),
+        tin: document.getElementById('c-tin').value.trim(),
+        representative_name: document.getElementById('c-rep').value.trim(),
+        addr_unit: document.getElementById('a-unit').value,
+        addr_building: document.getElementById('a-building').value,
+        addr_street: document.getElementById('a-street').value,
+        addr_barangay: document.getElementById('a-barangay').value.trim(),
+        addr_city: document.getElementById('a-city').value.trim(),
+        addr_region: selText(document.getElementById('a-region')),
+        addr_country: document.getElementById('a-country').value,
+        addr_zip: document.getElementById('a-zip').value
+      }
+    });
+    location.href = '/client.html?id=' + id;
+  } catch (err) { toast(err.message, true); }
+};
+
+let timer;
+q.oninput = () => { clearTimeout(timer); timer = setTimeout(load, 250); };
+statusSelect.onchange = load;
+
+(async () => {
+  me = await shell();
+  if (readOnlySetup(me)) disableEditing();
+  await load();
+})().catch((e) => toast(e.message, true));
+</script>
+</body>
+</html>

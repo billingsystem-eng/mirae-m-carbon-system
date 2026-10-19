@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Products — M-Carbon System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/app.css">
+<link rel="stylesheet" href="/css/products.css">
+<link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail"></aside>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>Products</h1>
+        <p>The M-Carbon lamps and tubes used in LED retrofit projects.</p>
+      </div>
+    </div>
+
+    <section class="spot" id="spot" aria-label="Product spotlight">
+      <div class="stage" id="stage">
+        <div class="glow" aria-hidden="true"></div>
+        <div class="beam" aria-hidden="true"></div>
+        <img id="spot-img" alt="">
+        <button type="button" class="power" id="power" aria-pressed="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v8.5"/><path d="M6.7 6.6a8 8 0 1 0 10.6 0"/></svg>
+          <span>Light on</span>
+        </button>
+      </div>
+
+      <div class="info">
+        <p class="group" id="spot-group"></p>
+        <h2 id="spot-name"></h2>
+        <p class="blurb" id="spot-blurb"></p>
+        <dl class="specs" id="spot-specs"></dl>
+        <div class="views" id="spot-views" role="group" aria-label="Photos"></div>
+        <div class="step">
+          <button type="button" id="prev" aria-label="Previous product">Previous</button>
+          <span id="count"></span>
+          <button type="button" id="next" aria-label="Next product">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="list-head">
+      <h2>All products</h2>
+      <div class="seg" id="filter" role="group" aria-label="Filter products">
+        <button type="button" data-f="all" class="on">All</button>
+        <button type="button" data-f="bulb">Bulbs</button>
+        <button type="button" data-f="tube">Tubes</button>
+      </div>
+    </div>
+    <div class="cards" id="cards"></div>
+
+    <section class="brochure" aria-label="Product brochure">
+      <a class="cover" href="/docs/m-carbon-smart-led-brochure.pdf" target="_blank" rel="noopener" aria-label="Open the brochure (PDF)">
+        <img src="/img/brochure-cover.webp" alt="Smart LED Lighting Optimization Program brochure, cover page" loading="lazy">
+      </a>
+      <div class="b-info">
+        <p class="group">Product brochure</p>
+        <h2>Smart LED Lighting Optimization Program</h2>
+        <p class="blurb">The Mirae ESP brochure: the Smart LED IoT tube compared with a conventional LED, the Always-On series, and project references from condominium, hotel, mall and office installations.</p>
+        <ul class="b-meta">
+          <li>4 pages</li><li>PDF, about 8 MB</li><li>Version 2026.1</li>
+        </ul>
+        <div class="b-actions">
+          <a class="btn primary" href="/docs/m-carbon-smart-led-brochure.pdf" target="_blank" rel="noopener">View brochure</a>
+          <a class="btn" href="/docs/m-carbon-smart-led-brochure.pdf" download="M-Carbon-Smart-LED-Brochure.pdf">Download PDF</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<script src="/js/i18n.js"></script>
+<script src="/js/app.js"></script>
+<script src="/js/products.js"></script>
+</body>
+</html>
