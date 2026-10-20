@@ -4,6 +4,11 @@
 :root {
   --ink: #152322;
   --ink-soft: #52635e;
+  --ink-bg: #152322;          /* dark fill used by rail, toast, pressed chips */
+  --field-ro: #f4f6f4;        /* read-only input */
+  --surface-2: #f4f7f3;       /* hover rows, banners, subtle blocks */
+  --avatar-bg: #eef0ee;
+  --bubble-in: #eceeec;
   --paper: #eef1ed;
   --surface: #ffffff;
   --rule: #d2dad5;
@@ -50,7 +55,7 @@ h3 { font-size: 0.92rem; color: var(--ink-soft); font-weight: 600; }
 .shell { display: grid; grid-template-columns: 252px 1fr; min-height: 100vh; }
 
 .rail {
-  background: var(--ink);
+  background: var(--ink-bg);
   color: #cfdbd7;
   padding: 20px 0 24px;
   display: flex; flex-direction: column;
@@ -198,7 +203,7 @@ button:disabled { box-shadow: none; }
   display: flex; flex-direction: column; gap: 8px; max-width: 360px;
 }
 #toast div {
-  background: var(--ink); color: #fff; padding: 10px 14px; border-radius: var(--radius);
+  background: var(--ink-bg); color: #fff; padding: 10px 14px; border-radius: var(--radius);
   font-size: 0.88rem; box-shadow: 0 6px 20px rgba(21, 35, 34, 0.25);
 }
 #toast div.bad { background: var(--alert); }
@@ -421,3 +426,51 @@ button:disabled { box-shadow: none; }
 .back-btn { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 14px; padding: 6px 12px 6px 8px; font-size: 0.86rem; }
 .back-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 @media print { .back-btn { display: none !important; } }
+
+/* Client menu: dropdown groups (Dashboard, Settlement details). */
+.rail nav .nav-head {
+  width: 100%; background: none; border: 0; border-left: 3px solid transparent; cursor: pointer; text-align: left;
+  font: inherit; font-size: 0.8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: #cfdbd7; padding: 13px 20px 13px 24px; display: flex; align-items: center; gap: 13px;
+}
+.rail nav .nav-head .nav-ico { color: #8fa39e; }
+.rail nav .nav-head:hover { background: #1e302d; }
+.rail nav .nav-head:hover .nav-ico { color: #cfe3ae; }
+.rail nav .nav-head span { flex: 1; }
+.rail nav .nav-caret { width: 16px; height: 16px; flex: none; stroke: #8fa39e; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .18s ease; }
+.rail nav .nav-group.open .nav-caret { transform: rotate(180deg); }
+.rail nav .nav-sub { display: none; flex-direction: column; gap: 1px; padding-bottom: 6px; }
+.rail nav .nav-group.open .nav-sub { display: flex; }
+.rail nav a.sub { padding: 9px 24px 9px 60px; font-size: 0.92rem; position: relative; }
+.rail nav a.sub::before { content: ''; position: absolute; left: 41px; top: 50%; width: 6px; height: 1.5px; background: #5d7771; }
+.rail nav a.sub.on::before { background: #9fd36a; }
+@media (max-width: 900px) {
+  .rail nav .nav-group { display: contents; }
+  .rail nav .nav-head { width: auto; padding: 8px 12px; }
+  .rail nav .nav-caret { display: none; }
+  .rail nav .nav-sub { display: contents; }
+  .rail nav a.sub { padding: 8px 12px; }
+  .rail nav a.sub::before { display: none; }
+}
+
+/* ---- Top-right Messages / Notifications buttons ---- */
+.top-actions { position: fixed; top: calc(8px + env(safe-area-inset-top, 0px)); right: 148px; z-index: 40; display: flex; gap: 10px; }
+.top-actions .tb-btn {
+  position: relative; width: 46px; height: 46px; display: grid; place-items: center;
+  border-radius: 50%; background: var(--surface); border: 1px solid var(--rule); color: var(--ink);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .12); text-decoration: none;
+}
+.top-actions .tb-btn:hover { background: var(--leaf-tint); border-color: var(--leaf-line); text-decoration: none; }
+.top-actions .tb-btn.on { background: var(--leaf-tint); border-color: var(--leaf); }
+.top-actions .nav-ico { width: 24px; height: 24px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.top-actions .tb-badge {
+  position: absolute; top: -6px; right: -6px; min-width: 20px; padding: 0 5px; border-radius: 11px;
+  background: var(--leaf); color: #fff; font-size: .72rem; font-weight: 600; line-height: 20px; text-align: center;
+  border: 2px solid var(--surface); box-sizing: content-box;
+}
+body:has(.top-actions) main { padding-top: 72px; }
+@media (max-width: 900px) {
+  .top-actions { right: 148px; top: calc(8px + env(safe-area-inset-top, 0px)); }
+  body:has(.top-actions) .rail { padding-right: 262px; min-height: 62px; }
+  body:has(.top-actions) main { padding-top: 18px; }
+}

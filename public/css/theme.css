@@ -1,0 +1,279 @@
+/* Light / dark theme.
+   Light is the original palette (defined in app.css). Dark keeps the same
+   family: deep forest-green surfaces, leaf-green accents, no grey or blue. */
+
+:root { color-scheme: light; }
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --ink: #e2eee8;
+  --ink-soft: #9db4ac;
+  --ink-bg: #1c372f;
+  --paper: #0a1512;
+  --surface: #10201c;
+  --surface-2: #152a25;
+  --field-ro: #0d1b18;
+  --avatar-bg: #1b312b;
+  --bubble-in: #19302a;
+  --rule: #223832;
+  --rule-strong: #34524a;
+
+  --leaf: #6db33f;
+  --leaf-dark: #a6d977;
+  --leaf-line: #34552b;
+  --leaf-tint: #172d1f;
+  --leaf-tint-hover: #1f3b27;
+  --signal: #45c3a2;
+  --signal-tint: #112e28;
+  --amber: #e2b559;
+  --amber-tint: #2c2611;
+  --alert: #f08c80;
+  --alert-tint: #331a19;
+
+  --btn-shadow: 0 1px 2px rgba(0,0,0,.5), 0 2px 5px rgba(0,0,0,.3);
+  --btn-shadow-hover: 0 2px 4px rgba(0,0,0,.55), 0 5px 11px rgba(0,0,0,.35);
+  --btn-shadow-press: 0 0 1px rgba(0,0,0,.6);
+
+  /* products page stage is already dark; deepen it a touch */
+  --stage-top: #1b332e; --stage-mid: #0e1a18; --stage-bot: #08110f;
+}
+
+/* ---------- Shell ---------- */
+html[data-theme="dark"] body { background: var(--paper); color: var(--ink); }
+html[data-theme="dark"] .rail { background: #07110e; border-right: 1px solid #172a25; }
+html[data-theme="dark"] .rail nav a:hover,
+html[data-theme="dark"] .rail nav a.on,
+html[data-theme="dark"] .rail nav .nav-head:hover { background: #12241f; }
+html[data-theme="dark"] .rail .who { border-top-color: #1b302a; }
+html[data-theme="dark"] a { color: var(--signal); }
+html[data-theme="dark"] :focus-visible { outline-color: var(--leaf); }
+
+/* ---------- Forms, buttons, dialogs ---------- */
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea { background: var(--surface-2); color: var(--ink); border-color: var(--rule-strong); }
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder { color: #6f8a81; }
+html[data-theme="dark"] input[readonly] { background: var(--field-ro); }
+html[data-theme="dark"] option { background: var(--surface); color: var(--ink); }
+html[data-theme="dark"] button.quiet { background: var(--surface); color: var(--leaf-dark); border-color: var(--leaf-line); }
+html[data-theme="dark"] button.quiet:hover { background: var(--leaf-tint-hover); }
+html[data-theme="dark"] button.primary, html[data-theme="dark"] .btn.primary { color: #07140d; }
+html[data-theme="dark"] button.danger:hover, html[data-theme="dark"] button.quiet.danger:hover { background: #432220; }
+html[data-theme="dark"] button.danger, html[data-theme="dark"] button.quiet.danger { border-color: #6a3430; }
+html[data-theme="dark"] #pw-dialog, html[data-theme="dark"] #pic-dialog, html[data-theme="dark"] #ndlg { background: var(--surface); color: var(--ink); }
+html[data-theme="dark"] dialog::backdrop { background: rgba(2, 8, 6, .65); }
+html[data-theme="dark"] .toast, html[data-theme="dark"] #toast > div { background: #1c372f; }
+
+/* ---------- Pills, notices, chips ---------- */
+html[data-theme="dark"] .pill.draft { background: #172a25; }
+html[data-theme="dark"] .pill.for_review { border-color: #5a4a1e; }
+html[data-theme="dark"] .pill.approved { border-color: #1f5a4c; }
+html[data-theme="dark"] .pill.final { background: #15283a; color: #9cc1ee; border-color: #27476b; }
+html[data-theme="dark"] .pill.issued, html[data-theme="dark"] .pill.Paid { color: #04140f; }
+html[data-theme="dark"] .pill.void, html[data-theme="dark"] .pill.Overdue, html[data-theme="dark"] .pill.overdue { border-color: #6a3430; }
+html[data-theme="dark"] .notice.warn { color: #f0d48f; border-color: #5a4a1e; }
+html[data-theme="dark"] .notice.bad { color: #f6b4ab; border-color: #6a3430; }
+html[data-theme="dark"] .notice.good { color: #9fe3cf; border-color: #1f5a4c; }
+html[data-theme="dark"] .tape .headline .line { color: #8fe0c6; }
+html[data-theme="dark"] .seg button.on { color: #04140f; }
+
+/* ---------- Messages / avatars ---------- */
+html[data-theme="dark"] .avatar { background: var(--avatar-bg); }
+html[data-theme="dark"] .avatar.has-pic { background: var(--surface); }
+html[data-theme="dark"] .chat-msg.theirs { background: var(--bubble-in); }
+html[data-theme="dark"] .chat-msg.mine { color: #06150d; }
+html[data-theme="dark"] .msgs-layout,
+html[data-theme="dark"] .msgs-layout > .panel,
+html[data-theme="dark"] .msgs-thread .chat-log { background: var(--surface); }
+
+/* ---------- Per-page light literals ---------- */
+html[data-theme="dark"] .al .chip:hover,
+html[data-theme="dark"] .bk .chip:hover,
+html[data-theme="dark"] .um .rcell:hover { background: var(--surface-2); }
+html[data-theme="dark"] .al .day,
+html[data-theme="dark"] .bk .banner,
+html[data-theme="dark"] .bk dialog .sum { background: var(--surface-2); }
+html[data-theme="dark"] .al .who.sys,
+html[data-theme="dark"] .nt-chip.wait { background: var(--avatar-bg); }
+html[data-theme="dark"] .bk .banner.test, html[data-theme="dark"] .nt-stage.soon { border-color: #5a4a1e; }
+html[data-theme="dark"] .bk .banner.bad, html[data-theme="dark"] .nt-stage.overdue, html[data-theme="dark"] .nt-chip.bad { border-color: #6a3430; }
+html[data-theme="dark"] .bk .tag.likely, html[data-theme="dark"] .nt-chip.ok { border-color: #1f5a4c; }
+html[data-theme="dark"] .bk .tag.strong { color: #04140f; }
+html[data-theme="dark"] .nt.unread { background: #112a1d; }
+html[data-theme="dark"] .nt-filters button[aria-pressed="true"] .n { background: #26493f; }
+html[data-theme="dark"] .um .urow:has(.edit:not([hidden])) { background: var(--surface-2); }
+html[data-theme="dark"] .pm-card.pending { background: linear-gradient(#1c2512, var(--surface) 60%); }
+html[data-theme="dark"] .pm-card.inactive { background: var(--surface-2); }
+html[data-theme="dark"] .pm-btn:not(.approve) { background: var(--surface); }
+html[data-theme="dark"] .pm-btn.approve { color: #04140f; }
+html[data-theme="dark"] .pm-btn.approve:hover { background: #5ad3b1; }
+
+/* ---------- Printable documents stay white paper (they are meant to print) ---------- */
+html[data-theme="dark"] .statement,
+html[data-theme="dark"] .sheet,
+html[data-theme="dark"] .si,
+html[data-theme="dark"] .qt {
+  --ink: #152322; --ink-soft: #52635e; --rule: #d2dad5; --rule-strong: #aab6b0;
+  --surface: #ffffff; --leaf: #5b9a2e; --leaf-dark: #3f7421; --signal: #0c6b5a;
+  background: #fff; color: #10201e; color-scheme: light;
+}
+html[data-theme="dark"] .si a, html[data-theme="dark"] .qt a { color: #0c6b5a; }
+html[data-theme="dark"] .si input, html[data-theme="dark"] .qt input,
+html[data-theme="dark"] .sheet input, html[data-theme="dark"] .statement input { background: #fff; color: #10201e; }
+
+/* ---------- Live monitor (.ww has its own token set) ---------- */
+html[data-theme="dark"] .ww {
+  --panel: #10201c; --ink: #e2eee8; --muted: #9db4ac; --rule: #223832;
+  --line: #6db33f; --line-soft: rgba(109,179,63,.2); --leaf: #6db33f;
+  --ok: #4fcf8a; --warn: #e2b559; --bad: #f08c80; --red: #6db33f;
+}
+html[data-theme="dark"] .ww .status[data-state="ok"] { background: #0f2a1f; border-color: #1f5a3c; }
+html[data-theme="dark"] .ww .finder .fclear:hover,
+html[data-theme="dark"] .ww .pk-head,
+html[data-theme="dark"] .ww .seg { background: #152a25; }
+html[data-theme="dark"] .ww .lv-now,
+html[data-theme="dark"] .ww .lv-tile.key,
+html[data-theme="dark"] .ww #siteDetails .figure.key { background: #162f1f; }
+html[data-theme="dark"] .ww .lv-tile,
+html[data-theme="dark"] .ww .block .figure,
+html[data-theme="dark"] .ww #siteDetails .figure { background: #12251f; }
+html[data-theme="dark"] .ww .chip { background: #1a312b; }
+html[data-theme="dark"] .ww .chip.good { background: #143324; }
+html[data-theme="dark"] .ww .chip.bad { background: #371c1a; }
+html[data-theme="dark"] .ww .lv-bar { background: #1c332d; }
+html[data-theme="dark"] .ww .lv-split { background: #223832; }
+html[data-theme="dark"] .ww .cv-bar { background: #1c332d; }
+html[data-theme="dark"] .ww .cv-bar i { background: #3b5a51; }
+html[data-theme="dark"] .ww .cv-pick button, html[data-theme="dark"] .ww .cv-pick input,
+html[data-theme="dark"] .ww .hist-range input, html[data-theme="dark"] .ww .pk-body select,
+html[data-theme="dark"] .ww .pk-body input, html[data-theme="dark"] .ww .mapctl button,
+html[data-theme="dark"] .ww .cv-tabs, html[data-theme="dark"] .ww .cv-rdbar { background: #12251f; color: var(--ink); }
+html[data-theme="dark"] .ww .cv-nav a:hover,
+html[data-theme="dark"] .ww .cv-tile .ic,
+html[data-theme="dark"] .ww .cv-hi { background: #1a3524; }
+html[data-theme="dark"] .ww .state { background: #0f2a1f; }
+html[data-theme="dark"] .ww .state.off { background: #371c1a; }
+html[data-theme="dark"] .ww .mapwrap { background: #0f2420; }
+html[data-theme="dark"] .ww #siteDetails .figure .v small.dl { background: #1a312b; }
+
+/* ---------- Login ---------- */
+html[data-theme="dark"] .formside { background: var(--paper); }
+
+/* ---------- Theme toggle ---------- */
+.theme-toggle {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  background: transparent; border: 1px solid #3b514c; color: #b7c8c3;
+  padding: 7px 14px; margin-top: 8px; font: inherit; border-radius: var(--radius, 3px);
+}
+.theme-toggle .nav-ico { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.theme-toggle .t-sun { display: none; }
+html[data-theme="dark"] .theme-toggle .t-sun { display: inline; }
+html[data-theme="dark"] .theme-toggle .t-moon { display: none; }
+.theme-toggle.floating {
+  position: fixed; top: calc(8px + env(safe-area-inset-top, 0px)); right: 176px; z-index: 9999; margin: 0;
+  width: 46px; height: 46px; padding: 0; justify-content: center; border-radius: 50%;
+  background: var(--surface); color: var(--ink-soft); border: 1px solid var(--rule-strong);
+  box-shadow: 0 1px 3px rgba(0,0,0,.12);
+}
+.theme-toggle.floating .t-label { display: none; }
+.theme-toggle.floating .nav-ico { width: 20px; height: 20px; }
+html[data-theme="dark"] .theme-toggle.floating { background: var(--surface); color: var(--ink); }
+
+/* No theme switching in print output */
+@media print {
+  html[data-theme="dark"] body { background: #fff !important; color: #000 !important; }
+  .theme-toggle { display: none !important; }
+}
+
+/* Smooth the switch, but never for people who ask for less motion */
+@media (prefers-reduced-motion: no-preference) {
+  html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after {
+    transition: background-color .2s, color .2s, border-color .2s, fill .2s, stroke .2s !important;
+  }
+}
+
+html[data-theme="dark"] .al .chip[aria-pressed="true"], html[data-theme="dark"] .bk .chip[aria-pressed="true"] { border-color: var(--leaf-line); }
+html[data-theme="dark"] .ww .plabel { stroke: #10201c; }
+html[data-theme="dark"] .brand { color: #dfe9e5; }
+
+/* Language switch (injected by i18n.js with light colours) */
+html[data-theme="dark"] .lang-switch { background: var(--surface) !important; border-color: var(--rule-strong) !important; }
+html[data-theme="dark"] .lang-switch button { color: var(--ink-soft) !important; }
+html[data-theme="dark"] .lang-switch button:hover { background: var(--leaf-tint-hover) !important; color: var(--leaf-dark) !important; }
+html[data-theme="dark"] .lang-switch button[aria-pressed="true"] { background: var(--leaf) !important; color: #06150d !important; }
+
+/* ---------- Live monitor client view: light mode ---------- */
+/* In dark mode the client view keeps its "dark glass" look (rules in monitor.html). In light mode it uses the page's light panels. */
+html[data-theme="light"] .ww #clientView { background: linear-gradient(180deg, #f6f9f4, #edf2ec); border: 1px solid var(--rule); }
+html[data-theme="light"] .ww .cv-gauge .bg { stroke: rgba(21,35,34,.1); }
+html[data-theme="light"] .ww .cv-gauge .fg { stroke: #5b9a2e; filter: none; }
+html[data-theme="light"] .ww .cv-gauge .mid b { color: #3f7421; }
+html[data-theme="light"] .ww .cv-gauge .st { background: rgba(91,154,46,.16); color: #3f7421; }
+html[data-theme="light"] .ww .cv-gauge .flow line { stroke: #5b9a2e; }
+html[data-theme="light"] .ww .cv-ringc .bg { stroke: rgba(21,35,34,.1); }
+html[data-theme="light"] .ww .cv-proj input[type=range] { background: linear-gradient(90deg, #5b9a2e var(--pct, 33%), rgba(21,35,34,.14) 0); }
+html[data-theme="light"] .ww .cv-card .cv-lead, html[data-theme="light"] .ww .cv-card .cv-trcap { color: var(--muted); }
+html[data-theme="light"] .ww .cv-card .cv-fine { color: var(--muted); }
+html[data-theme="light"] .ww .cv-card .cv-trcap b { color: #3f7421; }
+html[data-theme="light"] .ww .cv-card .cv-proj .cv-k b, html[data-theme="light"] .ww .cv-proj .cv-k b { color: #3f7421; }
+html[data-theme="light"] .ww .cv-m { background: #f4f7f3; border-color: var(--rule); }
+html[data-theme="light"] .ww .cv-m span { color: var(--muted); }
+html[data-theme="light"] .ww .cv-m em.on { color: #1d9a6c; }
+html[data-theme="light"] .ww .cv-m em.off { color: #c0392b; }
+html[data-theme="light"] .ww .cv-on { color: #3f7421; }
+html[data-theme="light"] .ww .cv-on::before { background: #5b9a2e; box-shadow: 0 0 8px rgba(91,154,46,.6); }
+html[data-theme="light"] .ww .trees svg { filter: none; }
+
+/* ---------- Live monitor client view, light mode: white cards like the M-Carbon dashboard ---------- */
+html[data-theme="light"] .ww .cv-orb, html[data-theme="light"] .ww .cv-wave { display: none; }
+
+/* header card */
+html[data-theme="light"] .ww .cv-hero { background: #fff; color: var(--ink); border: 1px solid var(--rule); box-shadow: 0 10px 24px -18px rgba(15,31,29,.35); }
+html[data-theme="light"] .ww .cv-hero h1 { opacity: 1; font-weight: 600; color: var(--ink); }
+html[data-theme="light"] .ww .cv-hero h1 small { opacity: 1; color: var(--muted); font-weight: 400; }
+html[data-theme="light"] .ww .cv-live { background: #e6f4ea; color: #1d7a45; }
+html[data-theme="light"] .ww .cv-live i { background: #2f9a5c; box-shadow: none; }
+html[data-theme="light"] .ww .cv-hl { opacity: 1; color: var(--muted); }
+html[data-theme="light"] .ww .cv-hero .cv-big { color: #10201e; }
+html[data-theme="light"] .ww .cv-hero .cv-big small { opacity: 1; color: #2f9a5c; font-weight: 600; }
+html[data-theme="light"] .ww .cv-chip { background: transparent; backdrop-filter: none; border-radius: 0; border-left: 1px solid var(--rule); padding: 4px 18px; }
+html[data-theme="light"] .ww .cv-chip span { opacity: 1; color: var(--muted); text-transform: none; letter-spacing: 0; }
+html[data-theme="light"] .ww .cv-chip b { color: var(--ink); }
+html[data-theme="light"] .ww .cv-ring { background: conic-gradient(#2f9a5c calc(var(--p) * 3.6deg), #e6ece6 0); box-shadow: none; }
+html[data-theme="light"] .ww .cv-ring::before { background: #fff; }
+html[data-theme="light"] .ww .cv-ring b { color: var(--ink); }
+html[data-theme="light"] .ww .cv-ring small { opacity: 1; color: var(--muted); }
+
+/* coloured tiles become white cards with a small coloured square, like the reference */
+html[data-theme="light"] .ww .cv-big2 { background: #fff !important; color: var(--ink); border: 1px solid var(--rule); box-shadow: 0 10px 24px -18px rgba(15,31,29,.35); }
+html[data-theme="light"] .ww .cv-big2.g1, html[data-theme="light"] .ww .cv-big2.g3 { --sq: #2f9a5c; }
+html[data-theme="light"] .ww .cv-big2.g2 { --sq: #1b8aa6; }
+html[data-theme="light"] .ww .cv-big2.g4 { --sq: #1d9a6c; }
+html[data-theme="light"] .ww .cv-big2.g5 { --sq: #e8812a; }
+html[data-theme="light"] .ww .cv-big2 .cv-k { color: var(--muted); font-size: 12px; text-transform: none; letter-spacing: 0; }
+html[data-theme="light"] .ww .cv-big2 .cv-k svg { display: none; }
+html[data-theme="light"] .ww .cv-big2 .cv-k::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 8px; background: var(--sq, #2f9a5c); }
+html[data-theme="light"] .ww .cv-big2 .n b { color: #10201e; }
+html[data-theme="light"] .ww .cv-big2 .n small { color: var(--muted); }
+html[data-theme="light"] .ww .cv-big2 em { color: #2f8f5b; font-weight: 600; }
+html[data-theme="light"] .ww .cv-big2 .sp svg path:first-child { fill: var(--sq, #2f9a5c); }
+html[data-theme="light"] .ww .cv-big2 .sp svg path:last-child { stroke: var(--sq, #2f9a5c); }
+
+/* highlighted tile (projection) and the bottom savings strip */
+html[data-theme="light"] .ww .cv-dark { background: #eef6e6; color: var(--ink); border: 1px solid #cfe3b8; }
+html[data-theme="light"] .ww .cv-dark .cv-k, html[data-theme="light"] .ww .cv-dark small { color: var(--muted); }
+html[data-theme="light"] .ww .cv-dark b { color: #3f7421; }
+html[data-theme="light"] .ww .cv-dark .ic { background: #fff; color: #3f7421; }
+html[data-theme="light"] .ww .cv-gl { background: #fff; color: var(--ink); border: 1px solid var(--rule); box-shadow: 0 10px 24px -18px rgba(15,31,29,.35); }
+html[data-theme="light"] .ww .gl-top .n b { color: #3f7421; }
+html[data-theme="light"] .ww .gl-top .n small, html[data-theme="light"] .ww .gl-top .cv-k, html[data-theme="light"] .ww .cv-gl .cv-k { color: var(--muted); }
+html[data-theme="light"] .ww .gl-mid { border-top-color: var(--rule); border-bottom-color: var(--rule); }
+html[data-theme="light"] .ww .gl-mid .cv-stat b { color: var(--ink); }
+html[data-theme="light"] .ww .gl-mid small { color: var(--muted); }
+html[data-theme="light"] .ww .glc { background: #f4f7f3; border-color: var(--rule); }
+html[data-theme="light"] .ww .glc .ic { background: #e6f1d9; color: #3f7421; }
+html[data-theme="light"] .ww .cv-gl .cv-trcap { color: var(--muted); }
+html[data-theme="light"] .ww .cv-gl .cv-trcap b { color: #3f7421; }
+html[data-theme="light"] .ww .cv-pulse .beat { background: repeating-linear-gradient(90deg, transparent 0 14px, #2f9a5c 14px 16px); }

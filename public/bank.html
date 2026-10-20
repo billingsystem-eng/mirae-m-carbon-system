@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/app.css">
+<link rel="stylesheet" href="/css/theme.css">
+<script src="/js/theme.js"></script>
 <link rel="icon" type="image/png" href="/favicon.png">
 <style>
 /* Bank reconciliation. Scoped under .bk so the other pages are untouched. */
@@ -21,7 +23,7 @@
 .bk .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .bk .chip { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--surface); color: var(--ink-soft); font-weight: 500; font-size: .88rem; cursor: pointer; box-shadow: none !important; transform: none !important; }
 .bk .chip:hover { background: #f4f7f3; color: var(--ink); border-color: var(--rule-strong); }
-.bk .chip[aria-pressed="true"], .bk .chip[aria-pressed="true"]:hover { background: var(--ink); border-color: var(--ink); color: #fff; }
+.bk .chip[aria-pressed="true"], .bk .chip[aria-pressed="true"]:hover { background: var(--ink-bg); border-color: var(--ink); color: #fff; }
 .bk td.desc small { display: block; color: var(--ink-soft); font-size: .8rem; }
 .bk .sug { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 .bk .sug button { text-align: left; }

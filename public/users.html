@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/app.css">
+<link rel="stylesheet" href="/css/theme.css">
+<script src="/js/theme.js"></script>
 <link rel="icon" type="image/png" href="/favicon.png">
 <style>
 /* Users page. Scoped under .um so the other pages are untouched. */
@@ -23,7 +25,7 @@
 .um .rcell .rc { display: block; font-family: var(--serif); font-size: 1.7rem; font-weight: 600; line-height: 1.1; letter-spacing: -.02em; }
 .um .rcell .rn { display: block; margin-top: 2px; font-weight: 600; font-size: .92rem; }
 .um .rcell .rd { display: block; margin-top: 3px; font-size: .8rem; line-height: 1.4; color: var(--ink-soft); }
-.um .rcell[aria-pressed="true"], .um .rcell[aria-pressed="true"]:hover { background: var(--ink); color: #fff; }
+.um .rcell[aria-pressed="true"], .um .rcell[aria-pressed="true"]:hover { background: var(--ink-bg); color: #fff; }
 .um .rcell[aria-pressed="true"] .rc { color: #9fd36a; }
 .um .rcell[aria-pressed="true"] .rd { color: #a9bdb7; }
 
@@ -39,7 +41,7 @@
 .um .av { grid-area: av; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: .85rem; letter-spacing: .02em; }
 .um .av { position: relative; overflow: hidden; }
 .um .av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.um .av.admin { background: var(--ink); color: #fff; }
+.um .av.admin { background: var(--ink-bg); color: #fff; }
 .um .av.billing_officer { background: var(--leaf-tint); color: var(--leaf-dark); }
 .um .av.finance_hr { background: var(--amber-tint); color: var(--amber); }
 .um .av.viewer { background: var(--signal-tint); color: var(--signal); }

@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Schibsted+Grotesk:wght@400;500;600;700&family=Chivo+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/app.css">
+<link rel="stylesheet" href="/css/theme.css">
+<script src="/js/theme.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="/js/chart-i18n.js"></script>
 <script src="/js/kr-regions.js"></script>
@@ -215,27 +217,29 @@
 .ww .trees { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 18px; font-size: 24px; } .ww .trees span { display: inline-block; animation: cvPop .5s both; } @keyframes cvPop { from { opacity: 0; transform: scale(.2) translateY(14px); } to { opacity: 1; transform: none; } }
 @media (max-width: 760px) { .ww .cv-bento > * { grid-column: 1 / -1 !important; } .ww .cv-bento > .cv-ringc { grid-column: span 6 !important; } .ww .cv-stats { grid-template-columns: 1fr 1fr; } }
 /* ---- client view: dark glass theme ---- */
-.ww #clientView { background: radial-gradient(1100px 520px at 85% -8%, rgba(63,116,33,.45), transparent 60%), radial-gradient(800px 520px at -5% 38%, rgba(31,184,138,.2), transparent 60%), radial-gradient(700px 500px at 100% 85%, rgba(74,98,232,.18), transparent 60%), #08130f; border-radius: 30px; padding: 24px; color: #e8f3ec; }
-.ww #clientView .cv-card, .ww #clientView .cv-tile:not(.cv-big2):not(.cv-dark), .ww #clientView .cv-rdbar { background: linear-gradient(160deg, rgba(255,255,255,.08), rgba(255,255,255,.03)); border: 1px solid rgba(255,255,255,.1); backdrop-filter: blur(10px); box-shadow: 0 20px 40px -28px #000; color: #e8f3ec; }
-.ww #clientView .cv-dark { background: linear-gradient(160deg, rgba(159,211,106,.18), rgba(31,184,138,.08)); border: 1px solid rgba(159,211,106,.3); }
-.ww #clientView .cv-k, .ww #clientView .cv-tile small, .ww #clientView .cv-stat small, .ww #clientView .cv-inl, .ww #clientView .dmid small, .ww #clientView .cv-ringc .mid small { color: rgba(232,243,236,.6); }
-.ww #clientView .cv-tile b, .ww #clientView .cv-stat b, .ww #clientView .cv-inl b, .ww #clientView .cv-ringc .mid b, .ww #clientView .dmid b, .ww #clientView .cv-card h3, .ww #clientView .cv-sec > h2 { color: #fff; }
-.ww #clientView .cv-dark b, .ww #clientView .cv-gauge .mid b { color: #9fd36a; }
+.ww #clientView { border-radius: 30px; padding: 24px; }
+html[data-theme="dark"] .ww #clientView { background: radial-gradient(1100px 520px at 85% -8%, rgba(63,116,33,.45), transparent 60%), radial-gradient(800px 520px at -5% 38%, rgba(31,184,138,.2), transparent 60%), radial-gradient(700px 500px at 100% 85%, rgba(74,98,232,.18), transparent 60%), #08130f; color: #e8f3ec; }
+html[data-theme="dark"] .ww #clientView .cv-card, html[data-theme="dark"] .ww #clientView .cv-tile:not(.cv-big2):not(.cv-dark), html[data-theme="dark"] .ww #clientView .cv-rdbar { background: linear-gradient(160deg, rgba(255,255,255,.08), rgba(255,255,255,.03)); border: 1px solid rgba(255,255,255,.1); backdrop-filter: blur(10px); box-shadow: 0 20px 40px -28px #000; color: #e8f3ec; }
+html[data-theme="dark"] .ww #clientView .cv-dark { background: linear-gradient(160deg, rgba(159,211,106,.18), rgba(31,184,138,.08)); border: 1px solid rgba(159,211,106,.3); }
+html[data-theme="dark"] .ww #clientView .cv-k, html[data-theme="dark"] .ww #clientView .cv-tile small, html[data-theme="dark"] .ww #clientView .cv-stat small, html[data-theme="dark"] .ww #clientView .cv-inl, html[data-theme="dark"] .ww #clientView .dmid small, html[data-theme="dark"] .ww #clientView .cv-ringc .mid small { color: rgba(232,243,236,.6); }
+html[data-theme="dark"] .ww #clientView .cv-tile b, html[data-theme="dark"] .ww #clientView .cv-stat b, html[data-theme="dark"] .ww #clientView .cv-inl b, html[data-theme="dark"] .ww #clientView .cv-ringc .mid b, html[data-theme="dark"] .ww #clientView .dmid b, html[data-theme="dark"] .ww #clientView .cv-card h3, html[data-theme="dark"] .ww #clientView .cv-sec > h2 { color: #fff; }
+html[data-theme="dark"] .ww #clientView .cv-dark b, html[data-theme="dark"] .ww #clientView .cv-gauge .mid b { color: #9fd36a; }
 .ww #clientView .cv-sec > h2 { font-size: 24px; letter-spacing: -.01em; } .ww #clientView .cv-card h3 { font-size: 17px; }
-.ww #clientView .cv-stat { border-bottom-color: rgba(255,255,255,.1); } .ww #clientView .cv-inl { border-top-color: rgba(255,255,255,.1); }
-.ww #clientView .cv-tile .ic { color: #9fd36a; background: rgba(159,211,106,.12); }
-.ww #clientView .cv-bar { background: rgba(255,255,255,.1); } .ww #clientView .cv-ringc .bg { stroke: rgba(255,255,255,.1); }
-.ww #clientView .cv-nav { background: rgba(10,25,19,.75); border-color: rgba(255,255,255,.12); } .ww #clientView .cv-nav a { color: rgba(232,243,236,.7); } .ww #clientView .cv-nav a:hover { background: rgba(255,255,255,.08); color: #fff; } .ww #clientView .cv-nav a.on { background: linear-gradient(135deg, #3f7421, #6fbf3a); color: #fff; }
-.ww #clientView .cv-pick button, .ww #clientView .cv-pick input { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.14); color: #e8f3ec; color-scheme: dark; } .ww #clientView .cv-pick button[aria-pressed="true"] { background: linear-gradient(135deg, #3f7421, #6fbf3a); border-color: transparent; color: #fff; }
-.ww #clientView .cv-tbl td, .ww #clientView .cv-tbl th { border-bottom-color: rgba(255,255,255,.1); } .ww #clientView .cv-tbl th { color: rgba(232,243,236,.55); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; } .ww #clientView .cv-on { color: #9fd36a; } .ww #clientView .cv-on::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #9fd36a; margin-right: 8px; box-shadow: 0 0 10px #9fd36a; }
-.ww #clientView .dg-read { color: #e8f3ec; } .ww #clientView .dg-read .k { color: #f2c94c; } .ww #clientView .dg-read .g { color: #5fe0b0; } .ww #clientView .dg-read .o { color: #ff9d57; } .ww #clientView .cv-rdbar { padding: 10px 22px 12px; } .ww #clientView .cv-rdbar .dg-read { font-size: 14px; gap: 6px 26px; }
-.ww #clientView .cv-foot { color: rgba(232,243,236,.5); } .ww #clientView .notice { background: rgba(242,201,76,.12); color: #f2c94c; border-color: rgba(242,201,76,.3); }
+html[data-theme="dark"] .ww #clientView .cv-stat { border-bottom-color: rgba(255,255,255,.1); } html[data-theme="dark"] .ww #clientView .cv-inl { border-top-color: rgba(255,255,255,.1); }
+html[data-theme="dark"] .ww #clientView .cv-tile .ic { color: #9fd36a; background: rgba(159,211,106,.12); }
+html[data-theme="dark"] .ww #clientView .cv-bar { background: rgba(255,255,255,.1); } html[data-theme="dark"] .ww #clientView .cv-ringc .bg { stroke: rgba(255,255,255,.1); }
+html[data-theme="dark"] .ww #clientView .cv-nav { background: rgba(10,25,19,.75); border-color: rgba(255,255,255,.12); } html[data-theme="dark"] .ww #clientView .cv-nav a { color: rgba(232,243,236,.7); } html[data-theme="dark"] .ww #clientView .cv-nav a:hover { background: rgba(255,255,255,.08); color: #fff; } html[data-theme="dark"] .ww #clientView .cv-nav a.on { background: linear-gradient(135deg, #3f7421, #6fbf3a); color: #fff; }
+html[data-theme="dark"] .ww #clientView .cv-pick button, html[data-theme="dark"] .ww #clientView .cv-pick input { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.14); color: #e8f3ec; color-scheme: dark; } html[data-theme="dark"] .ww #clientView .cv-pick button[aria-pressed="true"] { background: linear-gradient(135deg, #3f7421, #6fbf3a); border-color: transparent; color: #fff; }
+html[data-theme="dark"] .ww #clientView .cv-tbl td, html[data-theme="dark"] .ww #clientView .cv-tbl th { border-bottom-color: rgba(255,255,255,.1); } html[data-theme="dark"] .ww #clientView .cv-tbl th { color: rgba(232,243,236,.55); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; } html[data-theme="dark"] .ww #clientView .cv-on { color: #9fd36a; } html[data-theme="dark"] .ww #clientView .cv-on::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #9fd36a; margin-right: 8px; box-shadow: 0 0 10px #9fd36a; }
+html[data-theme="dark"] .ww #clientView .dg-read { color: #e8f3ec; } html[data-theme="dark"] .ww #clientView .dg-read .k { color: #f2c94c; } html[data-theme="dark"] .ww #clientView .dg-read .g { color: #5fe0b0; } html[data-theme="dark"] .ww #clientView .dg-read .o { color: #ff9d57; } html[data-theme="dark"] .ww #clientView .cv-rdbar { padding: 10px 22px 12px; } html[data-theme="dark"] .ww #clientView .cv-rdbar .dg-read { font-size: 14px; gap: 6px 26px; }
+html[data-theme="dark"] .ww #clientView .cv-foot { color: rgba(232,243,236,.5); } html[data-theme="dark"] .ww #clientView .notice { background: rgba(242,201,76,.12); color: #f2c94c; border-color: rgba(242,201,76,.3); }
 .ww #clientView .cv-pick { display: flex; flex-wrap: wrap; gap: 8px; } .ww #clientView .cv-pick button { white-space: nowrap; }
 .ww #clientView .cv-2 { grid-template-columns: repeat(2, 1fr); gap: 16px; } .ww #clientView .cv-plot { height: 330px; } .ww #clientView .cv-plot.s { height: 290px; }
 .ww .cv-proj input[type=range] { -webkit-appearance: none; appearance: none; height: 10px; border-radius: 6px; background: linear-gradient(90deg, #6fbf3a var(--pct, 33%), rgba(255,255,255,.14) 0); outline: none; margin: 16px 0 22px; }
 .ww .cv-proj input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; border-radius: 50%; background: #fff; border: 5px solid #6fbf3a; box-shadow: 0 0 0 6px rgba(111,191,58,.25), 0 6px 14px rgba(0,0,0,.4); cursor: grab; }
 .ww .cv-proj input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 5px solid #6fbf3a; cursor: grab; }
-.ww #clientView .cv-proj .cv-k b { color: #9fd36a; font-size: 22px; }
+.ww #clientView .cv-proj .cv-k b { font-size: 22px; }
+html[data-theme="dark"] .ww #clientView .cv-proj .cv-k b { color: #9fd36a; }
 .ww .trees svg { width: 26px; height: 26px; color: #6fbf3a; fill: rgba(111,191,58,.25); filter: drop-shadow(0 0 6px rgba(111,191,58,.5)); }
 .ww .trees span::selection, .ww .trees ::selection { background: transparent; } .ww .trees { user-select: none; }
 @media (max-width: 900px) { .ww #clientView .cv-2 { grid-template-columns: 1fr; } .ww #clientView { padding: 14px; border-radius: 22px; } }
@@ -601,6 +605,152 @@ main.ww { max-width: none; padding: 30px 40px 64px; }
 .ww #siteCharts .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
 .ww #siteCharts .charts .block { margin-bottom: 0; }
 @media (max-width: 900px) { .ww #siteCharts .charts { grid-template-columns: 1fr; } }
+
+/* ---- client dashboard: three one-page screens (Overview, Equipment, Analysis & forecast) ---- */
+.ww .cv-screen { display: flex; flex-direction: column; gap: 14px; }
+.ww .cv-screen[hidden] { display: none !important; }
+.ww .cv-screen.on { animation: cvIn .45s both; }
+.ww .cv-row { display: grid; grid-template-columns: repeat(12, 1fr); gap: 12px; }
+.ww .cv-tabs { display: flex; gap: 4px; padding: 4px; border-radius: 99px; background: #fff; border: 1px solid var(--rule); margin-left: auto; align-self: center; }
+.ww .cv-tabs button { font: inherit; font-size: 14px; border: 0; background: none; padding: 7px 16px; border-radius: 99px; cursor: pointer; color: var(--muted); white-space: nowrap; }
+.ww .cv-tabs button[aria-pressed="true"] { background: #0f1f1d; color: #fff; }
+.ww .cv-ringc .rw { position: relative; width: var(--rs, 130px); height: var(--rs, 130px); }
+.ww .cv-ringc .rw svg { width: 100%; height: 100%; }
+.ww .cv-ringc .rw .mid { position: absolute; inset: 0; top: 0; height: auto; }
+.ww .cv-ringc .rw .mid b { font-size: calc(var(--rs, 130px) * .22); }
+.ww .cv-anbody { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.ww .cv-abar { display: flex; gap: 12px; flex-wrap: wrap; align-items: stretch; }
+.ww .cv-abar .cv-rdbar { flex: 1; margin: 0; min-width: 280px; }
+.ww .cv-mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.ww .cv-m { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 12px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); font-size: 13px; min-width: 0; }
+.ww .cv-m b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.ww .cv-m span { color: rgba(232,243,236,.55); font-size: 12px; white-space: nowrap; }
+.ww .cv-m em { font-style: normal; font-size: 12px; font-weight: 700; white-space: nowrap; } .ww .cv-m em.on { color: #5fe0b0; } .ww .cv-m em.off { color: #ff8a7a; }
+@media (max-width: 900px) { .ww .cv-hero { grid-template-columns: 1fr; } .ww .cv-tabs { margin: 8px 0 0; overflow-x: auto; max-width: 100%; } }
+@media (max-width: 760px) { .ww .cv-row { grid-template-columns: repeat(6, 1fr); } .ww .cv-row > * { grid-column: span 6 !important; } .ww .cv-row > .cv-ringc { grid-column: span 3 !important; } .ww .cv-ringc { --rs: 110px; } }
+@media (min-width: 901px) {
+  body.cv-fit main.ww { padding-top: 16px; padding-bottom: 16px; }
+  body.cv-fit .ww .page-head { margin-bottom: 8px; padding-bottom: 0; align-items: center; gap: 12px; flex-wrap: nowrap; }
+  body.cv-fit .ww .page-head p, body.cv-fit .ww .finder, body.cv-fit .back-btn { display: none; }
+  body.cv-fit .ww .page-head h1 { font-size: 1.55rem; margin: 0; }
+  body.cv-fit .ww .page-head .status { order: 3; }
+  body.cv-fit:not(.cv-multi) .ww .tabbar { display: none; }
+  body.cv-fit .ww .tabbar { margin-bottom: 8px; }
+  body.cv-fit .ww .notice { margin-bottom: 8px; padding: 8px 14px; }
+  body.cv-fit .ww #clientView { height: var(--cvh, 640px); padding: 14px; border-radius: 24px; overflow: hidden; box-sizing: border-box; display: flex; }
+  body.cv-fit .ww #clientView[hidden] { display: none; }
+  body.cv-fit .ww .cv-wrap { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+  body.cv-fit .ww .cv-screen { flex: 1; min-height: 0; gap: 10px; }
+  body.cv-fit .ww .cv-row { flex: 1 1 0; min-height: 0; gap: 10px; }
+  body.cv-fit .ww .cv-row > * { min-height: 0; min-width: 0; margin: 0; overflow: hidden; }
+  body.cv-fit .ww .cv-tile, body.cv-fit .ww .cv-card { padding: 10px 14px; border-radius: 16px; }
+  body.cv-fit .ww .cv-tile:hover, body.cv-fit .ww .cv-card:hover { transform: none; }
+  /* overview */
+  body.cv-fit .ww .cv-hero { flex: 0 0 auto; padding: 12px 22px; border-radius: 18px; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.5fr) auto; gap: 22px; }
+  body.cv-fit .ww .cv-hero .cv-live { margin: 0 0 4px; padding: 3px 10px; }
+  body.cv-fit .ww .cv-hero h1 { font-size: 15px; }
+  body.cv-fit .ww .cv-hero .cv-hl { margin: 0; font-size: 11px; }
+  body.cv-fit .ww .cv-hero .cv-big { font-size: clamp(32px, 7vh, 60px); margin: 2px 0 0; white-space: nowrap; }
+  body.cv-fit .ww .cv-hero .cv-big small { font-size: 15px; }
+  body.cv-fit .ww .cv-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  body.cv-fit .ww .cv-chip { padding: 5px 12px; border-radius: 12px; }
+  body.cv-fit .ww .cv-chip b { font-size: clamp(14px, 2.4vh, 19px); }
+  body.cv-fit .ww .cv-ring { width: clamp(80px, 14vh, 128px); height: clamp(80px, 14vh, 128px); }
+  body.cv-fit .ww .cv-ring::before { inset: 9px; }
+  body.cv-fit .ww .cv-big2 { position: relative; justify-content: flex-start; gap: 2px; }
+  body.cv-fit .ww .cv-big2 > div:first-child { position: relative; z-index: 1; }
+  body.cv-fit .ww .cv-big2 .n b { font-size: clamp(24px, 5.2vh, 46px); margin: 2px 0 0; }
+  body.cv-fit .ww .cv-big2 .cv-k { margin-top: 0; font-size: 10px; }
+  body.cv-fit .ww .cv-big2 .sp { position: absolute; left: 0; right: 0; bottom: 0; height: 40%; margin: 0; opacity: .8; }
+  body.cv-fit .ww .cv-ringc { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 8px; --rs: clamp(52px, 10.5vh, 92px); }
+  body.cv-fit .ww .cv-ringc .cv-k { margin: 0; text-align: center; font-size: 10px; line-height: 1.25; }
+  body.cv-fit .ww .cv-ringc .cv-k svg { display: none; }
+  body.cv-fit .ww .cv-pulse .n b { font-size: clamp(24px, 5.2vh, 42px); margin: 2px 0 0; }
+  body.cv-fit .ww .cv-pulse .beat { height: 22px; }
+  body.cv-fit .ww .cv-pulse .cv-k { font-size: 10px; margin-top: 0; }
+  body.cv-fit .ww .cv-gl { flex: 0 0 auto; padding: 10px 18px; border-radius: 18px; }
+  body.cv-fit .ww .gl-top { margin-bottom: 6px; gap: 12px; }
+  body.cv-fit .ww .glc { padding: 8px 14px; gap: 12px; border-radius: 14px; }
+  body.cv-fit .ww .glc .ic { width: 38px; height: 38px; border-radius: 12px; }
+  body.cv-fit .ww .gl-top .n b { font-size: clamp(22px, 4.4vh, 38px); }
+  body.cv-fit .ww .gl-mid { padding: 8px 0 0; gap: 4px 14px; border-bottom: 0; }
+  body.cv-fit .ww .cv-gl .cv-stat { padding: 0; }
+  body.cv-fit .ww .cv-gl .cv-stat b { font-size: clamp(16px, 2.8vh, 24px); margin-top: 0; }
+  /* equipment */
+  body.cv-fit .ww .cv-row.r1 { flex-grow: 4; } body.cv-fit .ww .cv-row.r2 { flex-grow: 5; } body.cv-fit .ww .cv-row.r3 { flex-grow: 3; }
+  body.cv-fit .ww .cv-gauge { --gh: clamp(70px, 15vh, 150px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 14px; }
+  body.cv-fit .ww .cv-gauge svg:first-of-type { width: auto; height: var(--gh); max-width: 92%; }
+  body.cv-fit .ww .cv-gauge .mid { margin-top: calc(var(--gh) * -.5); }
+  body.cv-fit .ww .cv-gauge .mid b { font-size: calc(var(--gh) * .3); }
+  body.cv-fit .ww .cv-gauge .flow { height: 8px; margin-top: 4px; }
+  body.cv-fit .ww .cv-gauge .st { margin-top: 4px; padding: 2px 12px; }
+  body.cv-fit .ww .cv-gauge .cv-k { position: absolute; top: 8px; left: 14px; margin: 0; }
+  body.cv-fit .ww .cv-stats { grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr 1fr; align-content: stretch; gap: 0 18px; padding: 6px 16px; }
+  body.cv-fit .ww .cv-stats .cv-stat { display: flex; flex-direction: column; justify-content: center; padding: 2px 4px; }
+  body.cv-fit .ww .cv-stat b { font-size: clamp(18px, 3.6vh, 30px); margin-top: 2px; }
+  body.cv-fit .ww .cv-row.r2 > .cv-card { display: flex; flex-direction: column; }
+  body.cv-fit .ww .cv-card h3 { margin: 0 0 4px; font-size: 14px; }
+  body.cv-fit .ww .cv-bar { height: 10px; margin: 3px 0 6px; }
+  body.cv-fit .ww .cv-inl { margin-top: auto; padding-top: 8px; gap: 18px; }
+  body.cv-fit .ww .cv-inl b { font-size: clamp(16px, 2.8vh, 22px); }
+  body.cv-fit .ww .cv-dc .cv-plot { flex: 1; min-height: 0; height: auto; }
+  body.cv-fit .ww .dmid { inset: 0 0 26px; } body.cv-fit .ww .dmid b { font-size: clamp(20px, 4vh, 30px); }
+  body.cv-fit .ww .cv-meters { display: flex; flex-direction: column; }
+  body.cv-fit .ww .cv-mscroll { flex: 1; min-height: 0; overflow: auto; }
+  /* analysis & forecast */
+  body.cv-fit .ww .cv-abar { flex: 0 0 auto; flex-wrap: nowrap; gap: 10px; }
+  body.cv-fit .ww .cv-abar .cv-pick { margin: 0; flex-wrap: nowrap; align-content: center; }
+  body.cv-fit .ww .cv-abar .cv-pick button { padding: 6px 12px; font-size: 13px; }
+  body.cv-fit .ww #clientView .cv-rdbar { padding: 6px 14px; min-width: 0; border-radius: 14px; }
+  body.cv-fit .ww .cv-rdbar .dg-read { margin: 2px 0; font-size: 13px; }
+  body.cv-fit .ww #cvMsg { margin: 0; flex: 0 0 auto; }
+  body.cv-fit .ww .cv-anbody { grid-template-columns: minmax(0, 2.1fr) minmax(250px, 1fr); gap: 10px; flex: 1; min-height: 0; }
+  body.cv-fit .ww #clientView .cv-2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; min-height: 0; }
+  body.cv-fit .ww .cv-2 > .cv-card, body.cv-fit .ww .cv-proj { display: flex; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; }
+  body.cv-fit .ww #clientView .cv-plot, body.cv-fit .ww #clientView .cv-plot.s { flex: 1; min-height: 0; height: auto; position: relative; }
+  body.cv-fit .ww .cv-proj { padding: 12px 14px; }
+  body.cv-fit .ww .cv-proj .cv-lead { font-size: 13px; margin: 0 0 8px; }
+  body.cv-fit .ww .cv-proj .cv-pick { margin-bottom: 8px; gap: 6px; }
+  body.cv-fit .ww .cv-proj .cv-pick button { padding: 6px 12px; font-size: 13px; }
+  body.cv-fit .ww .cv-pt { flex: 1; min-height: 0; grid-template-rows: 1fr 1fr; gap: 8px; margin: 0; }
+  body.cv-fit .ww .cv-pt .cv-tile { padding: 8px 12px; overflow: hidden; }
+  body.cv-fit .ww .cv-pt .cv-tile .ic { width: 26px; height: 26px; font-size: 14px; border-radius: 8px; }
+  body.cv-fit .ww .cv-pt .cv-tile b { font-size: clamp(18px, 3.4vh, 28px); margin-top: 2px; }
+  body.cv-fit .ww .cv-pt .cv-k { margin-top: 2px; font-size: 10px; }
+  body.cv-fit .ww .cv-proj .cv-fine { margin: 6px 0 0; font-size: 11px; }
+}
+
+/* tuning for the one-page screens */
+@media (min-width: 901px) {
+  body.cv-fit .ww .page-head { padding-right: 270px; }
+  body.cv-fit .ww .cv-hero { padding: 8px 20px; gap: 18px; }
+  body.cv-fit .ww .cv-hero .cv-big { font-size: clamp(30px, 6vh, 54px); }
+  body.cv-fit .ww .cv-chips { gap: 6px; }
+  body.cv-fit .ww .cv-chip { padding: 4px 10px; min-width: 0; }
+  body.cv-fit .ww .cv-chip span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10px; }
+  body.cv-fit .ww .cv-chip b { font-size: clamp(13px, 2.2vh, 17px); white-space: nowrap; }
+  body.cv-fit .ww .cv-ring { width: clamp(72px, 12vh, 112px); height: clamp(72px, 12vh, 112px); }
+  body.cv-fit .ww .cv-ring b { font-size: clamp(22px, 4vh, 36px); }
+  body.cv-fit .ww .cv-big2 .n b { font-size: clamp(22px, 4.4vh, 40px); }
+  body.cv-fit .ww .cv-ringc { --rs: clamp(48px, 8.5vh, 78px); }
+  body.cv-fit .ww .cv-gl { padding: 8px 16px; }
+  body.cv-fit .ww .glc { padding: 6px 12px; }
+  body.cv-fit .ww .glc .ic { width: 34px; height: 34px; }
+  body.cv-fit .ww .gl-top .n b { font-size: clamp(20px, 3.8vh, 32px); }
+  body.cv-fit .ww .gl-mid { padding-top: 6px; }
+  body.cv-fit .ww .cv-gl .cv-stat { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; }
+  body.cv-fit .ww .cv-gl .cv-stat .cv-k { flex-basis: 100%; margin-top: 0; }
+  body.cv-fit .ww .cv-gl .cv-stat b { font-size: clamp(15px, 2.6vh, 22px); white-space: nowrap; }
+  body.cv-fit .ww .cv-stat b { font-size: clamp(16px, 3.2vh, 26px); }
+  body.cv-fit .ww .dmid { inset: 0 0 48px; }
+  body.cv-fit .ww .cv-pt { grid-template-columns: 1fr; grid-template-rows: repeat(4, 1fr); }
+  body.cv-fit .ww .cv-pt > .cv-tile { grid-column: 1 / -1 !important; display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; align-items: center; column-gap: 12px; }
+  body.cv-fit .ww .cv-pt .cv-tile .ic { grid-row: 1 / 3; grid-column: 1; }
+  body.cv-fit .ww .cv-pt .cv-tile .cv-k { grid-column: 2; grid-row: 1; margin: 0; align-self: end; }
+  body.cv-fit .ww .cv-pt .cv-tile b { grid-column: 2; grid-row: 2; margin: 0; font-size: clamp(18px, 3.2vh, 26px); white-space: nowrap; }
+  body.cv-fit .ww .cv-pt .cv-tile small { grid-column: 3; grid-row: 2; align-self: end; }
+  body.cv-fit .ww .cv-pt .cv-tile em { display: none; }
+}
 </style>
 <link rel="icon" type="image/png" href="/favicon.png">
 </head>
@@ -811,8 +961,8 @@ function setRegister(el, value, label) {
 /* ---------- charts ---------- */
 function makeCharts() {
   Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
-  Chart.defaults.color = '#5d6f69';
-  const grid = { color: '#e3e9e4' };
+  Chart.defaults.color = Theme.chart().ink;
+  const grid = { color: Theme.chart().grid };
   liveChart = new Chart($('#liveChart'), {
     type: 'line',
     data: { labels: [], datasets: [{ data: [], borderColor: '#3f7421', backgroundColor: 'rgba(91,154,46,.18)', fill: true, borderWidth: 2, pointRadius: 0, tension: .25 }] },
@@ -1000,7 +1150,7 @@ const h24Cross = { id: 'h24Cross', afterDatasetsDraw(chart) {
 } };
 
 function makeOverviewCharts() {
-  const grid = { color: '#e3e9e4' };
+  const grid = { color: Theme.chart().grid };
   h24Chart = new Chart($('#h24Chart'), {
     type: 'line',
     plugins: [h24Cross],
@@ -1959,6 +2109,24 @@ const cvPreLine = { id: 'cvPreLine', afterDatasetsDraw(chart) {
     ctx.fillText(cvT('Pre') + ' ' + nf(v, v < 10 ? 2 : 1), a.right - 4, y.getPixelForValue(v) - 4); ctx.restore();
   });
 } };
+// Value labels over the most recent bar that has a reading: saved kWh (green) above, actual kWh (white/dark) below it.
+const cvLatestVal = { id: 'cvLatestVal', afterDatasetsDraw(chart) {
+  const dsU = chart.data.datasets[0], dsS = chart.data.datasets.find((d, k) => k > 0 && !d.isPreLine && d.data);
+  if (!dsU || !dsU.data) return;
+  const num = (v) => (v == null || v === '' ? 0 : Number(v)), n = dsU.data.length;
+  let i = -1; for (let k = n - 1; k >= 0; k--) { if (num(dsU.data[k]) > 0 || (dsS && num(dsS.data[k]) > 0)) { i = k; break; } }
+  if (i < 0) return;
+  const mU = chart.getDatasetMeta(0), bU = mU.data[i]; if (!bU) return;
+  const hasS = dsS && num(dsS.data[i]) > 0, bS = hasS ? chart.getDatasetMeta(chart.data.datasets.indexOf(dsS)).data[i] : null;
+  const top = Math.min(bU.y, bS ? bS.y : bU.y), a = chart.chartArea, ctx = chart.ctx, dark = Theme.get() === 'dark';
+  ctx.save(); ctx.font = '700 12px ' + Chart.defaults.font.family; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+  const put = (txt, col, y) => { const w = ctx.measureText(txt).width / 2, x = Math.max(a.left + w, Math.min(bU.x, chart.width - w - 2));
+    ctx.lineWidth = 3; ctx.strokeStyle = dark ? 'rgba(6,16,12,.85)' : 'rgba(255,255,255,.9)'; ctx.strokeText(txt, x, y); ctx.fillStyle = col; ctx.fillText(txt, x, y); };
+  let y = top - 4;
+  if (hasS) { put(nf(num(dsS.data[i]), 2), dark ? '#5fe0b0' : '#14a37a', y); y -= 15; }
+  if (num(dsU.data[i]) > 0) put(nf(num(dsU.data[i]), 2), dark ? '#c9d3ff' : '#3f55e0', y);
+  ctx.restore();
+} };
 function cvSpark(arr, col) {
   const v = arr.map(Number).filter((x) => Number.isFinite(x)); if (v.length < 2) return '';
   const mx = Math.max(...v), mn = Math.min(...v), W = 300, H = 64, st = W / (v.length - 1);
@@ -1966,20 +2134,26 @@ function cvSpark(arr, col) {
   const line = pts.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' ');
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path d="${line} V${H} H0Z" fill="${col}" opacity=".18"/><path d="${line}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>`;
 }
-/* Which section is the reader in? The last one whose top has passed just under the sticky bar. */
-function cvSpy() {
-  const root = $('#clientView'), nav = $('#cvNav'); if (!root || root.hidden || !nav) return;
-  const secs = [...root.querySelectorAll('.cv-sec')]; if (!secs.length) return;
-  const line = nav.getBoundingClientRect().bottom + 24;
-  let cur = secs[0];
-  for (const x of secs) if (x.getBoundingClientRect().top - 28 <= line) cur = x;
-  const last = secs[secs.length - 1];
-  if (last.getBoundingClientRect().bottom <= window.innerHeight + 40) cur = last;
-  nav.querySelectorAll('a').forEach((a) => {
-    const on = a.getAttribute('href') === '#' + cur.id;
-    if (on && !a.classList.contains('on')) nav.scrollTo({ left: a.offsetLeft - nav.clientWidth / 2 + a.clientWidth / 2, behavior: 'smooth' });
-    a.classList.toggle('on', on);
-  });
+/* Client dashboard = three one-page screens (no scrolling). The left menu and the tabs above switch between them. */
+const CV_SCREENS = ['overview', 'equipment', 'analysis'];
+const CV_HASH = { 'cv-eq': 'equipment', 'cv-mt': 'equipment', 'cv-sv': 'equipment', 'cv-an': 'analysis', 'cv-pr': 'analysis' };
+function cvFromHash() { const h = location.hash.slice(1); return CV_SCREENS.includes(h) ? h : (CV_HASH[h] || 'overview'); }
+function cvFit() { // the screen is exactly as tall as the room left under the page header, so nothing scrolls
+  const root = $('#clientView'); if (!root || root.hidden || !state.client) return;
+  const main = root.closest('main'), pb = main ? parseFloat(getComputedStyle(main).paddingBottom) || 0 : 0;
+  const top = root.getBoundingClientRect().top + window.scrollY;
+  root.style.setProperty('--cvh', Math.max(520, window.innerHeight - top - pb) + 'px');
+  Object.values(CV.charts).forEach((c) => c.resize());
+}
+function cvShow(name, fromHash) {
+  const root = $('#clientView'); if (!root || !root.querySelector('.cv-screen')) return;
+  if (!CV_SCREENS.includes(name)) name = 'overview';
+  CV.screen = name;
+  root.querySelectorAll('.cv-screen').forEach((el) => { const on = el.dataset.screen === name; el.hidden = !on; el.classList.toggle('on', on); });
+  document.querySelectorAll('#cvTabs button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.screen === name)));
+  if (location.hash.slice(1) !== name) history.replaceState(null, '', '#' + name);
+  requestAnimationFrame(cvFit);
+  window.dispatchEvent(new Event('cvscreen'));
 }
 function cvIdx() { const S = CV.S; if (!S || !S.labels.length) return -1; for (let j = S.labels.length - 1; j >= 0; j--) if ((S.traffic && S.traffic[j]) || (S.used && S.used[j])) return j; return S.labels.length - 1; }
 function cvRd(i) {
@@ -2009,73 +2183,70 @@ function cvOpen(id) {
   const p = state.projects.find((x) => x.id === id) || {};
   const tile = (i, l, u, ic, cls = '') => `<div class="cv-tile ${cls}"><span class="ic">${ic}</span><span class="cv-k">${l}</span><b id="${i}">-</b>${u ? `<small>${u}</small>` : ''}<em id="${i}C"></em></div>`;
   const chip = (i, l, ic) => `<div class="cv-chip"><span>${ic ? ico(ic, 14) : ''}${l}</span><b id="${i}">-</b></div>`;
-  const ring = (id, l, col, span, ic) => `<div class="cv-tile cv-ringc" style="--c:${col};grid-column:span ${span}"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="bg"/><circle cx="60" cy="60" r="52" class="fg" id="${id}R"/></svg><div class="mid"><b id="${id}">-</b><small>%</small></div><span class="cv-k">${ic ? ico(ic, 15) : ''}${l}</span></div>`;
+  const ring = (id, l, col, span, ic) => `<div class="cv-tile cv-ringc" style="--c:${col};grid-column:span ${span}"><div class="rw"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="bg"/><circle cx="60" cy="60" r="52" class="fg" id="${id}R"/></svg><div class="mid"><b id="${id}">-</b><small>%</small></div></div><span class="cv-k">${ic ? ico(ic, 15) : ''}${l}</span></div>`;
   const stat = (id, l, u, ic) => `<div class="cv-stat"><span class="cv-k">${ic ? ico(ic, 15) : ''}${l}</span><b id="${id}">-</b><small>${u}</small></div>`;
   const hero = (cls, id, l, u, sp, chipId, span, ic) => `<div class="cv-tile cv-big2 ${cls}" style="grid-column:span ${span}"><div><span class="cv-k">${ic ? ico(ic, 15) : ''}${l}</span><div class="n"><b id="${id}">-</b>${u ? `<small>${u}</small>` : ''}</div><em id="${chipId}"></em></div>${sp ? `<div class="sp" id="${sp}"></div>` : ''}</div>`;
   const glb = (i, l, u, ic) => `<div class="glc"><span class="ic">${ico(ic)}</span><div><span class="cv-k">${l}</span><div class="n"><b id="${i}">-</b><small>${u}</small></div></div></div>`;
   const cv = (i, ttl, cls = '', ic) => `<div class="cv-card"><h3>${ic ? ico(ic, 17) : ''}${ttl}</h3><div class="cv-plot ${cls}"><canvas id="${i}"></canvas></div></div>`;
   $('#clientView').innerHTML = `<div class="cv-wrap">
-  <section class="cv-hero"><i class="cv-orb a"></i><i class="cv-orb b"></i><div><span class="cv-live"><i></i><span id="cvAt">Loading</span></span><h1>${esc(p.name || '')}<small>${esc(p.location || '')}</small></h1>
-    <div class="cv-hl">Energy saved this month</div><div class="cv-big"><span id="cvSaved">-</span><small>kWh</small></div>
-    <div class="cv-chips">${chip('cvCost', 'Cost saved', 'coin')}${chip('cvCo2', 'Carbon emission reduction', 'cloud')}${chip('cvTrees', 'Trees equivalent', 'tree')}${chip('cvUsage', 'Power used this month', 'bolt')}</div></div>
+  <div class="cv-screen on" data-screen="overview">
+  <section class="cv-hero"><i class="cv-orb a"></i><i class="cv-orb b"></i>
+    <div class="hA"><span class="cv-live"><i></i><span id="cvAt">Loading</span></span><h1>${esc(p.name || '')}<small>${esc(p.location || '')}</small></h1></div>
+    <div class="hB"><div class="cv-hl">Energy saved this month</div><div class="cv-big"><span id="cvSaved">-</span><small>kWh</small></div></div>
+    <div class="cv-chips">${chip('cvCost', 'Cost saved', 'coin')}${chip('cvCo2', 'Carbon emission reduction', 'cloud')}${chip('cvTrees', 'Trees equivalent', 'tree')}${chip('cvUsage', 'Power used this month', 'bolt')}</div>
     <div class="cv-ring" id="cvRing"><b id="cvRate">-</b><small>% saved</small></div><svg class="cv-wave" viewBox="0 0 2400 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 45 C150 5 450 85 600 45 S1050 5 1200 45 C1350 5 1650 85 1800 45 S2250 5 2400 45 V90 H0Z" fill="rgba(255,255,255,.07)"/></svg><svg class="cv-wave w2" viewBox="0 0 2400 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 55 C200 90 400 20 600 55 S1000 90 1200 55 C1400 90 1600 20 1800 55 S2200 90 2400 55 V90 H0Z" fill="rgba(159,211,106,.12)"/></svg></section>
-  <nav class="cv-nav" id="cvNav"><a href="#cv-eq">${ico('plug', 16)}Equipment, live</a><a href="#cv-td">${ico('sun', 16)}Today</a><a href="#cv-sv">${ico('leaf', 16)}Energy saving</a><a href="#cv-an">${ico('chart', 16)}Analysis</a><a href="#cv-pr">${ico('trend', 16)}Projection</a><a href="#cv-mt">${ico('meter', 16)}Meters</a><a href="#cv-tt">${ico('flag', 16)}Since go-live</a></nav>
-  <section class="cv-sec cv-rv" id="cv-eq"><h2><span class="cv-hi">${ico('plug', 20)}</span>Equipment, live</h2><div class="cv-bento">
-    <div class="cv-tile cv-gauge cv-dark" style="grid-column:span 5"><span class="cv-k">${ico('bolt', 15)}Load now</span><svg viewBox="0 0 200 110"><path class="bg" d="M10 100 A90 90 0 0 1 190 100"/><path class="fg" id="cvGF" d="M10 100 A90 90 0 0 1 190 100"/></svg><div class="mid"><b id="cvKw">-</b> <small>kW</small></div><svg class="flow" viewBox="0 0 300 12"><line x1="0" y1="6" x2="300" y2="6"/></svg><span class="st" id="cvSt">-</span></div>
-    <div class="cv-card cv-stats" style="grid-column:span 7">${stat('cvW', 'Power', 'W', 'bolt')}${stat('cvV', 'Voltage', 'V', 'pulse')}${stat('cvA', 'Current', 'A', 'pulse')}${stat('cvRead', 'Total meter reading', 'kWh', 'meter')}${stat('cvMt', 'Number of meters', '', 'chip')}${stat('cvFx', 'Lighting fixtures', 'pcs', 'bulb')}</div></div></section>
-  <section class="cv-sec cv-rv" id="cv-td"><h2><span class="cv-hi">${ico('sun', 20)}</span>Today</h2><div class="cv-bento">
-    ${hero('g1', 'cvSv', 'Saved today', 'kWh', 'cvSpS', 'cvSvC', 6, 'leaf')}${hero('g2', 'cvUsed', 'Used today', 'kWh', 'cvSpU', 'cvUsedC', 3, 'bolt')}${hero('g3', 'cvCarbon', 'Carbon saved today', 'kg', 'cvSpC', 'cvCarbonC', 3, 'cloud')}
-    ${ring('cvLed', 'LED operation ratio', '#e0b400', 3, 'bulb')}${ring('cvNL', 'Current lighting power', '#4a62e8', 3, 'bolt')}${ring('cvNP', 'Current parking occupied', '#1fb88a', 3, 'parking')}
-    <div class="cv-tile cv-pulse" style="grid-column:span 3"><div><span class="cv-k">${ico('people', 15)}Current traffic</span><div class="n"><b id="cvNT">-</b></div></div><i class="beat"></i></div>
-    ${hero('g4', 'cvTr', 'People and vehicles today', '', 'cvSpT', 'cvTrC', 8, 'people')}${hero('g5', 'cvPk', 'Parked today', '', '', 'cvPkC', 4, 'car')}</div></section>
-  <section class="cv-sec cv-rv" id="cv-sv"><h2><span class="cv-hi">${ico('leaf', 20)}</span>Energy saving</h2><div class="cv-bento">
-    <div class="cv-card" style="grid-column:span 6"><h3>${ico('chart', 17)}Before and after the improvement</h3><span class="cv-k">Before improvement · <span id="cvBefT">-</span> kWh</span><div class="cv-bar"><i id="cvBef"></i></div><span class="cv-k">After improvement · <span id="cvAftT">-</span> kWh</span><div class="cv-bar"><i class="a" id="cvAft"></i></div><p id="cvBA" style="margin:6px 0 0"></p>
+  <div class="cv-row">${hero('g1', 'cvSv', 'Saved today', 'kWh', 'cvSpS', 'cvSvC', 4, 'leaf')}${hero('g2', 'cvUsed', 'Used today', 'kWh', 'cvSpU', 'cvUsedC', 4, 'bolt')}${hero('g3', 'cvCarbon', 'Carbon saved today', 'kg', 'cvSpC', 'cvCarbonC', 4, 'cloud')}</div>
+  <div class="cv-row">${ring('cvLed', 'LED operation ratio', '#e0b400', 2, 'bulb')}${ring('cvNL', 'Current lighting power', '#4a62e8', 2, 'bolt')}${ring('cvNP', 'Current parking occupied', '#1fb88a', 2, 'parking')}
+    <div class="cv-tile cv-pulse" style="grid-column:span 2"><div><span class="cv-k">${ico('people', 15)}Current traffic</span><div class="n"><b id="cvNT">-</b></div></div><i class="beat"></i></div>
+    ${hero('g4', 'cvTr', 'People and vehicles today', '', 'cvSpT', 'cvTrC', 2, 'people')}${hero('g5', 'cvPk', 'Parked today', '', '', 'cvPkC', 2, 'car')}</div>
+  <div class="cv-gl"><div class="gl-top">${glb('cvTS', 'Energy saved', 'kWh', 'leaf')}${glb('cvTB', 'Bill savings', '', 'coin')}${glb('cvTC', 'Carbon emission reduction', 'kg', 'globe')}</div>
+    <div class="gl-mid">${stat('cvTU', 'Actual usage', 'kWh', 'bolt')}${stat('cvTO', 'Other', 'kWh', 'plug')}${stat('cvTR', 'Energy saving ratio', '%', 'percent')}${stat('cvTD', 'Days running', 'days', 'calendar')}${stat('cvTA', 'Air purified', 'm³', 'wind')}${stat('cvTT', 'Trees equivalent', '', 'tree')}</div></div>
+  </div>
+  <div class="cv-screen" data-screen="equipment" hidden>
+  <div class="cv-row r1"><div class="cv-tile cv-gauge cv-dark" style="grid-column:span 5"><span class="cv-k">${ico('bolt', 15)}Load now</span><svg viewBox="0 0 200 110"><path class="bg" d="M10 100 A90 90 0 0 1 190 100"/><path class="fg" id="cvGF" d="M10 100 A90 90 0 0 1 190 100"/></svg><div class="mid"><b id="cvKw">-</b> <small>kW</small></div><svg class="flow" viewBox="0 0 300 12"><line x1="0" y1="6" x2="300" y2="6"/></svg><span class="st" id="cvSt">-</span></div>
+    <div class="cv-card cv-stats" style="grid-column:span 7">${stat('cvW', 'Power', 'W', 'bolt')}${stat('cvV', 'Voltage', 'V', 'pulse')}${stat('cvA', 'Current', 'A', 'pulse')}${stat('cvRead', 'Total meter reading', 'kWh', 'meter')}${stat('cvMt', 'Number of meters', '', 'chip')}${stat('cvFx', 'Lighting fixtures', 'pcs', 'bulb')}</div></div>
+  <div class="cv-row r2"><div class="cv-card" style="grid-column:span 6"><h3>${ico('chart', 17)}Before and after the improvement</h3><span class="cv-k">Before improvement · <span id="cvBefT">-</span> kWh</span><div class="cv-bar"><i id="cvBef"></i></div><span class="cv-k">After improvement · <span id="cvAftT">-</span> kWh</span><div class="cv-bar"><i class="a" id="cvAft"></i></div><p id="cvBA" style="margin:4px 0 0"></p>
       <div class="cv-inl"><span>Tariff<b id="cvTariff">-</b></span><span>Daily baseline, before improvement<b><span id="cvBase">-</span> kWh/day</b></span></div></div>
     <div class="cv-card cv-dc" style="grid-column:span 3"><h3>${ico('leaf', 17)}Energy saving ratio</h3><div class="cv-plot s"><canvas id="cvDon1"></canvas><div class="dmid" id="cvD1"></div></div></div>
-    <div class="cv-card cv-dc" style="grid-column:span 3"><h3>${ico('bolt', 17)}Power usage ratio</h3><div class="cv-plot s"><canvas id="cvDon2"></canvas><div class="dmid" id="cvD2"></div></div></div></div></section>
-  <section class="cv-sec cv-rv" id="cv-an"><h2><span class="cv-hi">${ico('chart', 20)}</span>Analysis</h2><div class="cv-pick" id="cvPickBar"><button data-m="year">Year</button><button data-m="month" aria-pressed="true">Month</button><button data-m="day">Day</button><button data-m="custom">Date range</button></div><p class="notice warn" id="cvMsg" hidden></p>
-    <div class="cv-rdbar"><p class="dg-read" id="cvRdTraf"></p><p class="dg-read" id="cvRdPow"></p></div>
-    <div class="cv-2">${cv('cvPow', 'Power usage analysis', '', 'chart')}${cv('cvTraf', 'Traffic analysis', '', 'people')}${cv('cvHour', 'Traffic flow trend, last 24 hours', 's', 'trend')}${cv('cvShare', 'Power usage by month', 's', 'calendar')}</div></section>
-  <section class="cv-sec cv-rv" id="cv-pr"><h2><span class="cv-hi">${ico('trend', 20)}</span>Projection</h2><div class="cv-card cv-proj"><p class="cv-lead">If you keep saving at this month's daily pace, this is what you would save over the next:</p>
-    <div class="cv-pick" id="cvPS"><button data-n="3">3 months</button><button data-n="6">6 months</button><button data-n="12" aria-pressed="true">1 year</button><button data-n="36">3 years</button></div>
-    <div class="cv-bento" style="margin-top:16px">${tile('cvPK', 'Energy saved', 'kWh', ico('leaf'), 'cv-dark" style="grid-column:span 6')}${tile('cvPC', 'Cost saved', '', ico('coin'), '" style="grid-column:span 6')}${tile('cvPO', 'Carbon emission reduction', 'kg', ico('globe'), '" style="grid-column:span 6')}${tile('cvPT', 'Trees equivalent', '', ico('tree'), '" style="grid-column:span 6')}</div>
-    <p class="cv-fine">An estimate from this month's average, not a guarantee.</p></div></section>
-  <section class="cv-sec cv-rv" id="cv-mt"><h2><span class="cv-hi">${ico('meter', 20)}</span>Meters</h2><div class="cv-card"><table class="cv-tbl"><thead><tr><th>Meter</th><th>Type</th><th>Status</th></tr></thead><tbody id="cvMeters"></tbody></table></div></section>
-  <section class="cv-sec cv-rv" id="cv-tt"><h2><span class="cv-hi">${ico('flag', 20)}</span>Since go-live</h2><div class="cv-gl"><div class="gl-top">${glb('cvTS', 'Energy saved', 'kWh', 'leaf')}${glb('cvTB', 'Bill savings', '', 'coin')}${glb('cvTC', 'Carbon emission reduction', 'kg', 'globe')}</div>
-    <div class="gl-mid">${stat('cvTU', 'Actual usage', 'kWh', 'bolt')}${stat('cvTO', 'Other', 'kWh', 'plug')}${stat('cvTR', 'Energy saving ratio', '%', 'percent')}${stat('cvTD', 'Days running', 'days', 'calendar')}${stat('cvTA', 'Air purified', 'm³', 'wind')}${stat('cvTT', 'Trees equivalent', '', 'tree')}</div></div></section>
-  <p class="cv-foot">Thank you for choosing Mirae ESP. Your savings update live.</p></div>`;
+    <div class="cv-card cv-dc" style="grid-column:span 3"><h3>${ico('bolt', 17)}Power usage ratio</h3><div class="cv-plot s"><canvas id="cvDon2"></canvas><div class="dmid" id="cvD2"></div></div></div></div>
+  <div class="cv-row r3"><div class="cv-card cv-meters" style="grid-column:span 12"><h3>${ico('meter', 17)}Meters</h3><div class="cv-mscroll"><div class="cv-mgrid" id="cvMeters"></div></div></div></div>
+  </div>
+  <div class="cv-screen" data-screen="analysis" hidden>
+  <div class="cv-abar"><div class="cv-pick" id="cvPickBar"><button data-m="year">Year</button><button data-m="month" aria-pressed="true">Month</button><button data-m="day">Day</button><button data-m="custom">Date range</button></div>
+    <div class="cv-rdbar"><p class="dg-read" id="cvRdTraf"></p><p class="dg-read" id="cvRdPow"></p></div></div>
+  <p class="notice warn" id="cvMsg" hidden></p>
+  <div class="cv-anbody"><div class="cv-2">${cv('cvPow', 'Power usage analysis', '', 'chart')}${cv('cvTraf', 'Traffic analysis', '', 'people')}${cv('cvHour', 'Traffic flow trend, last 24 hours', 's', 'trend')}${cv('cvShare', 'Power usage by month', 's', 'calendar')}</div>
+    <div class="cv-card cv-proj"><h3>${ico('trend', 17)}Projection</h3><p class="cv-lead">If you keep saving at this month's daily pace, this is what you would save over the next:</p>
+      <div class="cv-pick" id="cvPS"><button data-n="3">3 months</button><button data-n="6">6 months</button><button data-n="12" aria-pressed="true">1 year</button><button data-n="36">3 years</button></div>
+      <div class="cv-bento cv-pt">${tile('cvPK', 'Energy saved', 'kWh', ico('leaf'), 'cv-dark" style="grid-column:span 6')}${tile('cvPC', 'Cost saved', '', ico('coin'), '" style="grid-column:span 6')}${tile('cvPO', 'Carbon emission reduction', 'kg', ico('globe'), '" style="grid-column:span 6')}${tile('cvPT', 'Trees equivalent', '', ico('tree'), '" style="grid-column:span 6')}</div>
+      <p class="cv-fine">An estimate from this month's average, not a guarantee.</p></div></div>
+  </div></div>`;
   Object.values(CV.charts).forEach((c) => c.destroy());
   const o = (x = {}) => ({ maintainAspectRatio: false, layout: { padding: { top: 8 } }, plugins: { legend: { display: true, position: 'bottom' } }, ...x });
   const mk = (cid, type, extra) => {
     const cfg = o(extra);
-    if (type !== 'doughnut') for (const k of ['x', 'y']) { cfg.scales = cfg.scales || {}; cfg.scales[k] = { ...(cfg.scales[k] || {}), ticks: { color: '#9db8aa', font: { size: 12 }, maxRotation: 0, autoSkipPadding: 12 }, grid: { color: k === 'y' ? 'rgba(255,255,255,.07)' : 'transparent', drawTicks: false }, border: { display: false } }; }
-    cfg.plugins = { ...cfg.plugins, legend: { ...((cfg.plugins || {}).legend || {}), display: true, position: 'bottom', labels: { color: '#cfe3d6', usePointStyle: true, pointStyle: 'rectRounded', boxWidth: 10, padding: 16, font: { size: 13 } } }, tooltip: { ...((cfg.plugins || {}).tooltip || {}), backgroundColor: 'rgba(6,16,12,.95)', borderColor: 'rgba(159,211,106,.45)', borderWidth: 1, padding: 12, cornerRadius: 12, boxPadding: 6, titleColor: '#9fd36a', bodyColor: '#e8f3ec' } };
+    if (type !== 'doughnut') for (const k of ['x', 'y']) { cfg.scales = cfg.scales || {}; cfg.scales[k] = { ...(cfg.scales[k] || {}), ticks: { color: Theme.get() === 'dark' ? '#9db8aa' : '#5d6f69', font: { size: 12 }, maxRotation: 0, autoSkipPadding: 12 }, grid: { color: k === 'y' ? (Theme.get() === 'dark' ? 'rgba(255,255,255,.07)' : 'rgba(21,35,34,.09)') : 'transparent', drawTicks: false }, border: { display: false } }; }
+    cfg.plugins = { ...cfg.plugins, legend: { ...((cfg.plugins || {}).legend || {}), display: true, position: 'bottom', labels: { color: Theme.get() === 'dark' ? '#cfe3d6' : '#2a3d38', usePointStyle: true, pointStyle: 'rectRounded', boxWidth: 10, padding: 16, font: { size: 13 } } }, tooltip: { ...((cfg.plugins || {}).tooltip || {}), backgroundColor: 'rgba(6,16,12,.95)', borderColor: 'rgba(159,211,106,.45)', borderWidth: 1, padding: 12, cornerRadius: 12, boxPadding: 6, titleColor: '#9fd36a', bodyColor: '#e8f3ec' } };
     if (type === 'doughnut') cfg.layout = { padding: 10 };
-    return new Chart($('#' + cid), { type, plugins: type === 'doughnut' ? [] : [cvPreLine], data: { labels: [], datasets: [] }, options: cfg });
+    return new Chart($('#' + cid), { type, plugins: type === 'doughnut' ? [] : (cid === 'cvPow' ? [cvPreLine, cvLatestVal] : [cvPreLine]), data: { labels: [], datasets: [] }, options: cfg });
   };
   const L = window.T || ((x) => x);
   CV.charts = {
-    pow: mk('cvPow', 'bar', { interaction: CVI, onHover: CVH, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, grace: '10%' } }, plugins: { legend: { display: true, position: 'bottom' }, tooltip: { callbacks: { afterBody: (it) => `${L('Carbon saved')} : ${rdFmt(CV.S && CV.S.carbon ? CV.S.carbon[it[0].dataIndex] : null, 2, ' kg')}` } } } }),
+    pow: mk('cvPow', 'bar', { layout: { padding: { top: 36 } }, interaction: CVI, onHover: CVH, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, grace: '10%' } }, plugins: { legend: { display: true, position: 'bottom' }, tooltip: { callbacks: { afterBody: (it) => `${L('Carbon saved')} : ${rdFmt(CV.S && CV.S.carbon ? CV.S.carbon[it[0].dataIndex] : null, 2, ' kg')}` } } } }),
     traf: mk('cvTraf', 'line', { interaction: CVI, onHover: CVH, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: true, position: 'bottom' }, tooltip: { callbacks: { afterLabel: (c) => `${L('LED operation ratio')} : ${rdFmt(rdLed(CV.S, c.dataIndex), 0, '%')}` } } } }),
     hour: mk('cvHour', 'line', { scales: { y: { beginAtZero: true } } }), share: mk('cvShare', 'bar', { scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, grace: '10%' } } }),
     don1: mk('cvDon1', 'doughnut', { cutout: '62%' }), don2: mk('cvDon2', 'doughnut', { cutout: '62%' }),
   };
   CV.mode = 'month'; CV.pick = null; CV.rdi = null; CV.rdS = null; CV.vals = dgToday(); CV.custom = null; cvSyncPick();
-  if (CV.io) CV.io.disconnect();
-  const links = [...document.querySelectorAll('#cvNav a')];
-  CV.io = new IntersectionObserver((es) => es.forEach((en) => { if (en.isIntersecting) en.target.classList.add('in'); }), { threshold: 0.1 });
-  document.querySelectorAll('#clientView .cv-rv').forEach((x) => CV.io.observe(x));
-  $('#cvNav').addEventListener('click', (e) => { const a = e.target.closest('a'); if (!a) return; e.preventDefault(); const t = document.querySelector(a.getAttribute('href')); if (t) { t.classList.add('in'); t.scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
-  requestAnimationFrame(cvSpy);
+  cvShow(cvFromHash(), true);
   if (!CV.bound) {
     CV.bound = true; const root = $('#clientView');
-    let tick = false; const kick = () => { if (tick) return; tick = true; requestAnimationFrame(() => { tick = false; cvSpy(); }); };
-    document.addEventListener('scroll', kick, true); window.addEventListener('resize', kick);
+    window.addEventListener('resize', cvFit); window.addEventListener('hashchange', () => cvShow(cvFromHash(), true));
     root.addEventListener('pointermove', (e) => { const t = e.target.closest('.cv-tile'); if (!t || e.pointerType === 'touch') return; const r = t.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height; t.style.setProperty('--mx', x * 100 + '%'); t.style.setProperty('--my', y * 100 + '%'); t.style.transform = `perspective(700px) rotateX(${(0.5 - y) * 7}deg) rotateY(${(x - 0.5) * 7}deg) translateY(-3px)`; });
     root.addEventListener('pointerout', (e) => { const t = e.target.closest('.cv-tile'); if (t && !t.contains(e.relatedTarget)) t.style.transform = ''; });
     root.addEventListener('click', (e) => { const b = e.target.closest('#cvPS button'); if (!b) return; CV.months = +b.dataset.n; document.querySelectorAll('#cvPS button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); cvProj(); });
   }
-  get(`/projects/${id}/meters`).then((ms) => { if (id === state.pid && $('#cvMeters')) $('#cvMeters').innerHTML = (ms || []).map((m) => `<tr><td>${esc(m.name)}</td><td>${esc(m.type || '')}</td><td class="${m.online ? 'cv-on' : 'cv-off'}">${m.online ? 'Online' : 'Offline'}</td></tr>`).join(''); }).catch(() => {});
+  get(`/projects/${id}/meters`).then((ms) => { if (id === state.pid && $('#cvMeters')) $('#cvMeters').innerHTML = (ms || []).map((m) => `<div class="cv-m"><b title="${esc(m.name)}">${esc(m.name)}</b><span>${esc(m.type || '')}</span><em class="${m.online ? 'on' : 'off'}">${m.online ? 'Online' : 'Offline'}</em></div>`).join(''); }).catch(() => {});
   $('#cvPickBar').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) openPicker(b.dataset.m, cvTarget(id)); });
   cvLoad(id); CV.timer = setInterval(() => { if (state.pid === id && !document.hidden) cvLoad(id); }, 8000);
   setStatus('ok', 'Live, refreshes every 8 s');
@@ -2152,7 +2323,7 @@ function cvPaint(d) {
   const ch = CV.charts, set = (k, labels, sets) => { ch[k].data.labels = labels; ch[k].data.datasets = sets; ch[k].update('none'); };
   set('don1', [cvT('Actual usage'), cvT('Power saved')], [{ data: [m.usedKwh, m.savedKwh], backgroundColor: ['#a58bdc', '#ff8a2a'], borderWidth: 0 }]);
   set('don2', [cvT('Lighting'), cvT('Air conditioning'), cvT('Other')], [{ data: [m.lampKwh, m.acKwh, m.otherKwh], backgroundColor: ['#e0b400', '#4a62e8', '#e0453a'], borderWidth: 0 }]);
-  set('hour', d.trafficHourly.map((r) => `${pad2(r.hour)}:00`), [{ label: cvT('People and vehicles'), data: d.trafficHourly.map((r) => r.value), borderColor: '#9fd36a', backgroundColor: cvGrad('159,211,106'), fill: true, tension: .4, borderWidth: 3, pointRadius: 0, pointHoverRadius: 6 }]);
+  set('hour', d.trafficHourly.map((r) => `${pad2(r.hour)}:00`), [{ label: cvT('People and vehicles'), data: d.trafficHourly.map((r) => r.value), borderColor: Theme.get() === 'dark' ? '#9fd36a' : '#5b9a2e', backgroundColor: cvGrad(Theme.get() === 'dark' ? '159,211,106' : '91,154,46'), fill: true, tension: .4, borderWidth: 3, pointRadius: 0, pointHoverRadius: 6 }]);
   set('share', d.powerShare.map((r) => new Date(2000, r.month - 1, 1).toLocaleDateString(LOCALE(), { month: 'short' })), [
     { label: cvT('Air conditioning'), data: d.powerShare.map((r) => r.ac), backgroundColor: cvBar('#8f9dff', '#3f55e0'), borderRadius: 6, maxBarThickness: 40 }, { label: cvT('Lighting'), data: d.powerShare.map((r) => r.lamp), backgroundColor: cvBar('#ffe27a', '#e0b400'), borderRadius: 6, maxBarThickness: 40 }, { label: cvT('Other'), data: d.powerShare.map((r) => r.other), backgroundColor: cvBar('#ff8a7a', '#e0453a'), borderRadius: 6, maxBarThickness: 40 },
     ...(B > 0 ? [cvPreSet(d.powerShare.length, Math.round(B * 30 * 100) / 100)] : [])]); // monthly bars: 30 days at the daily baseline, as on the staff chart
@@ -2171,6 +2342,12 @@ async function boot(me) {
     $('#demoBanner').hidden = cfg.mode !== 'mock';
     state.projects = await get('/projects');
     state.client = me.role === 'viewer';
+    if (state.client) {
+      document.body.classList.add('cv-fit'); document.body.classList.toggle('cv-multi', state.projects.length > 1);
+      const head = document.querySelector('.page-head');
+      if (head && !$('#cvTabs')) head.insertAdjacentHTML('beforeend', '<div class="cv-tabs" id="cvTabs" role="tablist" aria-label="Dashboard screens"><button type="button" data-screen="overview" aria-pressed="true">Overview</button><button type="button" data-screen="equipment" aria-pressed="false">Equipment</button><button type="button" data-screen="analysis" aria-pressed="false">Analysis &amp; forecast</button></div>');
+      $('#cvTabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) cvShow(b.dataset.screen); });
+    }
     const staff = me.role !== 'viewer'; // the national overview mixes every client's sites
     $('#tabs').innerHTML = (staff ? '<button class="tab" role="tab" data-id="overview" aria-selected="false">Overview</button>' : '')
       + state.projects.map((p) => `<button class="tab" role="tab" data-id="${esc(p.id)}" data-q="${esc([p.name, p.location, p.client].filter(Boolean).join(' ').toLowerCase())}" aria-selected="false">${esc(p.name)}</button>`).join('')

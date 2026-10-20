@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/app.css">
+<link rel="stylesheet" href="/css/theme.css">
+<script src="/js/theme.js"></script>
 <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body>
@@ -90,7 +92,7 @@ function statusChart(rows) {
       datasets: [{
         data: rows.map((r) => r.n),
         backgroundColor: rows.map((r) => STATUS_COLORS[r.status] || FALLBACK_COLOR),
-        borderColor: '#fff', borderWidth: rows.filter((r) => r.n > 0).length > 1 ? 2 : 0
+        borderColor: Theme.chart().surface, borderWidth: rows.filter((r) => r.n > 0).length > 1 ? 2 : 0
       }]
     },
     options: {
@@ -217,7 +219,8 @@ function barChart(monthly) {
   const cs = getComputedStyle(document.body);
   Chart.defaults.font.family = cs.fontFamily;
   Chart.defaults.font.size = 12;
-  Chart.defaults.color = '#52635e';
+  Chart.defaults.color = Theme.chart().ink;
+  Chart.defaults.borderColor = Theme.chart().grid;
   statusChart(d.clients_by_status);
   barChart(d.monthly);
 })().catch((e) => toast(e.message, true));

@@ -8,6 +8,9 @@
   --light: 190, 235, 120;          /* the glow colour, as r,g,b */
 }
 
+/* Use the full width of the window instead of the app's 1180px reading column. */
+main { max-width: none; }
+
 /* ---------- Spotlight ---------- */
 
 .spot {
@@ -208,4 +211,38 @@
   #spot-img { max-height: 310px; }
   .info { padding: 22px 18px 20px; }
   .info h2 { font-size: 1.55rem; }
+}
+
+/* ---------- Client (viewer) login, desktop: the whole page fits one screen, no scrolling ---------- */
+@media (min-width: 901px) {
+  body[data-role="viewer"] main { height: 100vh; height: 100dvh; box-sizing: border-box; padding: 16px 28px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+  body[data-role="viewer"] main .back-btn { display: none; }
+  body[data-role="viewer"] .page-head { margin: 0; padding: 0; flex: none; }
+  body[data-role="viewer"] .page-head h1 { font-size: 1.55rem; margin: 0; }
+  body[data-role="viewer"] .page-head p { display: none; }
+  body[data-role="viewer"] .spot { flex: 1 1 0; min-height: 0; margin: 0; }
+  body[data-role="viewer"] .stage { height: auto; min-height: 0; }
+  body[data-role="viewer"] #spot-img { max-height: 78%; }
+  body[data-role="viewer"] .info { padding: 16px 24px 14px; overflow: hidden; }
+  body[data-role="viewer"] .info h2 { font-size: 1.5rem; }
+  body[data-role="viewer"] .info .group { margin-bottom: 2px; }
+  body[data-role="viewer"] .info .blurb { margin: 6px 0 10px; font-size: .92rem; }
+  body[data-role="viewer"] .specs { margin-bottom: 10px; font-size: .88rem; }
+  body[data-role="viewer"] .specs dt, body[data-role="viewer"] .specs dd { padding: 4px 0; }
+  body[data-role="viewer"] .views { max-height: none; overflow: visible; margin: 0 -4px 8px; padding: 4px; gap: 6px; }
+  body[data-role="viewer"] .views button { width: 44px; height: 44px; }
+  body[data-role="viewer"] .list-head { flex: none; margin: 0; }
+  body[data-role="viewer"] .list-head h2 { font-size: 1rem; }
+  body[data-role="viewer"] .cards { flex: none; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  body[data-role="viewer"] .card { flex-direction: row; align-items: center; }
+  body[data-role="viewer"] .card:hover { transform: none; }
+  body[data-role="viewer"] .pic { height: 72px; width: 96px; flex: none; }
+  body[data-role="viewer"] .pic img { max-height: 60px; }
+  body[data-role="viewer"] .meta { padding: 6px 12px; min-width: 0; }
+  body[data-role="viewer"] .meta b { font-size: .9rem; }
+  body[data-role="viewer"] .brochure { flex: none; margin: 0; padding: 8px 16px; grid-template-columns: 1fr; }
+  body[data-role="viewer"] .brochure .cover, body[data-role="viewer"] .b-info .group, body[data-role="viewer"] .b-info .blurb, body[data-role="viewer"] .b-meta { display: none; }
+  body[data-role="viewer"] .b-info { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  body[data-role="viewer"] .b-info h2 { font-size: 1rem; margin: 0; }
+  body[data-role="viewer"] .b-actions .btn { padding: 6px 14px; }
 }

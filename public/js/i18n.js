@@ -42,6 +42,25 @@
  "Activity log": "활동 기록",
  "Users": "사용자",
  "Payment method": "결제 수단",
+ "Dashboard": "대시보드",
+ "Settlement details": "정산 내역",
+ "No sharing ratio has been set up for this site yet.": "이 현장에는 아직 배분 비율이 설정되지 않았습니다.",
+ "No end date": "종료일 미정",
+ "In effect now": "현재 적용",
+ "Mirae ESP": "미래 이에스피",
+ "Profit sharing": "수익 배분",
+ "No site is linked to your account yet.": "계정에 연결된 현장이 아직 없습니다.",
+ "Figures come directly from your M-Carbon meter data and update automatically; they do not depend on billing statements. The current month is a running total. Months without data show a dash.": "수치는 M-Carbon 계측 데이터에서 직접 가져오며 자동으로 갱신됩니다. 청구서와 무관하며, 이번 달은 누적 값입니다. 데이터가 없는 달은 —로 표시됩니다.",
+ "Your energy usage and savings, month by month, straight from your meter data.": "계측 데이터 기준 월별 에너지 사용량 및 절감량입니다.",
+ "Monthly energy usage and savings": "월별 에너지 사용량 및 절감량",
+ "Monthly results": "월별 실적",
+ "Baseline usage": "기준 사용량",
+ "Actual usage": "당월 사용량",
+ "Savings amount": "절감액",
+ "Client benefit": "귀속 이익",
+ "Equipment & device status": "설비 및 장치 상태",
+ "Analysis & forecast": "분석 및 예측",
+ "Analysis & savings forecast": "분석 및 절감 예측",
  "Administrator": "관리자",
  "Billing officer": "청구 담당자",
  "Viewer": "조회 전용",
@@ -190,6 +209,9 @@
  "Savings value": "절감 가치",
  "Sharing ratio and balances": "분배 비율 및 잔액",
  "Sharing ratios": "분배 비율",
+ "Sharing ratio by contract year": "계약 연차별 분배 비율",
+ "Contract year": "계약 연차",
+ "Currently applied": "현재 적용",
  "Share": "분배",
  "Client share (%)": "고객 분배율 (%)",
  "Mirae ESP share (%)": "미래 이에스피 분배율 (%)",
@@ -1338,15 +1360,26 @@ Object.assign(KO, {
         else m.addedNodes.forEach(node);
       })).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS });
     }
+    const st = document.createElement('style');
+    st.textContent = `
+      .lang-switch { position: fixed; top: calc(8px + env(safe-area-inset-top, 0px)); right: 12px; z-index: 9999; display: flex; align-items: center; gap: 2px;
+        height: 46px; padding: 4px; box-sizing: border-box; background: #fff; border: 1px solid #d5ddd2; border-radius: 23px;
+        box-shadow: 0 1px 3px rgba(0,0,0,.12); font: 600 14px/1 system-ui, -apple-system, 'Segoe UI', 'Malgun Gothic', sans-serif; }
+      .lang-switch button { height: 100%; min-width: 56px; padding: 0 12px; border: 0; border-radius: 19px; cursor: pointer; background: transparent; color: #5d6f66;
+        font: inherit; letter-spacing: .01em; transition: background .15s ease, color .15s ease; }
+      .lang-switch button:hover { background: #eaf4dc; color: #3f7421; }
+      .lang-switch button[aria-pressed="true"] { background: #5b9a2e; color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2); cursor: default; }
+      .lang-switch button:focus-visible { outline: 2px solid #5b9a2e; outline-offset: 2px; }`;
+    document.head.appendChild(st);
     const box = document.createElement('div');
-    box.className = 'no-print';
-    box.style.cssText = 'position:fixed;top:10px;right:12px;z-index:9999;display:flex;gap:2px;font:500 12px system-ui,sans-serif;background:#fff;border:1px solid #5b9a2e;border-radius:8px;padding:2px;box-shadow:0 1px 4px rgba(0,0,0,.12)';
+    box.className = 'lang-switch no-print';
+    box.setAttribute('role', 'group');
+    box.setAttribute('aria-label', 'Language');
     [['en', 'EN'], ['ko', '한국어']].forEach(([code, label]) => {
       const b = document.createElement('button');
-      b.type = 'button'; b.textContent = label;
-      b.style.cssText = 'border:0;border-radius:6px;padding:4px 9px;cursor:pointer;' +
-        (code === lang ? 'background:#5b9a2e;color:#fff' : 'background:#eaf4dc;color:#3f7421');
-      b.onclick = () => { localStorage.setItem('lang', code); location.reload(); };
+      b.type = 'button'; b.textContent = label; b.lang = code;
+      b.setAttribute('aria-pressed', String(code === lang));
+      b.onclick = () => { if (code === lang) return; localStorage.setItem('lang', code); location.reload(); };
       box.appendChild(b);
     });
     document.body.appendChild(box);

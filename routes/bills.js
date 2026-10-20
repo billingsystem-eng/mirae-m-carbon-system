@@ -184,12 +184,15 @@ router.get('/', (req, res) => {
   if (scope) {
     if (scope.projectIds ? !scope.projectIds.length : !scope.clientId) return res.json({ bills: [], labels: LABELS });
     client_id = undefined;                               // what a login sees comes from its site (billScopeSql), not from the page
-    status = 'issued';
+    // The Settlement details page (?scope=settlement) shows every monthly bill straight away, whatever its stage,
+    // except voided ones. Every other page still gets issued bills only.
+    status = req.query.scope === 'settlement' ? undefined : 'issued';
   }
   let sql = `SELECT b.*, c.name AS client_name, c.account_no, p.name AS project_name
              FROM bills b JOIN clients c ON c.id = b.client_id JOIN projects p ON p.id = b.project_id WHERE 1=1`;
   const args = [];
   if (scope) sql += billScopeSql(scope);
+  if (scope && req.query.scope === 'settlement') sql += " AND b.status != 'void'";
   if (client_id) { sql += ' AND b.client_id = ?'; args.push(client_id); }
   if (project_id) { sql += ' AND b.project_id = ?'; args.push(project_id); }
   if (status) { sql += ' AND b.status = ?'; args.push(status); }

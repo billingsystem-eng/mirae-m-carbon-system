@@ -18,6 +18,7 @@ const invoicesRouter = require('./routes/invoices');
 const messagesRouter = require('./routes/messages');
 const taxInvoices = require('./routes/tax-invoices');
 const bankRouter = require('./routes/bank');
+const settlementRouter = require('./routes/settlement');
 
 const avatarsRouter = require('./routes/avatars');
 
@@ -56,11 +57,11 @@ app.get('/api/health', (req, res) => res.json({ ok: true }));
 
 app.get('/', (req, res) => {
   if (!req.session?.userId) return res.redirect('/login.html');
-  res.redirect(req.session.role === 'viewer' ? '/bills.html' : '/dashboard.html');
+  res.redirect(req.session.role === 'viewer' ? '/monitor.html' : '/dashboard.html');
 });
 
-// Viewers (client logins) get their issued bills, quotations, live monitor and payment methods — read-only.
-const VIEWER_PAGES = new Set(['/bills.html', '/bill.html', '/statement.html', '/payment-methods.html', '/messages.html', '/notifications.html',
+// Viewers (client logins) get their dashboard, settlement, individual statements, quotations, live monitor and payment methods — read-only.
+const VIEWER_PAGES = new Set(['/settlement.html', '/bill.html', '/statement.html', '/payment-methods.html', '/messages.html', '/notifications.html',
   '/quotations.html', '/quotation-print.html', '/monitor.html', '/products.html']);
 // The printable Sales Invoice page is gone: the Bolta tax invoice (on the bill page) is the invoice now.
 app.get('/invoice.html', (req, res) => res.redirect(req.query.id ? '/bill.html?id=' + encodeURIComponent(req.query.id) : '/bills.html'));
@@ -68,7 +69,7 @@ app.get('/invoice.html', (req, res) => res.redirect(req.query.id ? '/bill.html?i
 app.get(/\.html$/, (req, res, next) => {
   if (req.session?.userId && req.session.role === 'viewer' &&
       req.path !== '/login.html' && !VIEWER_PAGES.has(req.path)) {
-    return res.redirect('/bills.html');
+    return res.redirect('/monitor.html');   // clients land on the Dashboard; the bills list is staff-only
   }
   next();
 });
@@ -85,6 +86,7 @@ app.use('/api/quotations', requireAuth, quotationsRouter);
 app.use('/api/invoices', requireAuth, invoicesRouter);
 app.use('/api/notifications', requireAuth, notificationsRouter);   // payment reminders (due soon / overdue)
 app.use('/api/tax-invoices', requireAuth, taxInvoices.router);   // Korean electronic tax invoices via Bolta
+app.use('/api/settlement', requireAuth, settlementRouter);   // monthly usage + savings straight from the meter data (no bills)
 app.use('/api/bank', requireAuth, bankRouter);   // bank reconciliation (deposits from Bolta-connected accounts)
 app.use('/api/messages', requireAuth, messagesRouter);   // payment chat: client <-> finance, per bill
 

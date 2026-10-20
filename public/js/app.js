@@ -84,8 +84,6 @@ const NAV = [
   { href: '/dashboard.html', label: 'Overview', icon: 'overview' },
   { href: '/clients.html', label: 'Clients & projects', icon: 'clients' },
   { href: '/bills.html', label: 'Billing', icon: 'billing' },
-  { href: '/messages.html', label: 'Messages', icon: 'messages' },
-  { href: '/notifications.html', label: 'Notifications', icon: 'bell' },
   { href: '/products.html', label: 'Products', icon: 'products' },
   { href: '/quotations.html', label: 'Quotations', icon: 'quotations', also: ['/quotation.html', '/quotation-print.html'] },
   { href: '/monitor.html', label: 'Live monitor', icon: 'monitor' },
@@ -96,14 +94,68 @@ const NAV = [
 ];
 
 /** Pages a viewer (client login) may open, all read-only: billing, quotations, live monitor, payment methods. */
-const VIEWER_PAGES = ['/bills.html', '/bill.html', '/statement.html', '/payment-methods.html', '/messages.html', '/notifications.html',
+const VIEWER_PAGES = ['/settlement.html', '/bill.html', '/statement.html', '/payment-methods.html', '/messages.html', '/notifications.html',
   '/quotations.html', '/quotation-print.html', '/monitor.html', '/products.html'];
+
+/** Client (viewer) menu: Dashboard dropdown, then Settlement details. (Messages and Notifications are the top-right buttons.)
+ *  hash items open one of the Live monitor's one-page screens (overview / equipment / analysis). */
+const VIEWER_NAV = [
+  { key: 'dashboard', label: 'Dashboard', icon: 'overview', items: [
+    { href: '/monitor.html#overview', label: 'Overview', icon: 'monitor' },
+    { href: '/monitor.html#equipment', label: 'Equipment & device status', icon: 'plug' },
+    { href: '/monitor.html#analysis', label: 'Analysis & savings forecast', icon: 'activity' },
+    { href: '/products.html', label: 'Products', icon: 'products' }
+  ] },
+  { href: '/settlement.html', label: 'Settlement details', icon: 'billing' }
+];
+
+/** True when menu item n is the page being viewed (Live monitor items compare the screen in the URL hash). */
+function navIsOn(n) {
+  const [path, hash] = n.href.split('#');
+  const here = location.pathname;
+  if (here !== path && !(n.also || []).includes(here)) return false;
+  if (!hash) return true;
+  const cur = ['#equipment', '#analysis'].includes(location.hash) ? location.hash : '#overview';
+  return '#' + hash === cur;
+}
+
+/** Builds the client's left menu (dropdown groups). */
+function viewerNavHtml() {
+  const link = (n, sub) => `<a href="${n.href}" class="${navIsOn(n) ? 'on' : ''}${sub ? ' sub' : ''}">${sub ? '' : navIcon(n.icon)}<span>${n.label}</span></a>`;
+  return VIEWER_NAV.map((g) => {
+    if (!g.items) return link(g, false);
+    const open = g.items.some(navIsOn) || (g.key === 'dashboard' && !VIEWER_NAV.some((x) => x.items && x.items.some(navIsOn)));
+    return `<div class="nav-group${open ? ' open' : ''}" data-group="${g.key}">
+      <button type="button" class="nav-head" aria-expanded="${open}" aria-controls="ng-${g.key}">${navIcon(g.icon)}<span>${g.label}</span><svg class="nav-caret" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="nav-sub" id="ng-${g.key}">${g.items.map((n) => link(n, true)).join('')}</div></div>`;
+  }).join('');
+}
+
+/** Dropdown behaviour for the client menu; the highlighted item follows the Live monitor screen in view. */
+function wireViewerNav(rail) {
+  const nav = rail.querySelector('nav');
+  const refresh = () => {
+    VIEWER_NAV.flatMap((g) => g.items || [g]).forEach((n) => {
+      const a = nav.querySelector(`a[href="${n.href}"]`);
+      if (a) a.classList.toggle('on', navIsOn(n));
+    });
+  };
+  nav.addEventListener('click', (e) => {
+    const head = e.target.closest('.nav-head');
+    if (!head) return;
+    const grp = head.parentElement, open = !grp.classList.contains('open');
+    grp.classList.toggle('open', open);
+    head.setAttribute('aria-expanded', String(open));
+  });
+  window.addEventListener('hashchange', refresh);
+  window.addEventListener('cvscreen', refresh);   // fired by the Live monitor when its screen changes
+}
 
 /** Renders the left rail and returns the signed-in user. */
 async function shell() {
   const me = await api('/api/auth/me');
   if (me.role === 'viewer' && !VIEWER_PAGES.includes(location.pathname)) {
-    location.href = '/bills.html';
+    location.href = '/monitor.html';   // clients land on the Dashboard
     return me;
   }
   const rail = document.querySelector('.rail');
@@ -112,13 +164,15 @@ async function shell() {
   const roleText = { admin: 'Administrator', billing_officer: 'Billing officer', finance_hr: 'Finance / HR', viewer: 'Viewer' }[me.role] || me.role;
   rail.innerHTML = `
     <div class="mark"><b>M-Carbon System</b><span>Mirae ESP Solutions</span></div>
-    <nav>${NAV.filter((n) => (!n.adminOnly || me.role === 'admin') && (!n.roles || n.roles.includes(me.role)) && (me.role !== 'viewer' || VIEWER_PAGES.includes(n.href)))
+    <nav>${me.role === 'viewer' ? viewerNavHtml() : NAV.filter((n) => (!n.adminOnly || me.role === 'admin') && (!n.roles || n.roles.includes(me.role)))
       .map((n) => `<a href="${n.href}" class="${here === n.href || (n.also || []).includes(here) ? 'on' : ''}">${navIcon(n.icon)}<span>${n.label}</span></a>`)
       .join('')}</nav>
     <div class="who">
       <div class="who-id"><button id="chpic" type="button" class="who-pic" title="Change profile photo" aria-label="Change profile photo">${userAvatar(me.role === 'viewer' ? 'client' : 'staff', { id: me.id, v: me.avatar_v })}</button>
         <span><b>${esc(me.full_name)}</b>${roleText}</span></div>
       ${me.role !== 'admin' ? '<button id="chpw" type="button">Change password</button> ' : ''}<button id="signout">${navIcon('signout')}Sign out</button></div>`;
+  if (window.Theme) rail.querySelector('.who').appendChild(Theme.button());   // light / dark switch
+  if (me.role === 'viewer') wireViewerNav(rail);
   const chpw = rail.querySelector('#chpw');   // every role except administrators
   if (chpw) chpw.onclick = openPasswordDialog;
   rail.querySelector('#chpic').onclick = () => openPhotoDialog(me, (v) => {
@@ -130,30 +184,38 @@ async function shell() {
     location.href = '/login.html';
   };
   document.body.dataset.role = me.role;
+  addTopActions(here);
   addBackButton(me);
-  // Unread payment-chat messages show as a badge on the Messages link.
+  // Unread counts show as badges on the Messages and Notifications buttons (top right).
   api('/api/messages/unread').then((u) => setMessageBadge(u.total)).catch(() => {});
   api('/api/notifications/unread').then((u) => setNotifBadge(u.total)).catch(() => {});
   return me;
 }
 
-/** Shows (or clears) the unread count on the Messages link in the left rail. */
-function setMessageBadge(n) {
-  const link = document.querySelector('.rail nav a[href="/messages.html"]');
-  if (!link) return;
-  const old = link.querySelector('.nav-badge');
-  if (old) old.remove();
-  if (n > 0) link.insertAdjacentHTML('beforeend', `<span class="nav-badge" title="Unread payment messages">${n > 99 ? '99+' : n}</span>`);
+/** Top-right buttons: Messages (chat) and Notifications (bell), each with its own unread badge. */
+function addTopActions(here) {
+  if (document.querySelector('.top-actions')) return;
+  const btn = (href, label, icon) => `<a class="tb-btn${here === href ? ' on' : ''}" href="${href}" title="${label}" aria-label="${label}"${here === href ? ' aria-current="page"' : ''}>${navIcon(icon)}</a>`;
+  const box = document.createElement('div');
+  box.className = 'top-actions no-print';
+  box.innerHTML = btn('/messages.html', 'Messages', 'messages') + btn('/notifications.html', 'Notifications', 'bell');
+  document.body.appendChild(box);
 }
 
-/** Shows (or clears) the unread count on the Notifications link in the left rail. */
-function setNotifBadge(n) {
-  const link = document.querySelector('.rail nav a[href="/notifications.html"]');
+/** Shows (or clears) the unread count badge on a top-right button. */
+function setTopBadge(href, n, title) {
+  const link = document.querySelector(`.top-actions a[href="${href}"]`);
   if (!link) return;
-  const old = link.querySelector('.nav-badge');
+  const old = link.querySelector('.tb-badge');
   if (old) old.remove();
-  if (n > 0) link.insertAdjacentHTML('beforeend', `<span class="nav-badge" title="Unread payment reminders">${n > 99 ? '99+' : n}</span>`);
+  if (n > 0) link.insertAdjacentHTML('beforeend', `<span class="tb-badge" title="${title}">${n > 99 ? '99+' : n}</span>`);
 }
+
+/** Unread count on the Messages button. */
+function setMessageBadge(n) { setTopBadge('/messages.html', n, 'Unread payment messages'); }
+
+/** Unread count on the Notifications button. */
+function setNotifBadge(n) { setTopBadge('/notifications.html', n, 'Unread payment reminders'); }
 
 /** Lets any signed-in user change their own password (needs the current one). */
 /**
@@ -164,7 +226,7 @@ function setNotifBadge(n) {
 function addBackButton(me) {
   const main = document.querySelector('main');
   if (!main || main.querySelector('.back-btn')) return;
-  const home = me.role === 'viewer' ? '/bills.html' : '/dashboard.html';
+  const home = me.role === 'viewer' ? '/monitor.html' : '/dashboard.html';
   const cameFromSite = (() => {
     try { return !!document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1; }
     catch (_) { return false; }
