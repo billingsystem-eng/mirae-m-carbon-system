@@ -188,6 +188,101 @@
 @keyframes cvFloat { to { transform: translate(40px, 30px) scale(1.15); } }
 .ww .cv-wave { position: absolute; left: 0; bottom: 0; width: 200%; height: 90px; animation: cvWave 16s linear infinite; pointer-events: none; } .ww .cv-wave.w2 { height: 70px; animation-duration: 24s; animation-direction: reverse; opacity: .7; }
 @keyframes cvWave { to { transform: translateX(-50%); } }
+/* Extra motion: rising sparks + drifting leaves in the hero, a breathing ring, staggered card entrances. */
+.ww .cv-fx { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.ww .cv-spark { position: absolute; bottom: -14px; left: var(--x); width: var(--s); height: var(--s); border-radius: 50%; background: radial-gradient(circle, #e4fbb8 0%, rgba(159,211,106,.55) 45%, rgba(159,211,106,0) 72%); opacity: 0; animation: cvRise var(--d) ease-in var(--dl) infinite; }
+@keyframes cvRise { 0% { transform: translate(0, 0) scale(.5); opacity: 0; } 12% { opacity: .95; } 55% { transform: translate(16px, -150px) scale(1); } 100% { transform: translate(-14px, -340px) scale(.7); opacity: 0; } }
+.ww .cv-leaf { position: absolute; top: -26px; left: var(--x); width: var(--s); height: var(--s); fill: rgba(190,240,130,.5); opacity: 0; animation: cvLeaf var(--d) linear var(--dl) infinite; }
+@keyframes cvLeaf { 0% { transform: translate(0, 0) rotate(0); opacity: 0; } 10% { opacity: .85; } 33% { transform: translate(24px, 90px) rotate(70deg); } 66% { transform: translate(-18px, 190px) rotate(150deg); } 100% { transform: translate(20px, 330px) rotate(240deg); opacity: 0; } }
+.ww .cv-ring { animation: cvBreathe 3.4s ease-in-out infinite; }
+@keyframes cvBreathe { 0%, 100% { box-shadow: 0 0 46px -12px rgba(159,211,106,.5); } 50% { box-shadow: 0 0 84px -4px rgba(159,211,106,.85); } }
+.ww .cv-screen.on :is(.cv-tile, .cv-card, .cv-rdbar) { animation: cvPopIn .65s cubic-bezier(.2,.8,.2,1) backwards; }
+@keyframes cvPopIn { from { opacity: 0; transform: translateY(22px) scale(.96); } to { opacity: 1; transform: none; } }
+.ww .cv-screen.on :is(.cv-tile, .cv-card):nth-child(1) { animation-delay: .04s; } .ww .cv-screen.on :is(.cv-tile, .cv-card):nth-child(2) { animation-delay: .1s; }
+.ww .cv-screen.on :is(.cv-tile, .cv-card):nth-child(3) { animation-delay: .16s; } .ww .cv-screen.on :is(.cv-tile, .cv-card):nth-child(4) { animation-delay: .22s; }
+.ww .cv-screen.on :is(.cv-tile, .cv-card):nth-child(5) { animation-delay: .28s; } .ww .cv-screen.on :is(.cv-tile, .cv-card):nth-child(6) { animation-delay: .34s; }
+.ww .cv-screen.on :is(.cv-tile, .cv-card):nth-child(n+7) { animation-delay: .4s; }
+.ww .cv-chip { animation: cvPopIn .6s cubic-bezier(.2,.8,.2,1) backwards; } .ww .cv-chip:nth-child(2) { animation-delay: .12s; } .ww .cv-chip:nth-child(3) { animation-delay: .2s; } .ww .cv-chip:nth-child(4) { animation-delay: .28s; }
+.ww .cv-tile .ic { animation: cvBob 3.6s ease-in-out infinite; } .ww .cv-tile:nth-child(even) .ic { animation-delay: -1.4s; }
+@keyframes cvBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+/* ---- Staff overview motion: header orbs/sparks, summary-bar sheen, radar sweep on the map, growing bars ---- */
+@property --ang { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+.ww .page-head { position: relative; } .ww .page-head > :not(.fx) { position: relative; z-index: 1; }
+.ww .fx { position: absolute; inset: -30px -40px -6px -40px; overflow: hidden; pointer-events: none; z-index: 0; }
+.ww .fx .orb { position: absolute; border-radius: 50%; filter: blur(48px); opacity: .3; animation: fxFloat 12s ease-in-out infinite alternate; }
+.ww .fx .orb.a { width: 240px; height: 240px; background: #7fc24a; left: -50px; top: -90px; } .ww .fx .orb.b { width: 200px; height: 200px; background: #2fb8a0; right: 18%; top: -80px; animation-delay: -5s; } .ww .fx .orb.c { width: 160px; height: 160px; background: #d9e86a; right: -30px; bottom: -90px; animation-delay: -8s; opacity: .2; }
+@keyframes fxFloat { to { transform: translate(46px, 26px) scale(1.18); } }
+.ww .fx .dot { position: absolute; bottom: -10px; left: var(--x); width: var(--s); height: var(--s); border-radius: 50%; background: radial-gradient(circle, #cdeb94, rgba(91,154,46,0) 70%); opacity: 0; animation: fxRise var(--d) ease-in var(--dl) infinite; }
+@keyframes fxRise { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: .9; } 100% { transform: translate(14px, -160px); opacity: 0; } }
+.ww .fx .wave { position: absolute; left: 0; bottom: 0; width: 200%; height: 44px; animation: cvWave 18s linear infinite; } .ww .fx .wave.w2 { height: 32px; opacity: .6; animation-duration: 28s; animation-direction: reverse; }
+html[data-theme="dark"] .ww .fx .orb { opacity: .18; }
+
+.ww .dash-sum { position: relative; }
+.ww .dash-sum::after { content: ""; position: absolute; top: 0; bottom: 0; width: 28%; left: -40%; background: linear-gradient(100deg, transparent, rgba(159,211,106,.16), transparent); transform: skewX(-18deg); animation: ovSheen 7s ease-in-out 1.5s infinite; pointer-events: none; }
+@keyframes ovSheen { 0% { left: -40%; } 35%, 100% { left: 125%; } }
+.ww .dash-sum .sc { animation: ovPop .65s cubic-bezier(.2,.8,.2,1) backwards; }
+.ww .dash-sum .sc:nth-child(2) { animation-delay: .08s; } .ww .dash-sum .sc:nth-child(3) { animation-delay: .16s; } .ww .dash-sum .sc:nth-child(4) { animation-delay: .24s; } .ww .dash-sum .sc:nth-child(5) { animation-delay: .32s; }
+.ww .dash-sum .sc .ic { animation: cvBob 3.6s ease-in-out infinite; } .ww .dash-sum .sc:nth-child(even) .ic { animation-delay: -1.5s; }
+@keyframes ovPop { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+
+/* blocks rise in (opacity + translate only, so the map and charts still measure their real size) */
+.ww .main-row > .mapblock, .ww .chartrow > .block, .ww .trio > .block, .ww .duo > *, .ww .site-row > .block, .ww .site-full { animation: ovPop .7s cubic-bezier(.2,.8,.2,1) backwards; transition: box-shadow .25s; }
+.ww .chartrow > .block:nth-child(1) { animation-delay: .12s; } .ww .chartrow > .block:nth-child(2) { animation-delay: .2s; } .ww .main-row > .mapblock { animation-delay: .08s; }
+.ww .trio > .block:nth-child(1) { animation-delay: .2s; } .ww .trio > .block:nth-child(2) { animation-delay: .3s; } .ww .trio > .block:nth-child(3) { animation-delay: .4s; }
+.ww .duo > *:nth-child(1) { animation-delay: .3s; } .ww .duo > *:nth-child(2) { animation-delay: .4s; } .ww .site-row > .block:nth-child(2) { animation-delay: .1s; }
+.ww .block:hover { box-shadow: 0 16px 30px -22px rgba(15,31,29,.5); }
+.ww .hic { animation: cvBob 4s ease-in-out infinite; }
+
+/* map: a slow radar sweep over the dark map, glowing site chips, chips pop in when the map changes */
+.ww .mapwrap::before { background: conic-gradient(from var(--ang) at 50% 45%, rgba(120,255,180,0) 0deg, rgba(120,255,180,0) 292deg, rgba(120,255,180,.2) 355deg, rgba(120,255,180,0) 360deg), radial-gradient(circle at 1px 1px, rgba(120,255,180,.11) 1px, transparent 1.3px) 0 0 / 22px 22px; animation: ovRadar 10s linear infinite; }
+@keyframes ovRadar { to { --ang: 360deg; } }
+.ww .mchip rect { animation: chipGlow 2.8s ease-in-out infinite; } .ww .mchip:nth-child(even) rect { animation-delay: -1.4s; }
+@keyframes chipGlow { 0%, 100% { stroke: rgba(160,255,200,.6); stroke-width: 1px; } 50% { stroke: rgba(200,255,225,1); stroke-width: 2.4px; } }
+.ww .mapwrap svg.swap .mchip { animation: chipPop .55s cubic-bezier(.2,.8,.2,1) backwards; transform-box: fill-box; transform-origin: center; }
+@keyframes chipPop { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: none; } }
+
+/* bars grow from the baseline, the donuts spin in, the lists slide in */
+.ww .cb-bar i { transform-origin: bottom; animation: ovGrowY .9s cubic-bezier(.2,.8,.2,1) backwards; }
+.ww .cb-col:nth-child(2) .cb-bar i { animation-delay: .06s; } .ww .cb-col:nth-child(3) .cb-bar i { animation-delay: .12s; } .ww .cb-col:nth-child(4) .cb-bar i { animation-delay: .18s; }
+.ww .cb-col:nth-child(5) .cb-bar i { animation-delay: .24s; } .ww .cb-col:nth-child(6) .cb-bar i { animation-delay: .3s; } .ww .cb-col:nth-child(7) .cb-bar i { animation-delay: .36s; }
+@keyframes ovGrowY { from { transform: scaleY(0); } to { transform: none; } }
+.ww .rk .bar i { transform-origin: left; animation: ovGrowX 1s cubic-bezier(.2,.8,.2,1) backwards; }
+.ww .rk:nth-child(2) .bar i { animation-delay: .08s; } .ww .rk:nth-child(3) .bar i { animation-delay: .16s; } .ww .rk:nth-child(4) .bar i { animation-delay: .24s; } .ww .rk:nth-child(5) .bar i { animation-delay: .32s; } .ww .rk:nth-child(6) .bar i { animation-delay: .4s; }
+@keyframes ovGrowX { from { transform: scaleX(0); } to { transform: none; } }
+/* ---- Always-moving extras: wind-turbine scene, ticker, scanning edges, map pings and fireflies, drifting dust ---- */
+.ww .scene { position: absolute; right: 30px; bottom: 0; height: 100%; width: min(460px, 60%); pointer-events: none; }
+.ww .fx .scene { color: rgba(91,154,46,.65); } .ww .cv-fx .scene { right: 0; width: min(560px, 62%); color: rgba(214,240,176,.6); }
+.ww .scene .cloud { fill: #fff; opacity: .85; animation: scCloud 44s linear infinite; } .ww .scene .cloud.c2 { animation-duration: 66s; animation-delay: -24s; opacity: .6; }
+.ww .cv-fx .scene .cloud { fill: rgba(255,255,255,.35); } html[data-theme="dark"] .ww .fx .scene .cloud { fill: #2a4a40; }
+@keyframes scCloud { from { transform: translateX(-60px); } to { transform: translateX(400px); } }
+.ww .scene .bird { animation: scBird 24s linear infinite; } .ww .scene .bird.b2 { animation-duration: 33s; animation-delay: -14s; }
+@keyframes scBird { from { transform: translate(-30px, 8px); } 50% { transform: translate(170px, -10px); } to { transform: translate(370px, 6px); } }
+
+.ww .ticker { position: relative; overflow: hidden; margin: 0 0 18px; border-radius: 10px; background: linear-gradient(90deg, #0d241d, #14402b 60%, #0d241d); color: #bcd4b4; white-space: nowrap; font-size: 13px; box-shadow: 0 10px 22px -18px rgba(15,31,29,.7); }
+.ww .ticker::before, .ww .ticker::after { content: ""; position: absolute; top: 0; bottom: 0; width: 60px; z-index: 1; pointer-events: none; } .ww .ticker::before { left: 0; background: linear-gradient(90deg, #0d241d, transparent); } .ww .ticker::after { right: 0; background: linear-gradient(270deg, #0d241d, transparent); }
+.ww .tk-track { display: inline-flex; padding: 9px 0; animation: tkMove 46s linear infinite; will-change: transform; } .ww .ticker:hover .tk-track { animation-play-state: paused; }
+.ww .tk-item { display: inline-flex; align-items: center; gap: 8px; padding: 0 30px; } .ww .tk-item i { width: 7px; height: 7px; border-radius: 50%; background: #9fd36a; box-shadow: 0 0 0 0 rgba(159,211,106,.7); animation: cvPulse 1.8s infinite; }
+.ww .tk-item b { color: #fff; font-weight: 600; font-variant-numeric: tabular-nums; }
+@keyframes tkMove { to { transform: translateX(-50%); } }
+
+.ww .block, .ww .carbon { position: relative; }
+.ww .block::before, .ww .carbon::before, .ww .cv-card::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; border-radius: 12px 12px 0 0; background: linear-gradient(90deg, transparent, rgba(91,154,46,.95), rgba(47,184,160,.9), transparent) -60% 0 / 45% 100% no-repeat; animation: scanX 5.5s linear infinite; pointer-events: none; z-index: 2; }
+.ww .cv-card { position: relative; } .ww .cv-card::before { border-radius: 18px 18px 0 0; }
+.ww .block:nth-child(2n)::before, .ww .cv-card:nth-child(2n)::before { animation-delay: -1.8s; } .ww .block:nth-child(3n)::before, .ww .cv-card:nth-child(3n)::before { animation-delay: -3.4s; animation-duration: 6.5s; }
+@keyframes scanX { from { background-position: -60% 0; } to { background-position: 160% 0; } }
+.ww .dash-sum::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: linear-gradient(90deg, transparent, #9fd36a, #2fb8a0, transparent) -40% 0 / 30% 100% no-repeat; animation: scanX 3.6s linear infinite; z-index: 2; pointer-events: none; }
+
+.ww .mchip rect.ping { fill: none; stroke: rgba(160,255,200,.95); stroke-width: 1.5px; pointer-events: none; transform-box: fill-box; transform-origin: center; animation: chipPing 2.8s ease-out infinite; animation-delay: 0s; }
+.ww .mchip rect.ping.p2 { animation-delay: 1.4s; }
+@keyframes chipPing { 0% { transform: scale(1); opacity: .85; } 100% { transform: scale(1.7, 2.4); opacity: 0; } }
+.ww .ff { position: absolute; z-index: 1; left: var(--x); top: var(--y); width: var(--s); height: var(--s); border-radius: 50%; background: #d7ffb8; box-shadow: 0 0 10px 3px rgba(190,255,150,.65); pointer-events: none; opacity: 0; animation: ffDrift var(--d) ease-in-out var(--dl) infinite alternate, ffBlink calc(var(--d) / 2.4) ease-in-out var(--dl) infinite; }
+@keyframes ffDrift { to { transform: translate(var(--dx), var(--dy)); } } @keyframes ffBlink { 0%, 100% { opacity: 0; } 50% { opacity: .95; } }
+.ambient { position: fixed; top: 0; right: 0; bottom: 0; z-index: 25; pointer-events: none; } @media print { .ambient { display: none; } }
+.ww .donut { animation: ovSpin 1.3s cubic-bezier(.2,.8,.2,1) backwards; }
+@keyframes ovSpin { from { opacity: 0; transform: rotate(-120deg) scale(.7); } to { opacity: 1; transform: none; } }
+.ww .carbon .cb-ico { animation: cvBob 4.2s ease-in-out infinite; }
+.ww .lv-tile { animation: ovPop .6s cubic-bezier(.2,.8,.2,1) backwards; transition: transform .2s, box-shadow .2s; } .ww .lv-tile:hover { transform: translateY(-3px); box-shadow: 0 14px 24px -18px rgba(15,31,29,.5); }
+.ww .lv-tile:nth-child(2) { animation-delay: .06s; } .ww .lv-tile:nth-child(3) { animation-delay: .12s; } .ww .lv-tile:nth-child(4) { animation-delay: .18s; } .ww .lv-tile:nth-child(5) { animation-delay: .24s; } .ww .lv-tile:nth-child(n+6) { animation-delay: .3s; }
 .ww .cv-nav { position: sticky; top: 8px; z-index: 20; display: flex; gap: 4px; overflow-x: auto; padding: 6px; margin: 16px 0 0; border-radius: 99px; background: rgba(255,255,255,.82); backdrop-filter: blur(14px); border: 1px solid var(--rule); box-shadow: 0 14px 30px -20px rgba(15,31,29,.6); scrollbar-width: none; }
 .ww .cv-nav a { padding: 8px 16px; border-radius: 99px; font-size: 14px; text-decoration: none; color: var(--muted); white-space: nowrap; transition: background .25s, color .25s; } .ww .cv-nav a:hover { background: #eef4e8; color: var(--ink); } .ww .cv-nav a.on { background: var(--line); color: #fff; }
 .ww .cv-rv { opacity: 0; transform: translateY(28px); transition: opacity .8s ease, transform .8s ease; scroll-margin-top: 72px; } .ww .cv-rv.in { opacity: 1; transform: none; }
@@ -751,6 +846,154 @@ main.ww { max-width: none; padding: 30px 40px 64px; }
   body.cv-fit .ww .cv-pt .cv-tile small { grid-column: 3; grid-row: 2; align-self: end; }
   body.cv-fit .ww .cv-pt .cv-tile em { display: none; }
 }
+
+/* =====================================================================
+   DARK MODE: fixes + design layer (everything is scoped to dark, so light mode is untouched)
+   ===================================================================== */
+/* -- 0. Layout fix (both themes): the page grew to ~5000px wide because the no-wrap ticker and the site tabs made the
+      <main> grid item as wide as their content. min-width:0 lets <main> shrink to the window, and the tab strip scroll. -- */
+main.ww { min-width: 0; max-width: 100%; }
+.ww .ticker, .ww .tabbar, .ww .finder, .ww .page-head { min-width: 0; max-width: 100%; }
+.ww .tabs { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.ww .tabs::-webkit-scrollbar { display: none; }
+.ww .tabbar { overflow: hidden; }
+
+/* The big kWh counter no longer runs into the next summary cell: smaller digits, unit wraps under them when tight. */
+.ww .dash-sum .sc:first-child .readout { flex-wrap: wrap; row-gap: 4px; }
+.ww .dash-sum .register, .ww .sc .register.big { font-size: clamp(24px, 2.5vw, 40px); }
+
+/* -- 1. Fixes: light-theme colours that were hard-coded and showed up as white lines / invisible tracks -- */
+html[data-theme="dark"] .ww .rk,
+html[data-theme="dark"] .ww td,
+html[data-theme="dark"] .ww .cat,
+html[data-theme="dark"] .ww #siteDetails .head,
+html[data-theme="dark"] .ww #siteDetails .figure,
+html[data-theme="dark"] .ww #siteDetails .figure.key { border-bottom-color: rgba(159,211,106,.10); }
+html[data-theme="dark"] .ww .head.sub { border-top-color: rgba(159,211,106,.10); }
+html[data-theme="dark"] .ww .finder .fclear:hover { background: #1a312b; }
+html[data-theme="dark"] .ww .rk .bar,
+html[data-theme="dark"] .ww .tr .bar { background: rgba(255,255,255,.07); box-shadow: inset 0 1px 2px rgba(0,0,0,.45); }
+html[data-theme="dark"] .ww .g-bg { stroke: rgba(255,255,255,.08); }
+html[data-theme="dark"] .ww .share span { background: rgba(255,255,255,.07); box-shadow: inset 0 1px 2px rgba(0,0,0,.45); }
+html[data-theme="dark"] .ww .sea { fill: #0b1c17; }
+html[data-theme="dark"] .ww .mapctl button { border-color: rgba(159,211,106,.25); }
+html[data-theme="dark"] .ww .tabnav { background: #12251f; color: var(--ink); border-color: rgba(159,211,106,.25); }
+html[data-theme="dark"] .ww .seg button[aria-pressed="true"] { background: #24453a; box-shadow: 0 0 0 1px rgba(159,211,106,.3); }
+html[data-theme="dark"] .ww .rk .bar i { position: relative; overflow: hidden; }
+
+/* -- 2. Atmosphere: aurora glow + faint blueprint grid behind the whole page -- */
+html[data-theme="dark"] main.ww { position: relative; isolation: isolate; }
+html[data-theme="dark"] main.ww::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(900px 520px at 88% -6%, rgba(109,179,63,.20), transparent 62%),
+    radial-gradient(760px 520px at -4% 30%, rgba(31,184,138,.14), transparent 62%),
+    radial-gradient(700px 480px at 100% 92%, rgba(74,98,232,.12), transparent 62%),
+    linear-gradient(rgba(159,211,106,.035) 1px, transparent 1px) 0 0 / 44px 44px,
+    linear-gradient(90deg, rgba(159,211,106,.035) 1px, transparent 1px) 0 0 / 44px 44px;
+  animation: dkAurora 22s ease-in-out infinite alternate;
+}
+@keyframes dkAurora { from { opacity: .8; transform: scale(1); } to { opacity: 1; transform: scale(1.06); } }
+
+/* -- 3. Glass panels with a lit edge -- */
+html[data-theme="dark"] .ww .block,
+html[data-theme="dark"] .ww .tile,
+html[data-theme="dark"] .ww .carbon {
+  background: linear-gradient(165deg, rgba(26,52,44,.78), rgba(11,25,21,.92));
+  border: 1px solid rgba(159,211,106,.16);
+  box-shadow: 0 22px 44px -30px #000, inset 0 1px 0 rgba(255,255,255,.06), inset 0 0 40px -22px rgba(109,179,63,.35);
+  backdrop-filter: blur(10px);
+  transition: border-color .3s, box-shadow .3s, transform .3s;
+}
+html[data-theme="dark"] .ww .block:hover,
+html[data-theme="dark"] .ww .tile:hover,
+html[data-theme="dark"] .ww .carbon:hover {
+  border-color: rgba(159,211,106,.42);
+  box-shadow: 0 24px 50px -28px #000, 0 0 28px -8px rgba(109,179,63,.45), inset 0 1px 0 rgba(255,255,255,.08), inset 0 0 40px -20px rgba(109,179,63,.45);
+}
+html[data-theme="dark"] .ww .tile:hover { transform: translateY(-2px); }
+/* glowing marker in front of every panel title */
+html[data-theme="dark"] .ww .head h2::before,
+html[data-theme="dark"] .ww .carbon h2::before {
+  content: ""; display: inline-block; width: 3px; height: .95em; margin-right: 9px; vertical-align: -.1em; border-radius: 3px;
+  background: linear-gradient(#b8f27a, #2fb8a0); box-shadow: 0 0 10px rgba(159,211,106,.85);
+}
+html[data-theme="dark"] .ww .head h2 { color: #f1faf4; }
+html[data-theme="dark"] .ww .head .ht h2::before { display: none; }
+
+/* -- 4. Page title, summary bar and the big counter -- */
+html[data-theme="dark"] .ww .page-head h1 {
+  background: linear-gradient(90deg, #ffffff 30%, #9fd36a 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 14px rgba(159,211,106,.25));
+}
+html[data-theme="dark"] .ww .dash-sum {
+  background:
+    radial-gradient(520px 170px at 0% 0%, rgba(109,179,63,.30), transparent 70%),
+    radial-gradient(420px 160px at 100% 100%, rgba(47,184,160,.18), transparent 70%),
+    linear-gradient(135deg, #0b1d18, #11291f);
+  border: 1px solid rgba(159,211,106,.22);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.4), 0 24px 50px -30px #000, 0 0 36px -14px rgba(109,179,63,.55);
+}
+html[data-theme="dark"] .ww .sc { border-left-color: rgba(159,211,106,.14); }
+html[data-theme="dark"] .ww .sc .v { color: #f4fff0; text-shadow: 0 0 16px rgba(159,211,106,.45); }
+html[data-theme="dark"] .ww .register { text-shadow: 0 0 18px rgba(159,211,106,.6); }
+html[data-theme="dark"] .ww .sc .ic { filter: drop-shadow(0 0 8px rgba(159,211,106,.55)); }
+
+/* -- 5. Ticker, tabs, status chip -- */
+html[data-theme="dark"] .ww .ticker { border: 1px solid rgba(159,211,106,.18); box-shadow: 0 0 24px -12px rgba(109,179,63,.7), inset 0 0 20px rgba(0,0,0,.35); }
+html[data-theme="dark"] .ww .tab { background: rgba(255,255,255,.04); border-color: rgba(159,211,106,.2); color: var(--ink); transition: background .25s, box-shadow .25s, border-color .25s; }
+html[data-theme="dark"] .ww .tab:hover { background: rgba(159,211,106,.12); border-color: rgba(159,211,106,.5); }
+html[data-theme="dark"] .ww .tab[aria-selected="true"] { background: linear-gradient(135deg, #3f7421, #6fbf3a); border-color: transparent; color: #fff; box-shadow: 0 0 20px -2px rgba(111,191,58,.7); }
+html[data-theme="dark"] .ww .status { background: rgba(255,255,255,.04); border-color: rgba(159,211,106,.25); }
+html[data-theme="dark"] .ww .status[data-state="ok"] { box-shadow: 0 0 18px -6px rgba(79,207,138,.8); }
+
+/* -- 6. Bars: neon fills, shimmer on the share bars, glowing carbon columns -- */
+html[data-theme="dark"] .ww .rk .bar i { box-shadow: 0 0 12px -1px rgba(159,211,106,.55); filter: saturate(1.15) brightness(1.1); }
+html[data-theme="dark"] .ww .rk .bar i::after,
+html[data-theme="dark"] .ww .share span i::after {
+  content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.4) 50%, transparent 70%);
+  transform: translateX(-120%); animation: dkShimmer 3.6s ease-in-out infinite;
+}
+html[data-theme="dark"] .ww .share span i { position: relative; overflow: hidden; box-shadow: 0 0 10px rgba(109,179,63,.6); }
+@keyframes dkShimmer { 0%, 35% { transform: translateX(-120%); } 80%, 100% { transform: translateX(120%); } }
+html[data-theme="dark"] .ww .tr .bar i { box-shadow: 0 0 10px rgba(91,154,46,.7); }
+html[data-theme="dark"] .ww .tr .bar.alt i { box-shadow: 0 0 10px rgba(217,154,28,.7); }
+html[data-theme="dark"] .ww .carbon {
+  background:
+    radial-gradient(420px 220px at 0% 0%, rgba(109,179,63,.22), transparent 70%),
+    radial-gradient(360px 220px at 100% 100%, rgba(47,184,160,.14), transparent 70%),
+    linear-gradient(165deg, #142b25, #0a1814);
+}
+html[data-theme="dark"] .ww .cb-bars { background: repeating-linear-gradient(to top, rgba(255,255,255,.06) 0 1px, transparent 1px 25%); }
+html[data-theme="dark"] .ww .cb-bar { border-bottom-color: rgba(159,211,106,.45); }
+html[data-theme="dark"] .ww .cb-bar i {
+  background: linear-gradient(#c4f088, #6db33f 55%, #2f7d3a);
+  box-shadow: 0 0 18px -2px rgba(159,211,106,.65), inset 0 2px 0 rgba(255,255,255,.45);
+  transition: filter .25s;
+}
+html[data-theme="dark"] .ww .cb-col:hover .cb-bar i { filter: brightness(1.2); }
+html[data-theme="dark"] .ww .cb-v { color: #e4f7c4; text-shadow: 0 0 8px rgba(159,211,106,.5); }
+html[data-theme="dark"] .ww .cb-facts { border-top-color: rgba(159,211,106,.18); }
+html[data-theme="dark"] .ww .cb-facts dd { text-shadow: 0 0 12px rgba(159,211,106,.35); }
+
+/* -- 7. Gauges, charts, map -- */
+html[data-theme="dark"] .ww .g-fg { filter: drop-shadow(0 0 7px rgba(159,211,106,.75)); }
+html[data-theme="dark"] .ww .gtxt { text-shadow: 0 0 14px rgba(159,211,106,.45); }
+html[data-theme="dark"] .ww .plot canvas { filter: drop-shadow(0 0 7px rgba(109,179,63,.28)); }
+html[data-theme="dark"] .ww .mapwrap { border-color: rgba(159,211,106,.25); box-shadow: inset 0 0 60px rgba(0,0,0,.55), 0 0 30px -12px rgba(109,179,63,.5); }
+html[data-theme="dark"] .ww .mapwrap svg .land { filter: drop-shadow(0 0 5px rgba(109,179,63,.35)); }
+html[data-theme="dark"] .ww .pin circle { filter: drop-shadow(0 0 7px rgba(159,211,106,.9)); }
+html[data-theme="dark"] .ww .tip { border: 1px solid rgba(159,211,106,.3); box-shadow: 0 18px 40px -12px #000, 0 0 24px -8px rgba(109,179,63,.5); }
+html[data-theme="dark"] .ww .state { box-shadow: 0 0 12px -4px rgba(79,207,138,.7); }
+
+/* -- 8. Small touches -- */
+html[data-theme="dark"] .ww ::selection { background: rgba(159,211,106,.35); color: #fff; }
+html[data-theme="dark"] .ww * { scrollbar-width: thin; scrollbar-color: #2f5546 transparent; }
+html[data-theme="dark"] .ww *::-webkit-scrollbar { width: 8px; height: 8px; }
+html[data-theme="dark"] .ww *::-webkit-scrollbar-thumb { background: #2f5546; border-radius: 8px; }
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="dark"] main.ww::before, html[data-theme="dark"] .ww .rk .bar i::after, html[data-theme="dark"] .ww .share span i::after { animation: none; }
+}
 </style>
 <link rel="icon" type="image/png" href="/favicon.png">
 </head>
@@ -759,6 +1002,7 @@ main.ww { max-width: none; padding: 30px 40px 64px; }
   <aside class="rail"></aside>
   <main class="ww">
     <div class="page-head">
+      <div class="fx" aria-hidden="true"><i class="orb a"></i><i class="orb b"></i><i class="orb c"></i><i class="dot" style="--x:5%;--s:6px;--d:7s;--dl:-0s"></i><i class="dot" style="--x:13%;--s:9px;--d:9s;--dl:-3s"></i><i class="dot" style="--x:24%;--s:5px;--d:6.5s;--dl:-5s"></i><i class="dot" style="--x:36%;--s:8px;--d:8s;--dl:-1.5s"></i><i class="dot" style="--x:47%;--s:6px;--d:7.5s;--dl:-4s"></i><i class="dot" style="--x:58%;--s:10px;--d:10s;--dl:-6s"></i><i class="dot" style="--x:67%;--s:5px;--d:6s;--dl:-2s"></i><i class="dot" style="--x:77%;--s:8px;--d:8.5s;--dl:-7s"></i><i class="dot" style="--x:87%;--s:6px;--d:7s;--dl:-3.5s"></i><i class="dot" style="--x:95%;--s:9px;--d:9.5s;--dl:-5.5s"></i><svg class="scene" viewBox="0 0 320 120" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"><g class="sun"><circle cx="40" cy="30" r="11" fill="#ffd45c"/><g stroke="#ffd45c" stroke-width="2" stroke-linecap="round"><line x1="55.0" y1="30.0" x2="61.0" y2="30.0"/><line x1="50.6" y1="40.6" x2="54.8" y2="44.8"/><line x1="40.0" y1="45.0" x2="40.0" y2="51.0"/><line x1="29.4" y1="40.6" x2="25.2" y2="44.8"/><line x1="25.0" y1="30.0" x2="19.0" y2="30.0"/><line x1="29.4" y1="19.4" x2="25.2" y2="15.2"/><line x1="40.0" y1="15.0" x2="40.0" y2="9.0"/><line x1="50.6" y1="19.4" x2="54.8" y2="15.2"/><animateTransform attributeName="transform" type="rotate" from="0 40 30" to="360 40 30" dur="18s" repeatCount="indefinite"/></g></g><g class="cloud c1"><ellipse cx="0" cy="24" rx="16" ry="6"/><ellipse cx="10" cy="18" rx="11" ry="7"/><ellipse cx="-9" cy="19" rx="9" ry="5"/></g><g class="cloud c2"><ellipse cx="0" cy="56" rx="13" ry="5"/><ellipse cx="8" cy="51" rx="9" ry="6"/><ellipse cx="-8" cy="52" rx="7" ry="4"/></g><g class="bird b1"><path d="M0 40 q4 -5 8 0 q4 -5 8 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><animate attributeName="d" dur=".8s" repeatCount="indefinite" values="M0 40 q4 -5 8 0 q4 -5 8 0;M0 40 q4 3 8 0 q4 3 8 0;M0 40 q4 -5 8 0 q4 -5 8 0"/></path></g><g class="bird b2"><path d="M0 64 q4 -5 8 0 q4 -5 8 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><animate attributeName="d" dur=".8s" repeatCount="indefinite" values="M0 64 q4 -5 8 0 q4 -5 8 0;M0 64 q4 3 8 0 q4 3 8 0;M0 64 q4 -5 8 0 q4 -5 8 0"/></path></g><g fill="currentColor"><g transform="translate(180,120) scale(1)"><path d="M-2.2 0 L2.2 0 L1 -44 L-1 -44Z"/><g transform="translate(0,-44)"><g><path transform="rotate(0)" d="M0 0 L-2 -20 L0 -28 L2 -20Z"/><path transform="rotate(120)" d="M0 0 L-2 -20 L0 -28 L2 -20Z"/><path transform="rotate(240)" d="M0 0 L-2 -20 L0 -28 L2 -20Z"/><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="5s" repeatCount="indefinite"/></g><circle r="3"/></g></g><g transform="translate(240,120) scale(0.78)"><path d="M-2.2 0 L2.2 0 L1 -44 L-1 -44Z"/><g transform="translate(0,-44)"><g><path transform="rotate(0)" d="M0 0 L-2 -20 L0 -28 L2 -20Z"/><path transform="rotate(120)" d="M0 0 L-2 -20 L0 -28 L2 -20Z"/><path transform="rotate(240)" d="M0 0 L-2 -20 L0 -28 L2 -20Z"/><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="6.8s" repeatCount="indefinite"/></g><circle r="3"/></g></g><g transform="translate(292,120) scale(0.56)"><path d="M-2.2 0 L2.2 0 L1 -44 L-1 -44Z"/><g transform="translate(0,-44)"><g><path transform="rotate(0)" d="M0 0 L-2 -20 L0 -28 L2 -20Z"/><path transform="rotate(120)" d="M0 0 L-2 -20 L0 -28 L2 -20Z"/><path transform="rotate(240)" d="M0 0 L-2 -20 L0 -28 L2 -20Z"/><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="4.4s" repeatCount="indefinite"/></g><circle r="3"/></g></g></g></svg><svg class="wave" viewBox="0 0 2400 44" preserveAspectRatio="none"><path d="M0 22 C150 2 450 42 600 22 S1050 2 1200 22 C1350 2 1650 42 1800 22 S2250 2 2400 22 V44 H0Z" fill="rgba(91,154,46,.10)"/></svg><svg class="wave w2" viewBox="0 0 2400 44" preserveAspectRatio="none"><path d="M0 28 C200 44 400 8 600 28 S1000 44 1200 28 S1600 8 1800 28 S2200 44 2400 28 V44 H0Z" fill="rgba(47,184,160,.10)"/></svg></div>
       <div>
         <h1>Live monitor</h1>
         <p>Consumption and savings for every project site, read from the M-Carbon Dashboard.</p>
@@ -782,6 +1026,7 @@ main.ww { max-width: none; padding: 30px 40px 64px; }
 
     <div id="overviewView" hidden>
       <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-bolt" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e4f4e6"/><path d="M36 12 20 36h11l-3 16 16-24H33Z" fill="#2f9457"/></symbol><symbol id="i-today" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fff4d6"/><rect x="17" y="19" width="30" height="28" rx="5" fill="#fff" stroke="#d9962b" stroke-width="2.500"/><path d="M17 24a5 5 0 0 1 5-5h20a5 5 0 0 1 5 5v4H17Z" fill="#f4b740"/><path d="M25 38l5 5 9-10" fill="none" stroke="#2f9457" stroke-width="3.200" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-co2" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e8f1fb"/><path d="M19 42a8 8 0 0 1-.6-16A11 11 0 0 1 40 23a9.500 9.500 0 0 1 3 19Z" fill="#7d9fd0"/><text x="31" y="36" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.500" font-weight="700" fill="#fff">CO&#8322;</text><circle cx="46" cy="46" r="9" fill="#1f9d6b" stroke="#fff" stroke-width="2"/><path d="M46 41.500v8m-3.500-3.300 3.500 3.500 3.500-3.500" fill="none" stroke="#fff" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-co2d" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e8f1fb"/><path d="M19 42a8 8 0 0 1-.6-16A11 11 0 0 1 40 23a9.500 9.500 0 0 1 3 19Z" fill="#7d9fd0"/><text x="31" y="36" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.500" font-weight="700" fill="#fff">CO&#8322;</text><circle cx="46" cy="46" r="9" fill="#f4b740" stroke="#fff" stroke-width="2"/><path d="M46 41.500v5l3.500 2" fill="none" stroke="#fff" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-building" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#efe7fb"/><rect x="18" y="14" width="20" height="36" rx="2.500" fill="#8b6fd1"/><rect x="38" y="28" width="9" height="22" rx="2" fill="#a893e0"/><path d="M23 20h4m4 0h2M23 27h4m4 0h2M23 34h4m4 0h2" stroke="#fff" stroke-width="3" stroke-linecap="round"/><rect x="25" y="41" width="6" height="9" rx="1" fill="#fff"/></symbol><symbol id="i-pin" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e4f4e6"/><path d="M32 13c-8.500 0-14 6.500-14 14 0 10.500 14 24 14 24s14-13.500 14-24c0-7.500-5.500-14-14-14Z" fill="#2f9457"/><circle cx="32" cy="27" r="5.500" fill="#fff"/></symbol><symbol id="i-chart" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e8f1fb"/><rect x="18" y="34" width="7" height="13" rx="1.500" fill="#a8c1e6"/><rect x="28.500" y="25" width="7" height="22" rx="1.500" fill="#7d9fd0"/><rect x="39" y="16" width="7" height="31" rx="1.500" fill="#4f7fc0"/></symbol><symbol id="i-gauge" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fff4d6"/><path d="M15 41a17 17 0 0 1 34 0" fill="none" stroke="#e7b556" stroke-width="5.500" stroke-linecap="round"/><path d="M15 41a17 17 0 0 1 9-15" fill="none" stroke="#2f9457" stroke-width="5.500" stroke-linecap="round"/><path d="M32 41l7-11" stroke="#7a4b00" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="41" r="3.500" fill="#7a4b00"/></symbol><symbol id="i-clock" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e8f1fb"/><circle cx="32" cy="32" r="16" fill="#fff" stroke="#4f7fc0" stroke-width="3.500"/><path d="M32 23v10l7 4" fill="none" stroke="#4f7fc0" stroke-width="3.500" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-layers" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e4f4e6"/><path d="M32 15 49 24 32 33 15 24Z" fill="#7fd29b"/><path d="M15 32l17 9 17-9" fill="none" stroke="#3fa564" stroke-width="4.500" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 40l17 9 17-9" fill="none" stroke="#2f9457" stroke-width="4.500" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-bulb" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fff4d6"/><path d="M32 14a12.500 12.500 0 0 0-6.500 23.200V42h13v-4.800A12.500 12.500 0 0 0 32 14Z" fill="#f4b740"/><rect x="27" y="44" width="10" height="4.500" rx="2" fill="#b98318"/><path d="M28 28l4 5 4-5" fill="none" stroke="#fff" stroke-width="2.500" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-down" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e4f4e6"/><path d="M32 17v26m-10-10 10 10 10-10" fill="none" stroke="#2f9457" stroke-width="5.500" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-plug" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fff4d6"/><path d="M26 15v10m12-10v10" stroke="#b98318" stroke-width="4" stroke-linecap="round"/><path d="M21 25h22v6a11 11 0 0 1-22 0Z" fill="#f4b740" stroke="#d9962b" stroke-width="2"/><path d="M32 42v8" stroke="#b98318" stroke-width="4" stroke-linecap="round"/></symbol></defs></svg>
+      <div class="ticker" aria-hidden="true"><div class="tk-track"><span class="tk-item"><i></i>Energy saved<b data-tk="saved">-</b></span><span class="tk-item"><i></i>Saved today<b data-tk="today">-</b></span><span class="tk-item"><i></i>CO&#8322; avoided<b data-tk="co2">-</b></span><span class="tk-item"><i></i>Saving rate<b data-tk="rate">-</b></span><span class="tk-item"><i></i>Sites monitored<b data-tk="sites">-</b></span><span class="tk-item"><i></i>Energy saved<b data-tk="saved">-</b></span><span class="tk-item"><i></i>Saved today<b data-tk="today">-</b></span><span class="tk-item"><i></i>CO&#8322; avoided<b data-tk="co2">-</b></span><span class="tk-item"><i></i>Saving rate<b data-tk="rate">-</b></span><span class="tk-item"><i></i>Sites monitored<b data-tk="sites">-</b></span><span class="tk-item"><i></i>Energy saved<b data-tk="saved">-</b></span><span class="tk-item"><i></i>Saved today<b data-tk="today">-</b></span><span class="tk-item"><i></i>CO&#8322; avoided<b data-tk="co2">-</b></span><span class="tk-item"><i></i>Saving rate<b data-tk="rate">-</b></span><span class="tk-item"><i></i>Sites monitored<b data-tk="sites">-</b></span><span class="tk-item"><i></i>Energy saved<b data-tk="saved">-</b></span><span class="tk-item"><i></i>Saved today<b data-tk="today">-</b></span><span class="tk-item"><i></i>CO&#8322; avoided<b data-tk="co2">-</b></span><span class="tk-item"><i></i>Saving rate<b data-tk="rate">-</b></span><span class="tk-item"><i></i>Sites monitored<b data-tk="sites">-</b></span></div></div>
       <section class="dash-sum">
         <div class="sc"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><div class="readout"><div class="register big" id="regTotal" role="img" aria-label="Total energy saved"></div><span class="unit">kWh saved</span></div><div class="l">South Korea, all monitored sites, since go-live</div></div>
         <div class="sc"><svg class="ic" aria-hidden="true"><use href="#i-today"/></svg><div class="v" id="oToday">-</div><div class="l">Saved today</div></div>
@@ -794,7 +1039,7 @@ main.ww { max-width: none; padding: 30px 40px 64px; }
         <section class="block mapblock">
           <div class="head hi"><div class="ht"><svg class="hic" aria-hidden="true"><use href="#i-pin"/></svg><h2>Where the sites are</h2></div><p id="mapHint">Click a province to see its sites. A province with sites opens its own map of districts.</p></div>
           <div class="mapwrap" id="mapWrap">
-            <svg id="phMap" role="group" aria-label="Map of South Korea with monitored sites"></svg>
+            <svg id="phMap" role="group" aria-label="Map of South Korea with monitored sites"></svg><i class="ff" style="--x:8%;--y:70%;--s:4px;--d:9s;--dl:-0s;--dx:40px;--dy:-30px"></i><i class="ff" style="--x:18%;--y:30%;--s:3px;--d:11s;--dl:-2s;--dx:-30px;--dy:40px"></i><i class="ff" style="--x:28%;--y:82%;--s:5px;--d:10s;--dl:-4s;--dx:50px;--dy:-40px"></i><i class="ff" style="--x:39%;--y:22%;--s:3px;--d:12s;--dl:-1s;--dx:-40px;--dy:30px"></i><i class="ff" style="--x:48%;--y:60%;--s:4px;--d:9s;--dl:-6s;--dx:30px;--dy:-50px"></i><i class="ff" style="--x:58%;--y:86%;--s:5px;--d:11s;--dl:-3s;--dx:-50px;--dy:-30px"></i><i class="ff" style="--x:66%;--y:35%;--s:3px;--d:10s;--dl:-5s;--dx:40px;--dy:40px"></i><i class="ff" style="--x:75%;--y:72%;--s:4px;--d:12s;--dl:-7s;--dx:-30px;--dy:-40px"></i><i class="ff" style="--x:84%;--y:28%;--s:5px;--d:9s;--dl:-2s;--dx:30px;--dy:50px"></i><i class="ff" style="--x:92%;--y:58%;--s:3px;--d:11s;--dl:-8s;--dx:-40px;--dy:30px"></i><i class="ff" style="--x:14%;--y:52%;--s:3px;--d:13s;--dl:-9s;--dx:60px;--dy:20px"></i><i class="ff" style="--x:54%;--y:12%;--s:4px;--d:10s;--dl:-1s;--dx:-20px;--dy:60px"></i><i class="ff" style="--x:70%;--y:92%;--s:3px;--d:12s;--dl:-4s;--dx:20px;--dy:-70px"></i><i class="ff" style="--x:34%;--y:48%;--s:3px;--d:9s;--dl:-5s;--dx:-50px;--dy:-20px"></i>
             <button type="button" class="mapback" id="mapBack" hidden>&#8249; South Korea</button>
             <div class="tip" id="mapTip" hidden></div>
             <aside class="bld" id="bldPanel" hidden aria-label="Building view">
@@ -959,6 +1204,38 @@ function setRegister(el, value, label) {
 }
 
 /* ---------- charts ---------- */
+const STILL = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+// Floating glow dust and leaves drifting up across the whole page. Pauses when the tab is hidden; off for reduced motion.
+(function ambient() {
+  if (STILL) return;
+  const cv = document.createElement('canvas'); cv.className = 'ambient'; cv.setAttribute('aria-hidden', 'true'); document.body.appendChild(cv);
+  const ctx = cv.getContext('2d'), dpr = Math.min(2, window.devicePixelRatio || 1); let W = 0, H = 0;
+  const resize = () => { const m = document.querySelector('main.ww'), L = m ? Math.max(0, m.getBoundingClientRect().left) : 0;
+    W = Math.max(100, innerWidth - L); H = innerHeight; cv.style.left = L + 'px'; cv.style.width = W + 'px'; cv.style.height = H + 'px'; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
+  resize(); window.addEventListener('resize', resize);
+  const spawn = (init) => { const leaf = Math.random() < 0.22; return { x: Math.random() * W, y: init ? Math.random() * H : H + 24, r: leaf ? 5 + Math.random() * 4 : 1.6 + Math.random() * 2.6, vy: -(0.14 + Math.random() * 0.38), vx: (Math.random() - 0.5) * 0.25, ph: Math.random() * 6.28, sp: 0.004 + Math.random() * 0.01, leaf, rot: Math.random() * 6.28, a: 0.3 + Math.random() * 0.4, teal: Math.random() < 0.3 }; };
+  const P = Array.from({ length: 48 }, () => spawn(true)); let last = performance.now();
+  (function frame(t) {
+    requestAnimationFrame(frame);
+    if (document.hidden) { last = t; return; }
+    const dt = Math.min(50, t - last) / 16.7; last = t; ctx.clearRect(0, 0, W, H);
+    for (const p of P) {
+      p.ph += p.sp * dt * 3; p.x += (p.vx + Math.sin(p.ph) * 0.35) * dt; p.y += p.vy * dt; p.rot += 0.012 * dt;
+      if (p.y < -24 || p.x < -24 || p.x > W + 24) Object.assign(p, spawn(false));
+      const tw = 0.6 + 0.4 * Math.sin(p.ph * 2), col = p.teal ? '47,184,160' : '110,190,60';
+      if (p.leaf) { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = `rgba(91,154,46,${(p.a * 0.75).toFixed(2)})`; ctx.beginPath(); ctx.ellipse(0, 0, p.r, p.r * 0.45, 0, 0, 6.283); ctx.fill(); ctx.restore(); continue; }
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 3);
+      g.addColorStop(0, `rgba(${col},${(p.a * tw).toFixed(2)})`); g.addColorStop(1, `rgba(${col},0)`);
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 3, 0, 6.283); ctx.fill();
+    }
+  })(last);
+  // the sun, birds and wind turbines are SVG animations: freeze them for people who asked for less motion (handled by the STILL early-return above)
+})();
+if (STILL) setInterval(() => document.querySelectorAll('svg.scene').forEach((s) => s.pauseAnimations && s.pauseAnimations()), 800);
+Chart.register({ id: 'firstDraw', afterRender(c) { if (!c.$timer) c.$timer = setTimeout(() => { c.$first = true; }, 1600); } });
+// Merge into Chart.js's own animation defaults; replacing the object breaks colour animations ("this._fn is not a function").
+if (STILL) Chart.defaults.animation = false;
+else Object.assign(Chart.defaults.animation, { duration: 1100, easing: 'easeOutQuart', delay: (c) => (c.type === 'data' && c.mode === 'default' && !c.chart.$first && !c.chart.$stagger ? Math.min(c.dataIndex * 28, 700) + c.datasetIndex * 70 : 0) });
 function makeCharts() {
   Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
   Chart.defaults.color = Theme.chart().ink;
@@ -1186,15 +1463,19 @@ function makeOverviewCharts() {
 }
 
 const roll = {}; // key -> { cur, to, apply }
+function tickerSet(o) { for (const [k, v] of Object.entries(o)) document.querySelectorAll(`[data-tk="${k}"]`).forEach((e) => { if (e.textContent !== v) e.textContent = v; }); }
+const BOOT_ROLL = new Set(['total', 'today', 'co2', 'co2t']); // the headline numbers count up from zero the first time they appear
 function rollTo(key, to, apply) {
   let r = roll[key];
+  if (!r && !STILL && BOOT_ROLL.has(key) && Number(to) > 0) { r = roll[key] = { cur: 0, to, apply, boot: true }; apply(0); return; }
   if (!r) { r = roll[key] = { cur: to, to, apply }; apply(to); return; } // first value is drawn straight away
   r.apply = apply; r.to = to;
 }
 setInterval(() => { // ~4 steps a second, so the numbers roll instead of jumping every few seconds
   for (const r of Object.values(roll)) {
     if (r.cur === r.to) continue;
-    r.cur = Math.abs(r.to - r.cur) < 0.005 ? r.to : r.cur + (r.to - r.cur) * 0.2;
+    r.cur = Math.abs(r.to - r.cur) < 0.005 ? r.to : r.cur + (r.to - r.cur) * (r.boot ? 0.3 : 0.2);
+    if (r.cur === r.to) r.boot = false;
     r.apply(r.cur);
   }
 }, 250);
@@ -1209,12 +1490,14 @@ function ranked(sel, rows, fmt, emptyMsg) {
   const list = rest > 0 ? [...top, { name: 'Other', v: rest }] : top, tot = list.reduce((a, r) => a + r.v, 0) || 1;
   const el = $(sel); let off = 0;
   const mx = Math.max(...list.map((r) => r.v), 0);
-  el.querySelector('.rank').innerHTML = mx <= 0 ? `<p class="empty">${esc(emptyMsg || 'No data yet.')}</p>` : list.map((r, i) => `<div class="rk" title="${esc(r.name)}"><span class="n"><i style="background:${PAL[i]}"></i><span>${esc(r.name)}</span></span><span class="v"><b>${fmt(r.v)}</b></span><span class="bar"><i style="width:${(r.v / mx * 100).toFixed(1)}%;background:${PAL[i]}"></i></span></div>`).join('');
-  el.querySelector('.donut').innerHTML = '<g transform="rotate(-90 21 21)">' + list.map((r, i) => {
+  const rankEl = el.querySelector('.rank'), rankHtml = mx <= 0 ? `<p class="empty">${esc(emptyMsg || 'No data yet.')}</p>` : list.map((r, i) => `<div class="rk" title="${esc(r.name)}"><span class="n"><i style="background:${PAL[i]}"></i><span>${esc(r.name)}</span></span><span class="v"><b>${fmt(r.v)}</b></span><span class="bar"><i style="width:${(r.v / mx * 100).toFixed(1)}%;background:${PAL[i]}"></i></span></div>`).join('');
+  if (rankEl.dataset.k !== rankHtml) { rankEl.innerHTML = rankHtml; rankEl.dataset.k = rankHtml; }
+  const donutEl = el.querySelector('.donut'), donutHtml = '<g transform="rotate(-90 21 21)">' + list.map((r, i) => {
     const p = r.v / tot * 100, len = Math.max(0, p - 0.6);
     const c = `<circle cx="21" cy="21" r="15.915" pathLength="100" fill="none" stroke="${PAL[i]}" stroke-width="5" stroke-dasharray="${len} ${100 - len}" stroke-dashoffset="${-off}"/>`;
     off += p; return c;
   }).join('') + '</g>';
+  if (donutEl.dataset.k !== donutHtml) { donutEl.innerHTML = donutHtml; donutEl.dataset.k = donutHtml; }
 }
 function renderCmp(o) {
   const pp = o.prePost || [], n = pp.length, t = pp[n - 1] || { before: 0, after: 0 }, y = pp[n - 2] || t;
@@ -1251,6 +1534,7 @@ function renderOverview(o) {
   rollTo('co2', t.co2Kg, (v) => { $('#oCo2').innerHTML = `${nf(v, 2)}<small>kg</small>`; });
   rollTo('co2t', t.todayCo2Kg, (v) => { $('#oCo2Today').innerHTML = `${nf(v, 2)}<small>kg</small>`; });
   $('#oSites').innerHTML = `${nf(t.projects)}<small>${nf(t.equipments || t.meters)} equipments</small>`;
+  tickerSet({ saved: nf(t.savedKwh, 2) + ' kWh', today: nf(t.todaySavedKwh, 2) + ' kWh', co2: nf(t.co2Kg, 2) + ' kg', rate: nf(t.savingRate, 1) + '%', sites: nf(t.projects) });
   renderCarbon(o);
 
   const A = o.areas || [];
@@ -1410,6 +1694,7 @@ function drawMap(o, force) {
     return `<g class="mchip" data-i="${c.i}" tabindex="0" role="button" aria-label="${esc(c.label)} sites">
       ${moved ? `<line class="lead" x1="${c.cx.toFixed(1)}" y1="${c.cy.toFixed(1)}" x2="${c.x.toFixed(1)}" y2="${c.y.toFixed(1)}"/><circle class="anchor" cx="${c.cx.toFixed(1)}" cy="${c.cy.toFixed(1)}" r="${(2.4 * px).toFixed(2)}"/>` : ''}
       <rect x="${(c.x - c.w / 2).toFixed(1)}" y="${(c.y - c.h / 2).toFixed(1)}" width="${c.w.toFixed(1)}" height="${c.h.toFixed(1)}" rx="${(c.h / 2).toFixed(1)}"/>
+      <rect class="ping" x="${(c.x - c.w / 2).toFixed(1)}" y="${(c.y - c.h / 2).toFixed(1)}" width="${c.w.toFixed(1)}" height="${c.h.toFixed(1)}" rx="${(c.h / 2).toFixed(1)}"/><rect class="ping p2" x="${(c.x - c.w / 2).toFixed(1)}" y="${(c.y - c.h / 2).toFixed(1)}" width="${c.w.toFixed(1)}" height="${c.h.toFixed(1)}" rx="${(c.h / 2).toFixed(1)}"/>
       <text x="${c.x.toFixed(1)}" y="${c.y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" style="font-size:${fs.toFixed(2)}px">${esc(c.label)}</text>
     </g>`;
   }).join('');
@@ -1427,8 +1712,8 @@ function drawMap(o, force) {
 
   // Fit each label to the real rendered text, whatever font the browser ends up using
   svg.querySelectorAll('.mchip').forEach((gEl) => {
-    const t = gEl.querySelector('text'), r = gEl.querySelector('rect');
-    try { const b = t.getBBox(); if (b.width > 0) { const w = b.width + fs * 1.4; r.setAttribute('x', (b.x + b.width / 2 - w / 2).toFixed(1)); r.setAttribute('width', w.toFixed(1)); } } catch (e) { /* hidden svg: keep the estimate */ }
+    const t = gEl.querySelector('text'), rs = gEl.querySelectorAll('rect');
+    try { const b = t.getBBox(); if (b.width > 0) { const w = b.width + fs * 1.4; rs.forEach((r) => { r.setAttribute('x', (b.x + b.width / 2 - w / 2).toFixed(1)); r.setAttribute('width', w.toFixed(1)); }); } } catch (e) { /* hidden svg: keep the estimate */ }
   });
 }
 
@@ -2190,7 +2475,7 @@ function cvOpen(id) {
   const cv = (i, ttl, cls = '', ic) => `<div class="cv-card"><h3>${ic ? ico(ic, 17) : ''}${ttl}</h3><div class="cv-plot ${cls}"><canvas id="${i}"></canvas></div></div>`;
   $('#clientView').innerHTML = `<div class="cv-wrap">
   <div class="cv-screen on" data-screen="overview">
-  <section class="cv-hero"><i class="cv-orb a"></i><i class="cv-orb b"></i>
+  <section class="cv-hero"><i class="cv-orb a"></i><i class="cv-orb b"></i><span class="cv-fx" aria-hidden="true"><svg class="scene" viewBox="0 0 320 120" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"><g class="sun"><circle cx="40" cy="30" r="11" fill="#ffd45c"/><g stroke="#ffd45c" stroke-width="2" stroke-linecap="round"><line x1="55.0" y1="30.0" x2="61.0" y2="30.0"/><line x1="50.6" y1="40.6" x2="54.8" y2="44.8"/><line x1="40.0" y1="45.0" x2="40.0" y2="51.0"/><line x1="29.4" y1="40.6" x2="25.2" y2="44.8"/><line x1="25.0" y1="30.0" x2="19.0" y2="30.0"/><line x1="29.4" y1="19.4" x2="25.2" y2="15.2"/><line x1="40.0" y1="15.0" x2="40.0" y2="9.0"/><line x1="50.6" y1="19.4" x2="54.8" y2="15.2"/><animateTransform attributeName="transform" type="rotate" from="0 40 30" to="360 40 30" dur="18s" repeatCount="indefinite"/></g></g><g class="cloud c1"><ellipse cx="0" cy="24" rx="16" ry="6"/><ellipse cx="10" cy="18" rx="11" ry="7"/><ellipse cx="-9" cy="19" rx="9" ry="5"/></g><g class="cloud c2"><ellipse cx="0" cy="56" rx="13" ry="5"/><ellipse cx="8" cy="51" rx="9" ry="6"/><ellipse cx="-8" cy="52" rx="7" ry="4"/></g><g class="bird b1"><path d="M0 40 q4 -5 8 0 q4 -5 8 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><animate attributeName="d" dur=".8s" repeatCount="indefinite" values="M0 40 q4 -5 8 0 q4 -5 8 0;M0 40 q4 3 8 0 q4 3 8 0;M0 40 q4 -5 8 0 q4 -5 8 0"/></path></g><g class="bird b2"><path d="M0 64 q4 -5 8 0 q4 -5 8 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><animate attributeName="d" dur=".8s" repeatCount="indefinite" values="M0 64 q4 -5 8 0 q4 -5 8 0;M0 64 q4 3 8 0 q4 3 8 0;M0 64 q4 -5 8 0 q4 -5 8 0"/></path></g><g fill="currentColor"><g transform="translate(180,120) scale(1)"><path d="M-2.2 0 L2.2 0 L1 -44 L-1 -44Z"/><g transform="translate(0,-44)"><g><path transform="rotate(0)" d="M0 0 L-2 -20 L0 -28 L2 -20Z"/><path transform="rotate(120)" d="M0 0 L-2 -20 L0 -28 L2 -20Z"/><path transform="rotate(240)" d="M0 0 L-2 -20 L0 -28 L2 -20Z"/><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="5s" repeatCount="indefinite"/></g><circle r="3"/></g></g><g transform="translate(240,120) scale(0.78)"><path d="M-2.2 0 L2.2 0 L1 -44 L-1 -44Z"/><g transform="translate(0,-44)"><g><path transform="rotate(0)" d="M0 0 L-2 -20 L0 -28 L2 -20Z"/><path transform="rotate(120)" d="M0 0 L-2 -20 L0 -28 L2 -20Z"/><path transform="rotate(240)" d="M0 0 L-2 -20 L0 -28 L2 -20Z"/><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="6.8s" repeatCount="indefinite"/></g><circle r="3"/></g></g><g transform="translate(292,120) scale(0.56)"><path d="M-2.2 0 L2.2 0 L1 -44 L-1 -44Z"/><g transform="translate(0,-44)"><g><path transform="rotate(0)" d="M0 0 L-2 -20 L0 -28 L2 -20Z"/><path transform="rotate(120)" d="M0 0 L-2 -20 L0 -28 L2 -20Z"/><path transform="rotate(240)" d="M0 0 L-2 -20 L0 -28 L2 -20Z"/><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="4.4s" repeatCount="indefinite"/></g><circle r="3"/></g></g></g></svg><i class="cv-spark" style="--x:6%;--s:6px;--d:7s;--dl:-0s"></i><i class="cv-spark" style="--x:14%;--s:9px;--d:9s;--dl:-3s"></i><i class="cv-spark" style="--x:23%;--s:5px;--d:6.5s;--dl:-5s"></i><i class="cv-spark" style="--x:33%;--s:8px;--d:8s;--dl:-1.5s"></i><i class="cv-spark" style="--x:44%;--s:6px;--d:7.5s;--dl:-4s"></i><i class="cv-spark" style="--x:53%;--s:10px;--d:10s;--dl:-6s"></i><i class="cv-spark" style="--x:62%;--s:5px;--d:6s;--dl:-2s"></i><i class="cv-spark" style="--x:71%;--s:8px;--d:8.5s;--dl:-7s"></i><i class="cv-spark" style="--x:80%;--s:6px;--d:7s;--dl:-3.5s"></i><i class="cv-spark" style="--x:90%;--s:9px;--d:9.5s;--dl:-5.5s"></i><i class="cv-spark" style="--x:96%;--s:5px;--d:6.5s;--dl:-0.8s"></i><svg class="cv-leaf" viewBox="0 0 24 24" style="--x:10%;--s:16px;--d:14s;--dl:-0s"><path d="M20 3C9 3 4 9 4 15c0 1.6.4 3 1.2 4.2L3 22l2.4-1.2C6.6 21.6 8 22 9.5 22 16 22 21 15 20 3z"/></svg><svg class="cv-leaf" viewBox="0 0 24 24" style="--x:38%;--s:13px;--d:16s;--dl:-6s"><path d="M20 3C9 3 4 9 4 15c0 1.6.4 3 1.2 4.2L3 22l2.4-1.2C6.6 21.6 8 22 9.5 22 16 22 21 15 20 3z"/></svg><svg class="cv-leaf" viewBox="0 0 24 24" style="--x:66%;--s:18px;--d:15s;--dl:-3s"><path d="M20 3C9 3 4 9 4 15c0 1.6.4 3 1.2 4.2L3 22l2.4-1.2C6.6 21.6 8 22 9.5 22 16 22 21 15 20 3z"/></svg><svg class="cv-leaf" viewBox="0 0 24 24" style="--x:86%;--s:12px;--d:17s;--dl:-9s"><path d="M20 3C9 3 4 9 4 15c0 1.6.4 3 1.2 4.2L3 22l2.4-1.2C6.6 21.6 8 22 9.5 22 16 22 21 15 20 3z"/></svg></span>
     <div class="hA"><span class="cv-live"><i></i><span id="cvAt">Loading</span></span><h1>${esc(p.name || '')}<small>${esc(p.location || '')}</small></h1></div>
     <div class="hB"><div class="cv-hl">Energy saved this month</div><div class="cv-big"><span id="cvSaved">-</span><small>kWh</small></div></div>
     <div class="cv-chips">${chip('cvCost', 'Cost saved', 'coin')}${chip('cvCo2', 'Carbon emission reduction', 'cloud')}${chip('cvTrees', 'Trees equivalent', 'tree')}${chip('cvUsage', 'Power used this month', 'bolt')}</div>
@@ -2228,6 +2513,8 @@ function cvOpen(id) {
     if (type !== 'doughnut') for (const k of ['x', 'y']) { cfg.scales = cfg.scales || {}; cfg.scales[k] = { ...(cfg.scales[k] || {}), ticks: { color: Theme.get() === 'dark' ? '#9db8aa' : '#5d6f69', font: { size: 12 }, maxRotation: 0, autoSkipPadding: 12 }, grid: { color: k === 'y' ? (Theme.get() === 'dark' ? 'rgba(255,255,255,.07)' : 'rgba(21,35,34,.09)') : 'transparent', drawTicks: false }, border: { display: false } }; }
     cfg.plugins = { ...cfg.plugins, legend: { ...((cfg.plugins || {}).legend || {}), display: true, position: 'bottom', labels: { color: Theme.get() === 'dark' ? '#cfe3d6' : '#2a3d38', usePointStyle: true, pointStyle: 'rectRounded', boxWidth: 10, padding: 16, font: { size: 13 } } }, tooltip: { ...((cfg.plugins || {}).tooltip || {}), backgroundColor: 'rgba(6,16,12,.95)', borderColor: 'rgba(159,211,106,.45)', borderWidth: 1, padding: 12, cornerRadius: 12, boxPadding: 6, titleColor: '#9fd36a', bodyColor: '#e8f3ec' } };
     if (type === 'doughnut') cfg.layout = { padding: 10 };
+    const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    cfg.animation = still ? false : { duration: 1200, easing: 'easeOutQuart', delay: (c) => (c.type === 'data' && c.mode === 'default' && c.chart.$stagger ? c.dataIndex * 24 : 0) };
     return new Chart($('#' + cid), { type, plugins: type === 'doughnut' ? [] : (cid === 'cvPow' ? [cvPreLine, cvLatestVal] : [cvPreLine]), data: { labels: [], datasets: [] }, options: cfg });
   };
   const L = window.T || ((x) => x);
@@ -2291,8 +2578,8 @@ async function cvSeries(id) {
 function cvDraw() {
   const S = CV.S; if (!S) return;
   const lb = S.range === 'day' ? S.labels.map((h) => `${pad2(h)}:00`) : S.labels, P = CV.charts.pow, T2 = CV.charts.traf;
-  P.data.labels = lb; P.data.datasets = [{ label: cvT('Actual usage'), data: S.used, backgroundColor: cvBar('#8f9dff', '#3f55e0'), borderRadius: 6, borderSkipped: false, maxBarThickness: 26 }, ...(S.saved ? [{ label: cvT('Power saved'), data: S.saved, backgroundColor: cvBar('#5fe0b0', '#14a37a'), borderRadius: 6, borderSkipped: false, maxBarThickness: 26 }] : []), ...((pre) => (pre == null ? [] : [cvPreSet(lb.length, pre)]))(cvPre(S))]; P.update();
-  T2.data.labels = lb; T2.data.datasets = [{ label: cvT('People and vehicles'), data: S.traffic, borderColor: '#5fe0b0', backgroundColor: cvGrad('95,224,176'), fill: true, tension: .4, borderWidth: 3, pointRadius: 0, pointHoverRadius: 7, pointBackgroundColor: '#fff', pointBorderColor: '#5fe0b0', pointBorderWidth: 3 }]; T2.update(); CV.rdS = null; cvRd(null);
+  P.data.labels = lb; P.data.datasets = [{ label: cvT('Actual usage'), data: S.used, backgroundColor: cvBar('#8f9dff', '#3f55e0'), borderRadius: 6, borderSkipped: false, maxBarThickness: 26 }, ...(S.saved ? [{ label: cvT('Power saved'), data: S.saved, backgroundColor: cvBar('#5fe0b0', '#14a37a'), borderRadius: 6, borderSkipped: false, maxBarThickness: 26 }] : []), ...((pre) => (pre == null ? [] : [cvPreSet(lb.length, pre)]))(cvPre(S))]; P.$stagger = T2.$stagger = true; P.update();
+  T2.data.labels = lb; T2.data.datasets = [{ label: cvT('People and vehicles'), data: S.traffic, borderColor: '#5fe0b0', backgroundColor: cvGrad('95,224,176'), fill: true, tension: .4, borderWidth: 3, pointRadius: 0, pointHoverRadius: 7, pointBackgroundColor: '#fff', pointBorderColor: '#5fe0b0', pointBorderWidth: 3 }]; T2.update(); setTimeout(() => { P.$stagger = T2.$stagger = false; }, 1800); CV.rdS = null; cvRd(null);
 }
 async function cvLoad(pid) {
   try { const d = await get(`/projects/${pid}/details`); if (pid !== state.pid) return; if (d) cvPaint(d); else $('#cvAt').textContent = 'No data'; } catch (err) { showFault(err); }
