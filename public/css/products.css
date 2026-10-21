@@ -21,7 +21,7 @@ main { max-width: none; }
 
 .stage {
   position: relative; isolation: isolate; overflow: hidden;
-  height: 560px; display: grid; place-items: center;
+  min-height: 560px; align-self: stretch; display: grid; place-items: center;
   grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   background: radial-gradient(120% 90% at 50% 0%, var(--stage-top) 0%, var(--stage-mid) 58%, var(--stage-bot) 100%);
 }
@@ -246,3 +246,4 @@ main { max-width: none; }
   body[data-role="viewer"] .b-info h2 { font-size: 1rem; margin: 0; }
   body[data-role="viewer"] .b-actions .btn { padding: 6px 14px; }
 }
+

@@ -7,34 +7,22 @@ const IMG_BASE = '/img/products/';
 
 const PRODUCTS = [
   {
-    id: 'bulb-e27', kind: 'bulb', name: 'M-Carbon Bulb E-27', group: 'LED bulb',
-    blurb: 'LED bulb with a standard E27 screw base. It fits the lamp holders already installed on site.',
-    specs: [['Type', 'LED bulb'], ['Fitting', 'E27 screw base'], ['Power', '5 W'], ['Colour', '6500K daylight']],
-    images: [{ src: 'bulb-e27-1' }, { src: 'bulb-e27-3' }, { src: 'bulb-e27-5' },
-             { src: 'bulb-e27-7' }, { src: 'bulb-e27-9' }, { src: 'bulb-e27-11' },
-             { src: 'bulb-e27-13' }, { src: 'bulb-e27-15' }]
+    id: 'smart-bracket', kind: 'bracket', name: 'Smart Bracket LED Light', group: 'Matrix IoT radar bracket lamp',
+    blurb: 'Energy-saving all-in-one bracket LED light, model ET-MR-SFD01-24. Radar detection and the IoT gateway light it only when needed and show usage in real time.',
+    specs: [['Model', 'ET-MR-SFD01-24'], ['Size (L×W×H)', '1185 × 58 × 50 mm'], ['Input voltage', 'AC 185–265 V'], ['Power', '0–24 W adjustable'],
+            ['Efficacy', '150–160 lm/W'], ['Power factor', '≥ 0.9'], ['Colour temperature', '6500 K (±300 K)'], ['Beam angle', '120°'],
+            ['Driver', 'Built-in non-isolated'], ['Body', 'Aluminium profile + aluminium board'], ['Protection', 'IP20'], ['Operating temperature', '-20 ~ 45 °C'],
+            ['Annual lumen depreciation', '< 3%'], ['Design life', '50,000 hours or more'], ['Service life', '100,000 hours'], ['Warranty', '5 years from purchase date']],
+    images: [{ src: 'bracket-1', fit: 'long' }, { src: 'bracket-2', fit: 'long' }, { src: 'bracket-3', fit: 'long' }]
   },
   {
-    id: 't5-always-on', kind: 'tube', name: 'M-Carbon Tube T5 Always On', group: 'LED tube',
-    blurb: 'Slim T5 LED tube for retrofitting existing fixtures. This is the Always On model.',
-    specs: [['Type', 'LED tube, T5'], ['Model', 'Always On'], ['Fitting', 'G5 two-pin'], ['Size', '1160 × 19 mm'], ['Power', '8 W'], ['Colour', '6500K daylight']],
-    images: [{ src: 't5-always-on-5', fit: 'bleed-bottom' }, { src: 't5-always-on-3', fit: 'tilt' }, { src: 't5-always-on-7', fit: 'bleed-top' },
-             { src: 't5-always-on-9', fit: 'bleed-top' }, { src: 't5-always-on-11', fit: 'wide' }, { src: 't5-always-on-13', fit: 'bleed-top' },
-             { src: 't5-always-on-1', fit: 'long' }]
-  },
-  {
-    id: 't8-always-on', kind: 'tube', name: 'M-Carbon Tube T8 Always On', group: 'LED tube',
-    blurb: 'T8 LED tube that replaces a standard fluorescent tube in the same fixture. This is the Always On model.',
-    specs: [['Type', 'LED tube, T8'], ['Model', 'Always On'], ['Fitting', 'G13 two-pin'], ['Power', '8 W'], ['Efficacy', '200 lm/W'], ['Colour', '6500K daylight']],
-    images: [{ src: 't8-always-on-3', fit: 'bleed-top' }, { src: 't8-always-on-2', fit: 'tilt' }, { src: 't8-always-on-4', fit: 'bleed-top' },
-             { src: 't8-always-on-5', fit: 'tilt' }, { src: 't8-always-on-6', fit: 'bleed-bottom' }, { src: 't8-always-on-1', fit: 'long' }]
-  },
-  {
-    id: 't8-iot', kind: 'tube', name: 'M-Carbon Tube T8 IoT', group: 'LED tube',
-    blurb: 'T8 LED tube with an IoT connection, so the lamp can be tracked in the M-Carbon monitor.',
-    specs: [['Type', 'LED tube, T8'], ['Model', 'IoT'], ['Fitting', 'G13 two-pin'], ['Power', '0–18 W adjustable'], ['Efficacy', '180 lm/W'], ['Light output', 'Up to 3,240 lm'], ['Colour', '6500K daylight'], ['Lifespan', 'Up to 100,000 hours'], ['Warranty', 'Up to 7 years']],
-    images: [{ src: 't8-iot-9', fit: 'bleed-bottom' }, { src: 't8-iot-3', fit: 'tilt' }, { src: 't8-iot-5', fit: 'tilt' },
-             { src: 't8-iot-7', fit: 'bleed-top' }, { src: 't8-iot-1', fit: 'long' }, { src: 't8-iot-11', fit: 'long' }]
+    id: 't8-pro', kind: 'tube', name: 'Smart T8 LED Lamp PRO', group: 'Matrix IoT radar T8 lamp',
+    blurb: 'Energy-saving straight T8 LED lamp, model ET-MR-T8A1200-18. Radar detection and the IoT gateway light it only when needed and show usage in real time.',
+    specs: [['Model', 'ET-MR-T8A1200-18'], ['Size (L×Ø)', '1198 × Ø28 mm'], ['Input voltage', 'AC 185–265 V'], ['Power', '0–18 W adjustable'],
+            ['Efficacy', '170–180 lm/W'], ['Power factor', '≥ 0.9'], ['Colour temperature', '6500 K (±300 K)'], ['Beam angle', '90°'],
+            ['Driver', 'Built-in non-isolated'], ['Body', 'Aluminium board'], ['Protection', 'IP20'], ['Operating temperature', '-20 ~ 45 °C'],
+            ['Annual lumen depreciation', '< 2%'], ['Design life', '50,000 hours or more'], ['Warranty', '5 years from purchase date']],
+    images: [{ src: 't8-pro-1', fit: 'long' }]
   }
 ];
 
