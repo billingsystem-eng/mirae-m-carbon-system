@@ -1249,6 +1249,22 @@ Object.assign(KO, {
   "An estimate from this month's average, not a guarantee.": "이번 달 평균을 기준으로 한 추정치이며, 보장되는 수치는 아닙니다."
 });
   // Phrase-level rules for dynamic text (numbers, names, dialogs). Applied after exact matches.
+  // Login page
+  Object.assign(KO, {
+    "Change the city's light,": "도시의 빛을 바꾸면,",
+    "carbon": "탄소",
+    "goes down": "가 줄어듭니다",
+    "LED ESCO carbon-saving platform for apartments and commercial buildings": "아파트 · 상업용 건물 LED ESCO 탄소절감 플랫폼",
+    "Smart LED": "스마트 LED",
+    "AMI remote metering": "AMI 원격검침",
+    "IoT sensors": "IoT 센서",
+    "Carbon-saving platform": "탄소절감 플랫폼",
+    "Remember ID": "아이디 저장",
+    "Forgot password?": "비밀번호 찾기",
+    "Enter your username": "아이디를 입력하세요",
+    "Enter your password": "비밀번호를 입력하세요",
+    "Ask your administrator to reset your password.": "비밀번호 재설정은 관리자에게 문의하세요."
+  });
   const RULES = [
     [/^Saved (\d.*)$/, '저장됨 $1'],
     [/^Add: (.+)% VAT$/, '부가세액'],

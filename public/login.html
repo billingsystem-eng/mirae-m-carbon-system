@@ -6,46 +6,77 @@
 <title>Sign in — M-Carbon System</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700&family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="stylesheet" href="/css/app.css">
 <link rel="stylesheet" href="/css/theme.css">
 <script src="/js/theme.js"></script>
 <style>
-  body { display: block; padding: 0; min-height: 100vh; }
+  body { display: block; padding: 0; min-height: 100vh; background: #0a1424; }
   .ico { width: 1em; height: 1em; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-  .login { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); min-height: 100vh; }
-
-  /* ---- Brand side ---- */
-  .brand {
-    position: relative; overflow: hidden; color: #dfe9e5;
+  /* ---- Full-page moving skyline: drifting camera, blinking tower lights, traffic, flickering windows ---- */
+  .scene { position: fixed; inset: 0; overflow: hidden; z-index: 0; background: #0b1424; }
+  .stage {
+    position: absolute; left: 50%; top: 50%; aspect-ratio: 1600 / 895;
+    width: calc(100vh * 1.7877);
+    width: max(100vw, calc(100vh * 1.7877));          /* always covers the screen, like background-size: cover */
+    transform: translate(-50%, -50%) scale(1.06);
+    animation: stage-in 1.4s ease-out both, drift 60s ease-in-out 1.4s infinite alternate;
+  }
+  .stage .photo, .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .shade {
+    position: absolute; inset: 0;
     background:
-      radial-gradient(900px 500px at 15% -10%, rgba(91,154,46,.28), transparent 60%),
-      radial-gradient(700px 500px at 100% 110%, rgba(12,107,90,.45), transparent 60%),
-      var(--ink-bg);
-    padding: 44px clamp(32px, 5vw, 72px);
-    display: flex; flex-direction: column; justify-content: space-between; gap: 32px;
+      linear-gradient(90deg, rgba(9,20,38,.72) 0%, rgba(9,20,38,.46) 42%, rgba(9,20,38,.16) 100%),
+      linear-gradient(180deg, rgba(9,20,38,.55) 0%, rgba(9,20,38,0) 24%, rgba(9,20,38,0) 68%, rgba(9,20,38,.62) 100%),
+      rgba(58,82,126,.20);
   }
-  .brand-top { display: flex; align-items: center; gap: 14px; }
-  .brand-top svg { width: 46px; height: 46px; flex: none; }
-  .brand-name { line-height: 1.15; }
-  .brand-name b { display: block; color: #fff; font-size: 1.2rem; letter-spacing: -0.01em; }
-  .brand-name span { font-size: 0.82rem; color: #8fa39e; }
+  .beacon { position: absolute; width: .42%; aspect-ratio: 1; margin: -.21% 0 0 -.21%; border-radius: 50%; background: #ff4a3d; box-shadow: 0 0 6px 2px rgba(255,60,50,.7); animation: blink 2.6s ease-in-out infinite; }
+  .car { position: absolute; width: 6%; height: .38%; border-radius: 99px; mix-blend-mode: screen; animation: linear infinite; }
+  .car.r { background: linear-gradient(90deg, rgba(255,40,30,0), rgba(255,80,60,.95)); animation-name: driveR; }
+  .car.w { background: linear-gradient(270deg, rgba(255,235,190,0), rgba(255,246,220,.95)); animation-name: driveL; }
+  @keyframes stage-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes drift {
+    from { transform: translate(-50%, -50%) scale(1.06) translateX(-2%); }
+    to   { transform: translate(-50%, -50%) scale(1.15) translateX(2%); }
+  }
+  @keyframes blink { 0%, 100% { opacity: .15; } 8%, 45% { opacity: 1; } 60% { opacity: .15; } }
+  @keyframes driveR { from { left: -8%; } to { left: 104%; } }
+  @keyframes driveL { from { left: 104%; } to { left: -8%; } }
+  @media (prefers-reduced-motion: reduce) {
+    .stage { animation: stage-in 1.4s ease-out both; }
+    .beacon { animation: none; opacity: .9; }
+    .car { display: none; }
+  }
 
-  .brand-mid { flex: 1; display: flex; align-items: center; justify-content: center; }
-  .brand-mid .art { width: 100%; max-width: 540px; height: auto; display: block; }
+  /* ---- Layout: message on the left, sign-in card on the right ---- */
+  .login {
+    position: relative; z-index: 1; min-height: 100vh;
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 380px); align-items: center;
+    column-gap: clamp(32px, 6vw, 96px); padding: 0 clamp(32px, 5.75vw, 92px);
+  }
+  .brand { position: relative; align-self: stretch; display: flex; flex-direction: column; justify-content: center; padding: 110px 0 40px; color: #fff; }
+  .brand-logo { position: absolute; top: 20px; left: 0; height: 80px; width: auto; filter: drop-shadow(0 2px 10px rgba(0,0,0,.45)); }
+  .hero h2 {
+    margin: 0 0 16px; color: #fff; text-shadow: 0 2px 18px rgba(0,0,0,.5);
+    font: 700 clamp(1.9rem, 3vw, 3rem)/1.3 'Noto Sans KR', 'Public Sans', 'Malgun Gothic', system-ui, sans-serif; letter-spacing: -0.02em;
+  }
+  .hero h2 em { font-style: normal; color: #7bd04c; }
+  .hero h2 .tail { margin-left: .28em; }
+  html[lang="ko"] .hero h2 .tail { margin-left: 0; }          /* Korean has no space before the particle */
+  .hero p { margin: 0 0 22px; font-size: clamp(.95rem, 1.1vw, 1.05rem); color: rgba(255,255,255,.93); text-shadow: 0 1px 10px rgba(0,0,0,.5); }
+  .pills { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pills span { padding: 6px 14px; border: 1px solid rgba(255,255,255,.45); border-radius: 99px; background: rgba(255,255,255,.08); color: #fff; font-size: .8rem; backdrop-filter: blur(2px); }
 
-  .brand-foot { font-size: 0.8rem; color: #6f867f; }
-
-  /* ---- Form side ---- */
-  .formside { display: flex; align-items: center; justify-content: center; padding: 32px 24px; background: var(--paper); }
+  .formside { display: flex; justify-content: flex-end; align-items: center; padding: 32px 0; }
+  html[data-theme="dark"] .formside { background: transparent; }   /* theme.css gives this column a solid background */
   .card {
-    width: 100%; max-width: 410px; background: var(--surface);
-    border: 1px solid var(--rule); border-radius: 12px; padding: 30px 30px 26px;
-    box-shadow: 0 10px 30px rgba(21, 35, 34, .07);
+    width: 100%; max-width: 380px; background: var(--surface);
+    border: 1px solid var(--rule); border-radius: 14px; padding: 30px 30px 24px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .40);
   }
-  .card .ines { display: block; height: 60px; width: auto; max-width: 100%; margin: 0 0 22px; }
+  .card .ines { display: block; height: 34px; width: auto; max-width: 100%; margin: 0 0 24px; }
   .card h1 { margin: 0 0 4px; font-size: 1.55rem; letter-spacing: -0.02em; }
   .card .sub { margin: 0 0 22px; color: var(--ink-soft); font-size: 0.92rem; }
   .card .field { margin-bottom: 14px; }
@@ -63,95 +94,49 @@
   .with-ico .eye:focus-visible { outline: 2px solid var(--signal); outline-offset: 0; }
   .with-ico.pw input::-ms-reveal, .with-ico.pw input::-ms-clear { display: none; }   /* Edge adds its own show-password icon */
   .with-ico.pw input { padding-right: 44px; }
+  .opts { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: -2px 0 14px; font-size: .8rem; }
+  .opts .remember { display: flex; align-items: center; gap: 7px; margin: 0; color: var(--ink-soft); font-size: inherit; font-weight: 400; cursor: pointer; }
+  .opts .remember input { width: auto; margin: 0; padding: 0; accent-color: var(--leaf); }
+  .opts a { color: var(--leaf-dark); font-weight: 600; text-decoration: none; }
+  .opts a:hover { text-decoration: underline; }
   .go { width: 100%; padding: 11px 14px; font-size: 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 4px; }
   .go .ico { font-size: 18px; }
   .card .legal { margin: 20px 0 0; padding-top: 16px; border-top: 1px solid var(--rule); text-align: center; font-size: 0.78rem; color: var(--ink-soft); }
 
   @media (max-width: 880px) {
-    .login { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-    .brand { padding: 18px 20px; gap: 0; }
-    .brand-top { padding-right: 120px; }
-    .brand-top svg { width: 38px; height: 38px; }
-    .brand-mid, .brand-foot { display: none; }
-    .formside { padding: 24px 16px 40px; align-items: flex-start; }
+    .login { grid-template-columns: minmax(0, 1fr); align-items: start; padding: 0 18px; column-gap: 0; }
+    .brand { align-self: auto; padding: 84px 0 20px; }
+    .brand-logo { height: 58px; top: 12px; }
+    .hero h2 { font-size: 1.6rem; margin-bottom: 8px; }
+    .hero p { margin-bottom: 0; font-size: .9rem; }
+    .pills { display: none; }
+    .formside { justify-content: center; padding: 8px 0 40px; }
   }
 </style>
 </head>
 <body>
+<div class="scene" aria-hidden="true">
+  <div class="stage" id="stage">
+    <img class="photo" src="/img/login-skyline.jpg" alt="" decoding="async" fetchpriority="high">
+    <canvas id="windows" width="1600" height="895"></canvas>
+  </div>
+  <div class="shade"></div>
+</div>
+
 <div class="login">
 
   <section class="brand">
-    <div class="brand-top">
-      <svg viewBox="0 0 48 48" aria-label="M-Carbon" role="img">
-        <defs><linearGradient id="lf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a4d65e"/><stop offset="1" stop-color="#4f8f27"/></linearGradient></defs>
-        <path d="M24 2.5C38.5 9 45 24 34.5 38.5 30.5 43.5 26.5 45.5 24 46 21.5 45.5 17.5 43.5 13.5 38.5 3 24 9.5 9 24 2.5z" fill="url(#lf)"/>
-        <path d="M16 31V19l8 9 8-9v12" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <div class="brand-name"><b>M-Carbon System</b><span>Mirae ESP Inc. System</span></div>
+    <img class="brand-logo" src="/img/m-carbon-logo-white.png" alt="M-Carbon Solutions">
+    <div class="hero">
+      <h2>Change the city's light,<br><em>carbon</em><span class="tail">goes down</span></h2>
+      <p>LED ESCO carbon-saving platform for apartments and commercial buildings</p>
+      <div class="pills"><span>Smart LED</span><span>AMI remote metering</span><span>IoT sensors</span><span>Carbon-saving platform</span></div>
     </div>
-
-    <div class="brand-mid">
-      <svg class="art" viewBox="0 0 520 470" role="img" aria-label="LED bulb with a leaf, surrounded by icons for energy, savings and billing">
-        <defs>
-          <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#9fd36a" stop-opacity=".38"/><stop offset=".55" stop-color="#5b9a2e" stop-opacity=".12"/><stop offset="1" stop-color="#5b9a2e" stop-opacity="0"/></radialGradient>
-          <linearGradient id="lf2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b6e26f"/><stop offset="1" stop-color="#4f8f27"/></linearGradient>
-        </defs>
-        <circle cx="260" cy="220" r="215" fill="url(#glow)"/>
-        <g fill="none" stroke="#9fd36a">
-          <circle cx="260" cy="220" r="90" stroke-opacity=".28" stroke-dasharray="2 7" stroke-linecap="round" stroke-width="1.6"/>
-          <circle cx="260" cy="220" r="150" stroke-opacity=".22" stroke-width="1.2"/>
-          <circle cx="260" cy="220" r="210" stroke-opacity=".16" stroke-dasharray="3 9" stroke-linecap="round" stroke-width="1.4"/>
-        </g>
-        <circle cx="344.6" cy="250.8" r="3.2" fill="#9fd36a" opacity=".8"/><circle cx="175.4" cy="189.2" r="3.2" fill="#9fd36a" opacity=".8"/><circle cx="185.0" cy="90.1" r="3.2" fill="#9fd36a" opacity=".8"/><circle cx="365.0" cy="401.9" r="3.2" fill="#9fd36a" opacity=".8"/><circle cx="331.8" cy="22.7" r="3.2" fill="#9fd36a" opacity=".8"/><circle cx="78.1" cy="325.0" r="3.2" fill="#9fd36a" opacity=".8"/>
-        
-    <g transform="translate(330.4 87.6)">
-      <circle r="36" fill="#9fd36a" opacity=".07"/>
-      <circle r="27" fill="#18302c" stroke="#9fd36a" stroke-opacity=".55" stroke-width="1.4"/>
-      <g transform="translate(-15.9 -15.9) scale(1.325)" fill="none" stroke="#cfe3ae" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></g>
-    </g>
-    <g transform="translate(392.4 290.4)">
-      <circle r="36" fill="#9fd36a" opacity=".07"/>
-      <circle r="27" fill="#18302c" stroke="#9fd36a" stroke-opacity=".55" stroke-width="1.4"/>
-      <g transform="translate(-15.9 -15.9) scale(1.325)" fill="none" stroke="#cfe3ae" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9.5 8h5M9.5 12h5"/></g>
-    </g>
-    <g transform="translate(127.6 290.4)">
-      <circle r="36" fill="#9fd36a" opacity=".07"/>
-      <circle r="27" fill="#18302c" stroke="#9fd36a" stroke-opacity=".55" stroke-width="1.4"/>
-      <g transform="translate(-15.9 -15.9) scale(1.325)" fill="none" stroke="#cfe3ae" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l6 6 4-4 8 8"/><path d="M15 17h6v-6"/></g>
-    </g>
-    <g transform="translate(459.7 155.1)">
-      <circle r="33" fill="#9fd36a" opacity=".07"/>
-      <circle r="24" fill="#18302c" stroke="#9fd36a" stroke-opacity=".55" stroke-width="1.4"/>
-      <g transform="translate(-14.1 -14.1) scale(1.178)" fill="none" stroke="#cfe3ae" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-9 5-14 15-14 0 10-5 15-14 15"/><path d="M5 19c3-5 6-8 10-10"/></g>
-    </g>
-    <g transform="translate(230.8 428.0)">
-      <circle r="33" fill="#9fd36a" opacity=".07"/>
-      <circle r="24" fill="#18302c" stroke="#9fd36a" stroke-opacity=".55" stroke-width="1.4"/>
-      <g transform="translate(-14.1 -14.1) scale(1.178)" fill="none" stroke="#cfe3ae" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><path d="M15.2 9.3A6 6 0 1 1 9.3 15.2"/><path d="M9 6.5v5M7.5 8h3"/></g>
-    </g>
-    <g transform="translate(69.7 131.3)">
-      <circle r="33" fill="#9fd36a" opacity=".07"/>
-      <circle r="24" fill="#18302c" stroke="#9fd36a" stroke-opacity=".55" stroke-width="1.4"/>
-      <g transform="translate(-14.1 -14.1) scale(1.178)" fill="none" stroke="#cfe3ae" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></g>
-    </g>
-        <!-- LED bulb -->
-        <g transform="translate(0 -6)">
-          <path d="M232 241C225 249 222 255 222 265H298C298 255 295 249 288 241A58 58 0 1 0 232 241Z" fill="#9fd36a" fill-opacity=".1" stroke="#cfe3ae" stroke-width="2.4" stroke-linejoin="round"/>
-          <path d="M238 276H282M240 286H280M247 296H273" stroke="#cfe3ae" stroke-width="2.6" stroke-linecap="round"/>
-          <g transform="translate(236 178) scale(.92)">
-            <path d="M24 2.5C38.5 9 45 24 34.5 38.5 30.5 43.5 26.5 45.5 24 46 21.5 45.5 17.5 43.5 13.5 38.5 3 24 9.5 9 24 2.5z" fill="url(#lf2)"/>
-            <path d="M16 31V19l8 9 8-9v12" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
-          </g>
-        </g>
-      </svg>
-    </div>
-
-    <div class="brand-foot">Mirae ESP Inc. System</div>
   </section>
 
   <section class="formside">
     <div class="card">
-      <img class="ines" src="/img/mirae-esp-logo.png" alt="Mirae ESP Inc">
+      <img class="ines" id="ines" src="/img/mirae-esp-logo.png" alt="Mirae ESP Inc">
       <h1>Sign in</h1>
       <p class="sub">Use your billing system account.</p>
       <div id="error" class="notice bad" hidden></div>
@@ -159,20 +144,25 @@
         <div class="field">
           <label for="username">Username</label>
           <div class="with-ico">
-            <input id="username" name="username" autocomplete="username" required autofocus>
+            <input id="username" name="username" autocomplete="username" placeholder="Enter your username" required autofocus>
             <svg class="ico lead" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 21c.8-4 3.8-6 7.5-6s6.7 2 7.5 6"/></svg>
           </div>
         </div>
         <div class="field">
           <label for="password">Password</label>
           <div class="with-ico pw">
-            <input id="password" name="password" type="password" autocomplete="current-password" required>
+            <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required>
             <svg class="ico lead" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3M12 15v2"/></svg>
             <button type="button" class="eye" id="eye" aria-label="Show password" title="Show password">
               <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
           </div>
         </div>
+        <div class="opts">
+          <label class="remember"><input type="checkbox" id="remember"><span>Remember ID</span></label>
+          <a href="#" id="forgot">Forgot password?</a>
+        </div>
+        <div id="forgot-note" class="notice" hidden>Ask your administrator to reset your password.</div>
         <button class="primary go" type="submit">
           <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h3.5A1.5 1.5 0 0 1 20 4.5v15a1.5 1.5 0 0 1-1.5 1.5H15"/><path d="M10 17l5-5-5-5M15 12H3"/></svg>
           Sign in
@@ -197,6 +187,7 @@ form.onsubmit = async (e) => {
       method: 'POST',
       body: { username: username.value, password: password.value }
     });
+    try { remember.checked ? localStorage.setItem('mc.loginId', username.value) : localStorage.removeItem('mc.loginId'); } catch (e) {}
     location.href = '/dashboard.html';
   } catch (err) {
     error.textContent = err.message;
@@ -206,6 +197,11 @@ form.onsubmit = async (e) => {
 
 // Already signed in? Go straight through.
 api('/api/auth/me').then(() => (location.href = '/dashboard.html')).catch(() => {});
+
+// Remember ID (only the username is stored, in this browser), forgot-password note, Korean logo
+try { const saved = localStorage.getItem('mc.loginId'); if (saved) { username.value = saved; remember.checked = true; password.focus(); } } catch (e) {}
+document.getElementById('forgot').onclick = (e) => { e.preventDefault(); const n = document.getElementById('forgot-note'); n.hidden = !n.hidden; };
+if (window.LANG === 'ko') document.getElementById('ines').src = '/img/mirae-esp-logo-kr.png';
 
 // Show / hide password
 const eye = document.getElementById('eye');
@@ -219,6 +215,44 @@ eye.onclick = () => {
     ? '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.7A10 10 0 0 1 12 5.5c6.4 0 10 6.5 10 6.5a17 17 0 0 1-3.2 3.9M6.3 7.3C3.7 9 2 12 2 12s3.6 6.5 10 6.5c1.5 0 2.8-.3 4-.8"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>'
     : '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 };
+
+// ---- Moving skyline ----
+(() => {
+  const stage = document.getElementById('stage');
+  if (!stage) return;
+  const BEACONS = [[63.08,15.21],[61.56,22.26],[78.71,26.88],[74.56,29.16],[83.04,29.27],[45.94,29.5],[42.56,32.18],[42.8,32.2],[69.75,33.41],[70.0,33.41],[69.88,33.63],[53.45,38.11],[55.72,40.22],[55.88,40.45],[55.72,40.67]];                // red tower lights, in percent of the photo
+  const WINDOWS = [[1021,301,16,6],[1097,548,7,3],[930,389,4,3],[1103,457,2,3],[722,624,4,4],[1198,378,5,4],[247,380,1,5],[763,433,5,3],[1099,527,3,4],[1228,539,6,4],[1152,348,5,4],[998,301,9,4],[1085,457,7,4],[333,423,11,6],[1151,649,4,2],[1493,417,4,5],[702,413,3,3],[719,533,5,5],[142,682,1,5],[1594,421,3,4],[1040,290,5,2],[1098,359,5,3],[799,624,12,6],[378,387,8,6],[1147,527,12,5],[1146,457,9,5],[1101,380,3,2],[779,374,5,4],[763,353,5,4],[1086,378,5,2],[879,528,8,5],[1510,596,13,13],[171,373,3,4],[300,334,5,4],[1366,584,8,5],[694,433,3,3],[589,559,9,2],[98,392,5,10],[1297,299,4,4],[1520,490,4,2],[1341,512,7,5],[799,548,2,4],[1152,429,6,3],[1404,621,4,3],[1491,579,2,6],[917,597,1,5],[1079,457,5,5],[1516,399,8,8],[241,599,2,4],[85,392,3,4],[917,610,1,6],[328,428,1,6],[31,544,2,5],[809,548,2,3],[26,571,6,6],[692,624,3,5],[1183,560,2,4],[823,509,8,4],[925,392,3,3],[754,324,4,4],[740,544,4,4],[880,540,3,2],[1217,309,7,4],[1510,400,4,3],[1493,525,5,4],[1146,487,9,5],[624,525,4,3],[1218,480,4,2],[323,429,2,4],[1290,512,10,2],[867,400,6,3],[878,449,10,5],[777,543,2,3],[86,375,4,3],[486,597,3,5],[177,701,4,5],[1494,435,4,5],[1529,489,3,2],[358,387,5,5],[1171,574,3,2],[1399,621,4,4],[687,433,5,5],[741,533,3,3],[1171,560,2,4],[1529,476,2,5],[1127,407,3,5],[171,410,3,9],[1206,309,7,4],[878,399,12,5],[880,429,6,4],[621,632,2,5],[339,459,5,6],[685,543,7,5],[1179,446,6,6],[524,417,2,4],[1364,420,15,6],[701,533,4,3],[1227,429,8,4],[948,277,8,5],[1079,387,14,6],[1510,490,6,4],[1368,530,5,1],[754,414,4,4],[818,509,3,4],[519,456,2,5],[1512,524,15,10],[1345,403,1,5],[528,432,3,7],[1375,427,4,4],[910,558,8,6],[1080,358,13,5],[745,433,3,3],[773,384,5,5],[741,537,7,1],[779,384,4,5],[624,414,1,5],[1264,309,6,4],[1369,447,2,3],[1267,566,7,7],[1171,458,14,7],[1494,708,2,6],[62,647,2,3],[589,450,15,9],[1519,454,8,9],[1183,548,2,4],[1175,548,2,3],[380,393,5,2],[1171,484,6,6],[300,315,1,6],[1217,299,2,4],[779,403,4,5],[741,624,2,4],[170,463,3,6],[998,267,6,4],[1171,548,3,4],[799,574,2,4],[1146,547,14,5],[719,334,3,3],[802,574,6,4],[529,415,2,6],[1080,378,4,5],[719,543,6,5],[1596,671,4,5],[1126,548,5,3],[1486,543,13,7],[1517,634,10,7],[396,333,6,6],[1267,458,4,5],[1147,507,4,5],[910,558,3,2],[1525,494,2,5],[1487,435,3,5],[1595,581,3,6],[1227,309,6,4],[823,429,8,5],[914,597,2,3],[859,399,4,4],[1491,435,2,5],[490,523,6,6],[1340,403,3,5],[513,433,9,10],[1084,558,4,2],[1372,657,7,5],[938,277,7,5],[685,564,10,4],[1146,387,11,6],[1514,634,1,7],[1152,447,3,3],[809,574,2,4],[1032,290,5,3],[336,460,2,4],[1512,458,4,5],[96,573,3,10],[1085,467,6,4],[847,372,3,4],[719,324,2,3],[511,615,4,3],[1029,383,3,3],[397,405,3,6],[615,632,5,6],[764,403,4,5],[765,413,3,4],[514,469,8,8],[29,637,2,5],[1156,488,3,4],[686,414,11,4],[1588,634,5,7],[937,389,2,4],[754,433,4,5],[166,410,4,10],[702,543,3,3],[928,369,5,2],[1227,318,8,5],[26,544,2,3],[87,409,9,10],[96,409,4,9],[375,626,5,7],[1227,489,6,4],[1146,348,4,2],[1513,616,2,5],[512,505,9,9],[1127,378,4,3],[779,534,5,4],[772,423,13,5],[375,660,7,4],[615,450,6,6],[398,370,2,4],[742,403,6,5],[1100,418,4,3],[1307,298,8,5],[694,403,3,5],[9,558,4,2],[403,407,2,4],[200,481,4,7],[1138,389,4,2],[1171,624,14,6],[1079,527,15,5],[165,464,3,4],[1264,567,2,6],[1497,708,2,4],[90,395,1,5],[489,469,7,5],[299,662,2,5],[1018,313,2,3],[1021,313,16,5],[877,459,10,5],[487,469,1,5],[317,423,5,12],[376,389,2,5],[332,624,3,9],[888,529,2,4],[294,315,2,4],[1081,417,12,5],[483,523,6,6],[1290,621,9,6],[1082,577,6,2],[1156,448,4,4],[721,403,2,5],[1100,467,4,3],[688,403,5,5]];                // lit windows [x, y, w, h] in photo pixels
+  const LANES = [91.6, 92.6, 93.6, 94.5];     // road lanes, in percent of the photo height
+  BEACONS.forEach(([x, y], i) => {
+    const b = document.createElement('i'); b.className = 'beacon';
+    b.style.left = x + '%'; b.style.top = y + '%'; b.style.animationDelay = (-(i * 0.37)).toFixed(2) + 's';
+    stage.appendChild(b);
+  });
+  LANES.forEach((y, i) => {
+    for (let k = 0; k < 2; k++) {
+      const c = document.createElement('i'); c.className = 'car ' + (i < 2 ? 'r' : 'w');
+      c.style.top = y + '%'; c.style.animationDuration = (7 + Math.random() * 7).toFixed(1) + 's';
+      c.style.animationDelay = (-Math.random() * 14).toFixed(1) + 's';
+      stage.appendChild(c);
+    }
+  });
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // Lights in random windows switch off and on, a few at a time.
+  const ctx = document.getElementById('windows').getContext('2d'), off = new Set();
+  const paint = (i) => {
+    const [x, y, w, h] = WINDOWS[i];
+    ctx.clearRect(x - 1, y - 1, w + 2, h + 2);
+    if (off.has(i)) { ctx.fillStyle = 'rgba(12,16,28,.9)'; ctx.fillRect(x - 1, y - 1, w + 2, h + 2); }
+  };
+  (function flick() {
+    if (!document.hidden) {
+      const i = Math.floor(Math.random() * WINDOWS.length);
+      if (off.has(i)) off.delete(i); else if (off.size < 45) off.add(i);
+      paint(i);
+    }
+    setTimeout(flick, 350 + Math.random() * 900);
+  })();
+})();
 </script>
 </body>
 </html>
