@@ -1013,7 +1013,7 @@ body.ov-pick .ww .ticker { margin-bottom: 12px; }
 body.ov-pick .ww .ticker .tk-track { padding: 7px 0; }
 
 /* summary bar: icons and figures bigger, titles readable, every figure the headline's size */
-.ww .dash-sum.kpi { grid-template-columns: minmax(0, 3fr) repeat(4, minmax(0, 1fr)); margin-bottom: 16px; }
+.ww .dash-sum.kpi { grid-template-columns: minmax(0, 2.7fr) repeat(5, minmax(0, 1fr)); margin-bottom: 16px; }
 .ww .dash-sum.kpi .sc { padding: 12px 18px; justify-content: flex-start; gap: 4px; }
 .ww .dash-sum.kpi .sch { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .ww .dash-sum.kpi .sch .t { font-size: 15px; font-weight: 600; color: #e3efe6; line-height: 1.25; }
@@ -1065,7 +1065,10 @@ html[data-theme="dark"] .ww .seg button[aria-pressed="true"] { background: #3f74
 .ww .no { flex: none; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--line); color: #fff; font-size: 12px; font-weight: 700; font-family: var(--digits); }
 .ww .rr strong { font-family: var(--digits); font-size: clamp(20px, 1.6vw, 26px); color: var(--line); line-height: 1.2; white-space: nowrap; }
 .ww .rr strong small { font-size: 13px; color: var(--muted); margin-left: 3px; }
-.ww .rr .sub { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ww .rr .sub { font-size: 12px; color: var(--muted); line-height: 1.35; }
+.ww .rr .nodata { font-family: var(--sans); font-size: 15px; font-weight: 600; color: var(--muted); }
+.ww .rr.empty-r strong { line-height: 1.6; }
+.ww .siterank td.nodata { color: var(--muted); font-size: 13px; }
 .ww .regrank .empty, .ww .siterank .empty { color: var(--muted); font-size: 13px; margin: 0; }
 html[data-theme="dark"] .ww .rr { background: rgba(255,255,255,.035); border-color: rgba(159,211,106,.16); }
 html[data-theme="dark"] .ww .rr:not([disabled]):hover, html[data-theme="dark"] .ww .rr.on { background: rgba(159,211,106,.12); border-color: rgba(159,211,106,.5); }
@@ -1103,7 +1106,7 @@ html[data-theme="dark"] .ww .siterank .badge { background: rgba(227,184,102,.12)
   .ww .mapblock .head { margin-bottom: 10px; }
 }
 @media (max-width: 1500px) and (min-width: 1101px) {
-  .ww .dash-sum.kpi { grid-template-columns: minmax(0, 2.1fr) repeat(4, minmax(0, 1fr)); }
+  .ww .dash-sum.kpi { grid-template-columns: minmax(0, 1.9fr) repeat(5, minmax(0, 1fr)); }
   .ww .dash-sum.kpi .sc { padding: 14px 16px; }
   .ww .dash-sum.kpi .sch .t { font-size: 14px; }
   .ww .dash-sum.kpi .ic { width: 36px; height: 36px; }
@@ -1151,7 +1154,7 @@ html[data-theme="dark"] .ww .siterank .badge { background: rgba(227,184,102,.12)
     <div class="tabbar"><button type="button" class="tabnav" id="tabPrev" aria-label="Scroll sites left">&#8249;</button><div class="tabs" id="tabs" role="tablist" aria-label="Sites"></div><button type="button" class="tabnav" id="tabNext" aria-label="Scroll sites right">&#8250;</button></div>
 
     <div id="overviewView" hidden>
-      <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-bolt" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e4f4e6"/><path d="M36 12 20 36h11l-3 16 16-24H33Z" fill="#2f9457"/></symbol><symbol id="i-today" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fff4d6"/><rect x="17" y="19" width="30" height="28" rx="5" fill="#fff" stroke="#d9962b" stroke-width="2.500"/><path d="M17 24a5 5 0 0 1 5-5h20a5 5 0 0 1 5 5v4H17Z" fill="#f4b740"/><path d="M25 38l5 5 9-10" fill="none" stroke="#2f9457" stroke-width="3.200" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-co2" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e8f1fb"/><path d="M19 42a8 8 0 0 1-.6-16A11 11 0 0 1 40 23a9.500 9.500 0 0 1 3 19Z" fill="#7d9fd0"/><text x="31" y="36" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.500" font-weight="700" fill="#fff">CO&#8322;</text><circle cx="46" cy="46" r="9" fill="#1f9d6b" stroke="#fff" stroke-width="2"/><path d="M46 41.500v8m-3.500-3.300 3.500 3.500 3.500-3.500" fill="none" stroke="#fff" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-co2d" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e8f1fb"/><path d="M19 42a8 8 0 0 1-.6-16A11 11 0 0 1 40 23a9.500 9.500 0 0 1 3 19Z" fill="#7d9fd0"/><text x="31" y="36" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.500" font-weight="700" fill="#fff">CO&#8322;</text><circle cx="46" cy="46" r="9" fill="#f4b740" stroke="#fff" stroke-width="2"/><path d="M46 41.500v5l3.500 2" fill="none" stroke="#fff" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-building" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#efe7fb"/><rect x="18" y="14" width="20" height="36" rx="2.500" fill="#8b6fd1"/><rect x="38" y="28" width="9" height="22" rx="2" fill="#a893e0"/><path d="M23 20h4m4 0h2M23 27h4m4 0h2M23 34h4m4 0h2" stroke="#fff" stroke-width="3" stroke-linecap="round"/><rect x="25" y="41" width="6" height="9" rx="1" fill="#fff"/></symbol><symbol id="i-pin" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e4f4e6"/><path d="M32 13c-8.500 0-14 6.500-14 14 0 10.500 14 24 14 24s14-13.500 14-24c0-7.500-5.500-14-14-14Z" fill="#2f9457"/><circle cx="32" cy="27" r="5.500" fill="#fff"/></symbol><symbol id="i-chart" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e8f1fb"/><rect x="18" y="34" width="7" height="13" rx="1.500" fill="#a8c1e6"/><rect x="28.500" y="25" width="7" height="22" rx="1.500" fill="#7d9fd0"/><rect x="39" y="16" width="7" height="31" rx="1.500" fill="#4f7fc0"/></symbol><symbol id="i-gauge" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fff4d6"/><path d="M15 41a17 17 0 0 1 34 0" fill="none" stroke="#e7b556" stroke-width="5.500" stroke-linecap="round"/><path d="M15 41a17 17 0 0 1 9-15" fill="none" stroke="#2f9457" stroke-width="5.500" stroke-linecap="round"/><path d="M32 41l7-11" stroke="#7a4b00" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="41" r="3.500" fill="#7a4b00"/></symbol><symbol id="i-clock" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e8f1fb"/><circle cx="32" cy="32" r="16" fill="#fff" stroke="#4f7fc0" stroke-width="3.500"/><path d="M32 23v10l7 4" fill="none" stroke="#4f7fc0" stroke-width="3.500" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-layers" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e4f4e6"/><path d="M32 15 49 24 32 33 15 24Z" fill="#7fd29b"/><path d="M15 32l17 9 17-9" fill="none" stroke="#3fa564" stroke-width="4.500" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 40l17 9 17-9" fill="none" stroke="#2f9457" stroke-width="4.500" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-bulb" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fff4d6"/><path d="M32 14a12.500 12.500 0 0 0-6.500 23.200V42h13v-4.800A12.500 12.500 0 0 0 32 14Z" fill="#f4b740"/><rect x="27" y="44" width="10" height="4.500" rx="2" fill="#b98318"/><path d="M28 28l4 5 4-5" fill="none" stroke="#fff" stroke-width="2.500" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-down" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e4f4e6"/><path d="M32 17v26m-10-10 10 10 10-10" fill="none" stroke="#2f9457" stroke-width="5.500" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-plug" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fff4d6"/><path d="M26 15v10m12-10v10" stroke="#b98318" stroke-width="4" stroke-linecap="round"/><path d="M21 25h22v6a11 11 0 0 1-22 0Z" fill="#f4b740" stroke="#d9962b" stroke-width="2"/><path d="M32 42v8" stroke="#b98318" stroke-width="4" stroke-linecap="round"/></symbol></defs></svg>
+      <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-bolt" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e4f4e6"/><path d="M36 12 20 36h11l-3 16 16-24H33Z" fill="#2f9457"/></symbol><symbol id="i-today" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fff4d6"/><rect x="17" y="19" width="30" height="28" rx="5" fill="#fff" stroke="#d9962b" stroke-width="2.500"/><path d="M17 24a5 5 0 0 1 5-5h20a5 5 0 0 1 5 5v4H17Z" fill="#f4b740"/><path d="M25 38l5 5 9-10" fill="none" stroke="#2f9457" stroke-width="3.200" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-co2" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e8f1fb"/><path d="M19 42a8 8 0 0 1-.6-16A11 11 0 0 1 40 23a9.500 9.500 0 0 1 3 19Z" fill="#7d9fd0"/><text x="31" y="36" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.500" font-weight="700" fill="#fff">CO&#8322;</text><circle cx="46" cy="46" r="9" fill="#1f9d6b" stroke="#fff" stroke-width="2"/><path d="M46 41.500v8m-3.500-3.300 3.500 3.500 3.500-3.500" fill="none" stroke="#fff" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-co2d" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e8f1fb"/><path d="M19 42a8 8 0 0 1-.6-16A11 11 0 0 1 40 23a9.500 9.500 0 0 1 3 19Z" fill="#7d9fd0"/><text x="31" y="36" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.500" font-weight="700" fill="#fff">CO&#8322;</text><circle cx="46" cy="46" r="9" fill="#f4b740" stroke="#fff" stroke-width="2"/><path d="M46 41.500v5l3.500 2" fill="none" stroke="#fff" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-won" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fff4d6"/><circle cx="32" cy="32" r="17" fill="#f4b740" stroke="#d9962b" stroke-width="2.500"/><path d="M23 24l4 16 5-12 5 12 4-16M21.500 30h21M21.500 34.500h21" fill="none" stroke="#fff" stroke-width="2.600" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-building" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#efe7fb"/><rect x="18" y="14" width="20" height="36" rx="2.500" fill="#8b6fd1"/><rect x="38" y="28" width="9" height="22" rx="2" fill="#a893e0"/><path d="M23 20h4m4 0h2M23 27h4m4 0h2M23 34h4m4 0h2" stroke="#fff" stroke-width="3" stroke-linecap="round"/><rect x="25" y="41" width="6" height="9" rx="1" fill="#fff"/></symbol><symbol id="i-pin" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e4f4e6"/><path d="M32 13c-8.500 0-14 6.500-14 14 0 10.500 14 24 14 24s14-13.500 14-24c0-7.500-5.500-14-14-14Z" fill="#2f9457"/><circle cx="32" cy="27" r="5.500" fill="#fff"/></symbol><symbol id="i-chart" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e8f1fb"/><rect x="18" y="34" width="7" height="13" rx="1.500" fill="#a8c1e6"/><rect x="28.500" y="25" width="7" height="22" rx="1.500" fill="#7d9fd0"/><rect x="39" y="16" width="7" height="31" rx="1.500" fill="#4f7fc0"/></symbol><symbol id="i-gauge" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fff4d6"/><path d="M15 41a17 17 0 0 1 34 0" fill="none" stroke="#e7b556" stroke-width="5.500" stroke-linecap="round"/><path d="M15 41a17 17 0 0 1 9-15" fill="none" stroke="#2f9457" stroke-width="5.500" stroke-linecap="round"/><path d="M32 41l7-11" stroke="#7a4b00" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="41" r="3.500" fill="#7a4b00"/></symbol><symbol id="i-clock" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e8f1fb"/><circle cx="32" cy="32" r="16" fill="#fff" stroke="#4f7fc0" stroke-width="3.500"/><path d="M32 23v10l7 4" fill="none" stroke="#4f7fc0" stroke-width="3.500" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-layers" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e4f4e6"/><path d="M32 15 49 24 32 33 15 24Z" fill="#7fd29b"/><path d="M15 32l17 9 17-9" fill="none" stroke="#3fa564" stroke-width="4.500" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 40l17 9 17-9" fill="none" stroke="#2f9457" stroke-width="4.500" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-bulb" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fff4d6"/><path d="M32 14a12.500 12.500 0 0 0-6.500 23.200V42h13v-4.800A12.500 12.500 0 0 0 32 14Z" fill="#f4b740"/><rect x="27" y="44" width="10" height="4.500" rx="2" fill="#b98318"/><path d="M28 28l4 5 4-5" fill="none" stroke="#fff" stroke-width="2.500" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-down" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e4f4e6"/><path d="M32 17v26m-10-10 10 10 10-10" fill="none" stroke="#2f9457" stroke-width="5.500" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-plug" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fff4d6"/><path d="M26 15v10m12-10v10" stroke="#b98318" stroke-width="4" stroke-linecap="round"/><path d="M21 25h22v6a11 11 0 0 1-22 0Z" fill="#f4b740" stroke="#d9962b" stroke-width="2"/><path d="M32 42v8" stroke="#b98318" stroke-width="4" stroke-linecap="round"/></symbol></defs></svg>
       <div class="ticker" aria-hidden="true"><div class="tk-track"><span class="tk-item"><i></i>Energy saved<b data-tk="saved">-</b></span><span class="tk-item"><i></i>Saved today<b data-tk="today">-</b></span><span class="tk-item"><i></i>CO&#8322; avoided<b data-tk="co2">-</b></span><span class="tk-item"><i></i>Saving rate<b data-tk="rate">-</b></span><span class="tk-item"><i></i>Sites monitored<b data-tk="sites">-</b></span><span class="tk-item"><i></i>Energy saved<b data-tk="saved">-</b></span><span class="tk-item"><i></i>Saved today<b data-tk="today">-</b></span><span class="tk-item"><i></i>CO&#8322; avoided<b data-tk="co2">-</b></span><span class="tk-item"><i></i>Saving rate<b data-tk="rate">-</b></span><span class="tk-item"><i></i>Sites monitored<b data-tk="sites">-</b></span><span class="tk-item"><i></i>Energy saved<b data-tk="saved">-</b></span><span class="tk-item"><i></i>Saved today<b data-tk="today">-</b></span><span class="tk-item"><i></i>CO&#8322; avoided<b data-tk="co2">-</b></span><span class="tk-item"><i></i>Saving rate<b data-tk="rate">-</b></span><span class="tk-item"><i></i>Sites monitored<b data-tk="sites">-</b></span><span class="tk-item"><i></i>Energy saved<b data-tk="saved">-</b></span><span class="tk-item"><i></i>Saved today<b data-tk="today">-</b></span><span class="tk-item"><i></i>CO&#8322; avoided<b data-tk="co2">-</b></span><span class="tk-item"><i></i>Saving rate<b data-tk="rate">-</b></span><span class="tk-item"><i></i>Sites monitored<b data-tk="sites">-</b></span></div></div>
       <section class="dash-sum kpi">
         <div class="sc sc-main">
@@ -1165,6 +1168,7 @@ html[data-theme="dark"] .ww .siterank .badge { background: rgba(227,184,102,.12)
         <div class="sc"><div class="sch"><svg class="ic" aria-hidden="true"><use href="#i-today"/></svg><span class="t">Saved today</span></div><div class="v fit" id="oToday">-</div><div class="l" id="oTodayNote">&nbsp;</div></div>
         <div class="sc"><div class="sch"><svg class="ic" aria-hidden="true"><use href="#i-co2"/></svg><span class="t">CO&#8322; avoided, all time</span></div><div class="v fit" id="oCo2">-</div><div class="l" id="oCo2Note">&nbsp;</div></div>
         <div class="sc"><div class="sch"><svg class="ic" aria-hidden="true"><use href="#i-co2d"/></svg><span class="t">CO&#8322; avoided today</span></div><div class="v fit" id="oCo2Today">-</div><div class="l">&nbsp;</div></div>
+        <div class="sc"><div class="sch"><svg class="ic" aria-hidden="true"><use href="#i-won"/></svg><span class="t">Electricity cost saved</span></div><div class="v fit" id="oWon">-</div><div class="l" id="oWonNote">&nbsp;</div></div>
         <div class="sc"><div class="sch"><svg class="ic" aria-hidden="true"><use href="#i-building"/></svg><span class="t">Projects and equipments</span></div><div class="v fit" id="oSites">-</div><div class="l" id="oSitesNote">&nbsp;</div></div>
       </section>
 
@@ -1585,6 +1589,18 @@ function renderCmp(o) {
 const kwhU = (v) => (Math.abs(v) >= 1e5 ? [v / 1000, 1, 'MWh'] : [v, 2, 'kWh']);
 const kgU = (v) => (Math.abs(v) >= 1e4 ? [v / 1000, 1, 't'] : [v, 2, 'kg']);
 const withUnit = ([v, d, u]) => `${nf(v, d)}<small>${u}</small>`;
+const wonU = (v) => (isKo()
+  ? (Math.abs(v) >= 1e8 ? [v / 1e8, 1, '억 원'] : Math.abs(v) >= 1e4 ? [v / 1e4, 1, '만 원'] : [v, 0, '원'])
+  : (Math.abs(v) >= 1e6 ? [v / 1e6, 1, 'M won'] : [v, 0, 'won']));
+// Electricity cost saved: the sum of every site's saved fee from the ranking data (the dashboard's saveFee / totalSaveFee).
+function renderWon() {
+  const sites = (state.ranking && state.ranking.sites) || [];
+  if (!sites.length) return;
+  const all = sites.reduce((a, s) => a + (s.total.savedWon || 0), 0), month = sites.reduce((a, s) => a + ((s.month && s.month.savedWon) || 0), 0);
+  $('#oWon').innerHTML = withUnit(wonU(all));
+  $('#oWonNote').textContent = `${withUnit(wonU(month)).replace(/<\/?small>/g, ' ').replace(/\s+/g, ' ').trim()} this month`;
+  fitFigures();
+}
 // Shrink a summary figure only when it would not fit its cell (long totals on a narrow screen).
 function fitFigures() {
   document.querySelectorAll('.ww .dash-sum.kpi .fit').forEach((el) => {
@@ -1592,6 +1608,13 @@ function fitFigures() {
     let fs = parseFloat(getComputedStyle(el).fontSize), n = 0;
     while (el.scrollWidth > el.clientWidth + 1 && fs > 14 && n++ < 40) { fs -= 1; el.style.fontSize = fs + 'px'; }
   });
+  // Keep the average saving rate beside the total: shrink the counter a little when the two would wrap onto two lines.
+  const reg = $('#regTotal'), avg = document.querySelector('.ww .dash-sum.kpi .avg');
+  if (reg && avg && window.innerWidth > 600) {
+    reg.style.fontSize = '';
+    let fs = parseFloat(getComputedStyle(reg).fontSize), n = 0;
+    while (avg.offsetTop > reg.offsetTop + 10 && fs > 22 && n++ < 30) { fs -= 1; reg.style.fontSize = fs + 'px'; }
+  }
 }
 window.addEventListener('resize', () => { if (state.view === 'overview') fitFigures(); });
 
@@ -1634,7 +1657,7 @@ async function loadRanking() {
   const r = await get('/ranking');
   state.ranking = r;
   state.rankingAt = Date.now();
-  renderRegions(); renderSites();
+  renderRegions(); renderSites(); renderWon();
 }
 setInterval(() => { if (state.view === 'overview' && Date.now() - (state.rankingAt || 0) > 5 * 60e3) loadRanking().catch(() => {}); }, 30e3);
 
@@ -1655,13 +1678,14 @@ function renderRegions() {
     a.saved += s.total.savedKwh; a.used += s.total.usedKwh; a.n += 1;
     by.set(g.key, a);
   }
-  const rows = [...by.values()].map((a) => ({ ...a, rate: a.saved + a.used > 0 ? a.saved / (a.saved + a.used) * 100 : 0 }))
-    .sort((a, b) => (RK.region === 'kwh' ? b.saved - a.saved : b.rate - a.rate)).slice(0, 4);
+  // A region whose sites have no readings yet (still in test operation) is shown as "no data yet", after the regions that have figures.
+  const rows = [...by.values()].map((a) => ({ ...a, has: a.saved + a.used > 0, rate: a.saved + a.used > 0 ? a.saved / (a.saved + a.used) * 100 : 0 }))
+    .sort((a, b) => (b.has - a.has) || (RK.region === 'kwh' ? b.saved - a.saved : b.rate - a.rate)).slice(0, 4);
   const html = rows.length ? rows.map((r, i) => {
-    const big = RK.region === 'kwh' ? withUnit(kwhU(r.saved)) : `${nf(r.rate, 1)}<small>%</small>`;
-    const sub = RK.region === 'kwh' ? `${nf(r.rate, 1)}% saved · ${nf(r.n)} sites` : `${withUnit(kwhU(r.saved)).replace(/<\/?small>/g, ' ').trim()} since go-live`;
+    const big = !r.has ? '<span class="nodata">No data yet</span>' : RK.region === 'kwh' ? withUnit(kwhU(r.saved)) : `${nf(r.rate, 1)}<small>%</small>`;
+    const sub = !r.has ? `${nf(r.n)} sites · no savings readings yet` : RK.region === 'kwh' ? `${nf(r.rate, 1)}% saved · ${nf(r.n)} sites` : `${withUnit(kwhU(r.saved)).replace(/<\/?small>/g, ' ').trim()} since go-live`;
     const on = r.drill && MAP.level === r.drill;
-    return `<button type="button" class="rr${on ? ' on' : ''}" ${r.drill ? `data-drill="${esc(r.drill)}"` : 'disabled'} title="${esc(r.name)}"><span class="rrh"><b class="no">${i + 1}</b><span class="nm">${esc(r.name)}</span></span><strong>${big}</strong><span class="sub">${esc(sub)}</span></button>`;
+    return `<button type="button" class="rr${on ? ' on' : ''}${r.has ? '' : ' empty-r'}" ${r.drill ? `data-drill="${esc(r.drill)}"` : 'disabled'} title="${esc(r.name)}"><span class="rrh"><b class="no">${i + 1}</b><span class="nm">${esc(r.name)}</span></span><strong>${big}</strong><span class="sub">${esc(sub)}</span></button>`;
   }).join('') : '<p class="empty">No savings figures yet.</p>';
   if (el.dataset.k !== html) { el.innerHTML = html; el.dataset.k = html; }
 }
@@ -1682,7 +1706,8 @@ const SR_METRIC = { rate: (m) => m.rate, kwh: (m) => m.savedKwh, won: (m) => m.s
 function renderSites() {
   const r = state.ranking || {}, sites = (r.sites || []).filter((s) => s.month), k = RK.site, f = SR_METRIC[k];
   $('#srSample').hidden = state.mode !== 'mock';
-  const order = [...sites].sort((a, b) => f(b.month) - f(a.month));
+  const has = (s) => s.month.savedKwh > 0 || s.month.rate > 0;
+  const order = [...sites].sort((a, b) => (has(b) - has(a)) || (f(b.month) - f(a.month)));
   const last = sites.filter((s) => s.last).sort((a, b) => f(b.last) - f(a.last));
   const lastRank = new Map(last.map((s, i) => [s.id, i + 1]));
   const mx = Math.max(0, ...order.map((s) => f(s.month)));
@@ -1693,8 +1718,9 @@ function renderSites() {
     const chg = d == null ? '<span class="chg new">new</span>' : d > 0 ? `<span class="chg up" title="Up ${d}">&#9650; ${d}</span>` : d < 0 ? `<span class="chg dn" title="Down ${-d}">&#9660; ${-d}</span>` : '<span class="chg">&ndash;</span>';
     const g = regionOf(s), w = mx > 0 ? Math.max(0, f(s.month)) / mx * 100 : 0;
     const can = open.has(String(s.id));
-    return `<tr${can ? ` class="go" data-open="${esc(s.id)}" tabindex="0" title="Open ${esc(s.name)}"` : ''}><td class="c-rank"><b class="no${i < 3 ? ' top' : ''}">${i + 1}</b></td><td class="c-chg">${chg}</td><td class="nm">${esc(s.name)}</td><td class="rg">${esc(g.name)}${s.city && s.city !== s.region ? `<small>${esc(s.city)}</small>` : ''}</td>`
-      + `<td class="c-bar"><span class="sbar"><i style="width:${w.toFixed(1)}%"></i></span></td><td class="num${k === 'rate' ? ' key' : ''}">${fmt.rate(s.month)}</td><td class="num${k === 'kwh' ? ' key' : ''}">${fmt.kwh(s.month)}</td><td class="num${k === 'won' ? ' key' : ''}">${fmt.won(s.month)}</td></tr>`;
+    return `<tr${can ? ` class="go" data-open="${esc(s.id)}" tabindex="0" title="Open ${esc(s.name)}"` : ''}><td class="c-rank">${has(s) ? `<b class="no${i < 3 ? ' top' : ''}">${i + 1}</b>` : '<span class="chg">&ndash;</span>'}</td><td class="c-chg">${has(s) ? chg : '<span class="chg">&ndash;</span>'}</td><td class="nm">${esc(s.name)}</td><td class="rg">${esc(g.name)}${s.city && s.city !== s.region ? `<small>${esc(s.city)}</small>` : ''}</td>`
+      + (has(s) ? `<td class="c-bar"><span class="sbar"><i style="width:${w.toFixed(1)}%"></i></span></td><td class="num${k === 'rate' ? ' key' : ''}">${fmt.rate(s.month)}</td><td class="num${k === 'kwh' ? ' key' : ''}">${fmt.kwh(s.month)}</td><td class="num${k === 'won' ? ' key' : ''}">${fmt.won(s.month)}</td></tr>`
+        : `<td class="c-bar nodata">No savings readings yet this month</td><td class="num">&ndash;</td><td class="num">&ndash;</td><td class="num">&ndash;</td></tr>`);
   }).join('') : '<tr><td colspan="8" class="empty">No savings figures yet.</td></tr>';
   if ($('#srRows').dataset.k !== html) { $('#srRows').innerHTML = html; $('#srRows').dataset.k = html; }
 }

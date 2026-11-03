@@ -1324,6 +1324,9 @@ Object.assign(KO, {
     "new": "신규",
     "Average": "평균",
     "Saved energy": "절감량",
+    "Electricity cost saved": "전기요금 절감액",
+    "No data yet": "집계 전",
+    "No savings readings yet this month": "이번 달 절감 데이터 없음",
     "CO₂ avoided": "CO₂ 감축",
     "Saving rate": "절감률",
     "Sites monitored": "모니터링 사이트",
@@ -1392,6 +1395,8 @@ Object.assign(KO, {
     [/^([\d.,]+) (kWh|MWh) since go-live$/, '가동 이후 $1 $2 절감'],
     [/^([\d,]+) equipments$/, '장비 $1대'],
     [/^Up (\d+)$/, '$1단계 상승'],
+    [/^([\d.,]+ (?:억 원|만 원|원)) this month$/, '이번 달 $1'],
+    [/^([\d,]+) sites · no savings readings yet$/, '사이트 $1개 · 아직 절감 데이터 없음'],
     [/^Down (\d+)$/, '$1단계 하락'],
     [/^Open (.+)$/, '$1 열기']
   );
