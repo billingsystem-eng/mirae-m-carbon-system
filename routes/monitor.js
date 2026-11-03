@@ -69,6 +69,12 @@ router.get('/overview', wrap(async (req, res) => {
   res.json(await provider.overview());
 }));
 
+// Savings per site (this month, last month, since go-live) for the overview's ranking tables. Staff-only, like the overview.
+router.get('/ranking', wrap(async (req, res) => {
+  if (req.allowedSites) return res.status(403).json({ error: 'Your role does not allow this.' });
+  res.json(provider.ranking ? await provider.ranking() : { sites: [] });
+}));
+
 // Everything the dashboard's own site screen shows. Null when the provider (sample data) has no such figures.
 router.get('/projects/:id/details', wrap(async (req, res) => res.json(provider.details ? await provider.details(req.params.id) : null)));
 

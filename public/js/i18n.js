@@ -1301,6 +1301,34 @@ Object.assign(KO, {
     "Enter your password": "비밀번호를 입력하세요",
     "Ask your administrator to reset your password.": "비밀번호 재설정은 관리자에게 문의하세요."
   });
+  // Live monitor overview (Nov 2026 layout)
+  Object.assign(KO, {
+    "Choose a site": "사이트 선택",
+    "Overview (all sites)": "개요 (전체 사이트)",
+    "Average saving rate": "평균 절감률",
+    "Savings ranking by region": "지역별 절감 순위",
+    "Click a region to open it on the map": "지역을 누르면 지도가 해당 지역으로 바뀝니다",
+    "Rank regions by": "지역 순위 기준",
+    "Savings ranking by site": "사이트별 전력 절감 순위",
+    "Sample data": "샘플 데이터",
+    "All monitored sites · this month so far · change is against last month": "전국 연동 사이트 · 이번 달 누적 기준 · 순위 변동은 지난달 대비",
+    "Rank sites by": "사이트 순위 기준",
+    "Amount saved": "절감액",
+    "Rank": "순위",
+    "Change": "변동",
+    "Comparison": "절감률 비교",
+    "Saved this month": "월 절감량",
+    "No savings figures yet.": "아직 절감 데이터가 없습니다.",
+    "sites": "개 사이트",
+    "won": "원",
+    "new": "신규",
+    "Average": "평균",
+    "Saved energy": "절감량",
+    "CO₂ avoided": "CO₂ 감축",
+    "Saving rate": "절감률",
+    "Sites monitored": "모니터링 사이트",
+    "South Korea, all monitored sites, since go-live": "대한민국, 전체 모니터링 사이트, 가동 이후"
+  });
   const RULES = [
     [/^Saved (\d.*)$/, '저장됨 $1'],
     [/^Add: (.+)% VAT$/, '부가세액'],
@@ -1357,6 +1385,16 @@ Object.assign(KO, {
   );
   RULES.push([/^(\d+) of (\d+)$/, '$1 / $2']);
   RULES.push([/^([\d.,]+)% of the day's peak$/, '일 최대치 대비 $1%']);
+  RULES.push(
+    [/^([\d.,]+)% saved today$/, '오늘 절감률 $1%'],
+    [/^([\d.,]+) kg CO₂ per kWh$/, 'kWh당 CO₂ $1 kg'],
+    [/^([\d.,]+)% saved · ([\d,]+) sites$/, '절감률 $1% · 사이트 $2개'],
+    [/^([\d.,]+) (kWh|MWh) since go-live$/, '가동 이후 $1 $2 절감'],
+    [/^([\d,]+) equipments$/, '장비 $1대'],
+    [/^Up (\d+)$/, '$1단계 상승'],
+    [/^Down (\d+)$/, '$1단계 하락'],
+    [/^Open (.+)$/, '$1 열기']
+  );
   RULES.push(
     [/^([▲▼]) (.+)% vs yesterday$/, '$1 $2% 전일 대비'],
     [/^Live · updated (.+)$/, '실시간 · $1 갱신']

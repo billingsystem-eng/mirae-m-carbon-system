@@ -994,6 +994,129 @@ html[data-theme="dark"] .ww *::-webkit-scrollbar-thumb { background: #2f5546; bo
 @media (prefers-reduced-motion: reduce) {
   html[data-theme="dark"] main.ww::before, html[data-theme="dark"] .ww .rk .bar i::after, html[data-theme="dark"] .ww .share span i::after { animation: none; }
 }
+
+/* ================= Overview layout, Nov 2026 (Live dashboard 수정 slides) =================
+   Everything on the first screen without scrolling: compact header with a site picker, bigger summary
+   figures, a smaller before/after chart with wider gauges, region ranking + savings tiles, then only the
+   site ranking table below. */
+.ww .head-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.ww .sitepick { white-space: nowrap; display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 6px 0 14px; border: 1px solid var(--rule); border-radius: 999px; background: var(--panel); font-size: 13px; color: var(--muted); }
+.ww .sitepick select { height: 28px; max-width: 260px; border: 0; border-radius: 999px; padding: 0 28px 0 10px; background: #edf1ec; color: var(--ink); font: inherit; font-weight: 600; cursor: pointer; }
+html[data-theme="dark"] .ww .sitepick { background: rgba(255,255,255,.04); border-color: rgba(159,211,106,.25); }
+html[data-theme="dark"] .ww .sitepick select { background: #1a312b; color: var(--ink); }
+body.ov-pick .ww .finder, body.ov-pick .ww .tabbar { display: none; }
+body.ov-pick .ww .page-head { margin-bottom: 10px; }
+body.ov-pick .ww .page-head p { margin: 0; }
+body.ov-pick main.ww .back-btn { margin-bottom: 6px; }
+body.ov-pick .ww .page-head h1 { margin-bottom: 2px; }
+body.ov-pick .ww .ticker { margin-bottom: 12px; }
+body.ov-pick .ww .ticker .tk-track { padding: 7px 0; }
+
+/* summary bar: icons and figures bigger, titles readable, every figure the headline's size */
+.ww .dash-sum.kpi { grid-template-columns: minmax(0, 3fr) repeat(4, minmax(0, 1fr)); margin-bottom: 16px; }
+.ww .dash-sum.kpi .sc { padding: 12px 18px; justify-content: flex-start; gap: 4px; }
+.ww .dash-sum.kpi .sch { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.ww .dash-sum.kpi .sch .t { font-size: 15px; font-weight: 600; color: #e3efe6; line-height: 1.25; }
+.ww .dash-sum.kpi .ic { width: 42px; height: 42px; flex: none; margin: 0; }
+.ww .dash-sum.kpi .register.big { font-size: clamp(24px, 2.2vw, 42px); }
+.ww .dash-sum.kpi .v { font-size: clamp(24px, 2.2vw, 42px); line-height: 1.15; white-space: nowrap; margin-top: auto; }
+.ww .dash-sum.kpi .v small { font-size: 14px; margin-left: 5px; }
+.ww .dash-sum.kpi .l { font-size: 13px; margin-top: 0; }
+.ww .dash-sum.kpi .mainread { display: flex; align-items: center; gap: 10px 20px; flex-wrap: wrap; margin-top: auto; }
+.ww .dash-sum.kpi .sc-main .readout { flex-wrap: nowrap; align-items: center; gap: 10px; }
+.ww .dash-sum.kpi .sc-main .unit { font-size: 16px; font-weight: 600; color: var(--leaf-hi); align-self: flex-end; margin-bottom: 6px; }
+.ww .dash-sum.kpi .avg { display: flex; flex-direction: column; padding-left: 22px; border-left: 1px solid #28403b; min-width: 0; }
+.ww .dash-sum.kpi .avg .t { font-size: 14px; font-weight: 600; color: #cfe3d4; }
+.ww .dash-sum.kpi .avg .v { color: var(--leaf-hi); margin: 0; }
+html[data-theme="dark"] .ww .dash-sum.kpi .avg { border-left-color: rgba(159,211,106,.18); }
+
+/* right column: chart narrower, gauges wider and side by side */
+.ww .main-row { margin-bottom: 16px; gap: 16px; }
+.ww .right { gap: 16px; }
+.ww .chartrow, .ww .row2 { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; }
+.ww .row2 { align-items: stretch; }
+.ww .chartrow .block, .ww .row2 .block { padding: 14px 16px; margin: 0; }
+.ww .chartrow .head, .ww .row2 .head { margin-bottom: 10px; }
+.ww .gcard { display: flex; flex-direction: column; }
+.ww .gpair { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: center; }
+.ww .gcard .gwrap { max-width: 200px; }
+.ww .gcard .gtxt { font-size: clamp(20px, 1.9vw, 30px); }
+.ww .gcard .gcap { font-size: 14px; font-weight: 500; }
+@media (min-width: 1281px) { .ww .chartrow .plot { height: 158px; } }
+
+/* savings tiles, stacked on the right */
+.ww .row2 .cmp { grid-template-columns: 1fr; gap: 16px; }
+.ww .row2 .tile { padding: 10px 16px; }
+.ww .row2 .tile strong { margin-bottom: 2px; }
+.ww .row2 .tile { display: flex; flex-direction: column; justify-content: center; }
+
+/* region ranking cards */
+.ww .regrank .head .ht p, .ww .siterank .head .ht p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
+.ww .regrank .seg button, .ww .siterank .seg button { padding: 5px 12px; }
+.ww .seg button[aria-pressed="true"] { background: var(--line); color: #fff; }
+html[data-theme="dark"] .ww .seg button[aria-pressed="true"] { background: #3f7421; color: #fff; }
+.ww .rrgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ww .rr { display: flex; flex-direction: column; gap: 1px; text-align: left; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 10px; background: #f6f8f5; min-width: 0; transition: border-color .2s, background .2s, transform .2s; }
+.ww .rr:not([disabled]):hover { border-color: var(--leaf); background: #eef6e6; transform: translateY(-1px); }
+.ww .rr.on { border-color: var(--line); background: #e4f1d8; box-shadow: inset 0 0 0 1px var(--line); }
+.ww .rr[disabled] { cursor: default; }
+.ww .rrh { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ww .rr .nm { font-size: 13.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ww .no { flex: none; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--line); color: #fff; font-size: 12px; font-weight: 700; font-family: var(--digits); }
+.ww .rr strong { font-family: var(--digits); font-size: clamp(20px, 1.6vw, 26px); color: var(--line); line-height: 1.2; white-space: nowrap; }
+.ww .rr strong small { font-size: 13px; color: var(--muted); margin-left: 3px; }
+.ww .rr .sub { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ww .regrank .empty, .ww .siterank .empty { color: var(--muted); font-size: 13px; margin: 0; }
+html[data-theme="dark"] .ww .rr { background: rgba(255,255,255,.035); border-color: rgba(159,211,106,.16); }
+html[data-theme="dark"] .ww .rr:not([disabled]):hover, html[data-theme="dark"] .ww .rr.on { background: rgba(159,211,106,.12); border-color: rgba(159,211,106,.5); }
+html[data-theme="dark"] .ww .rr strong { color: var(--leaf-hi); }
+
+/* site ranking table: the only thing under the first screen */
+.ww .siterank { margin-bottom: 0; }
+.ww .siterank .badge { display: inline-block; margin-left: 8px; padding: 1px 9px; border: 1px solid #e3b866; border-radius: 999px; color: #9a6a12; background: #fff7e6; font-size: 11.5px; font-weight: 600; vertical-align: 2px; }
+.ww .srscroll { overflow-x: auto; }
+.ww .siterank table { min-width: 760px; }
+.ww .siterank th { white-space: nowrap; }
+.ww .siterank td { padding: 10px 10px 10px 0; }
+.ww .siterank .c-rank { width: 56px; } .ww .siterank .c-chg { width: 70px; }
+.ww .siterank .c-bar { width: 26%; }
+.ww .siterank td.nm { font-weight: 600; }
+.ww .siterank td.rg small { display: block; color: var(--muted); font-size: 12px; }
+.ww .siterank .no { background: #8fa39e; } .ww .siterank .no.top { background: var(--line); }
+.ww .siterank td.num { font-family: var(--digits); white-space: nowrap; }
+.ww .siterank td.num small { font-family: var(--sans); font-size: 11.5px; color: var(--muted); margin-left: 3px; }
+.ww .siterank td.key { color: var(--line); font-weight: 600; }
+.ww .sbar { display: block; height: 10px; border-radius: 999px; background: #e7ece6; overflow: hidden; }
+.ww .sbar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #3f7421, #5b9a2e); transition: width .5s ease; }
+.ww .chg { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+.ww .chg.up { color: #2f8f5b; } .ww .chg.dn { color: #b25f12; } .ww .chg.new { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.ww .siterank tr.go { cursor: pointer; }
+.ww .siterank tr.go:hover td { background: #f3f7f0; }
+html[data-theme="dark"] .ww .sbar { background: rgba(255,255,255,.07); }
+html[data-theme="dark"] .ww .siterank td.key { color: var(--leaf-hi); }
+html[data-theme="dark"] .ww .siterank tr.go:hover td { background: rgba(159,211,106,.07); }
+html[data-theme="dark"] .ww .siterank .badge { background: rgba(227,184,102,.12); color: #f0c97a; border-color: rgba(227,184,102,.4); }
+
+/* first screen: the map fills the row's height, the row fits the window */
+@media (min-width: 1281px) {
+  .ww .mapblock { padding: 16px 18px; }
+  .ww .mapblock .head { margin-bottom: 10px; }
+}
+@media (max-width: 1500px) and (min-width: 1101px) {
+  .ww .dash-sum.kpi { grid-template-columns: minmax(0, 2.1fr) repeat(4, minmax(0, 1fr)); }
+  .ww .dash-sum.kpi .sc { padding: 14px 16px; }
+  .ww .dash-sum.kpi .sch .t { font-size: 14px; }
+  .ww .dash-sum.kpi .ic { width: 36px; height: 36px; }
+}
+@media (max-width: 1100px) {
+  .ww .dash-sum.kpi { grid-template-columns: 1fr 1fr; }
+  .ww .chartrow, .ww .row2 { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .ww .rrgrid { grid-template-columns: 1fr; }
+  .ww .dash-sum.kpi { grid-template-columns: 1fr; }
+  .ww .dash-sum.kpi .avg { padding-left: 0; border-left: 0; }
+}
 </style>
 <link rel="icon" type="image/png" href="/favicon.png">
 </head>
@@ -1007,7 +1130,10 @@ html[data-theme="dark"] .ww *::-webkit-scrollbar-thumb { background: #2f5546; bo
         <h1>Live monitor</h1>
         <p>Consumption and savings for every project site, read from the M-Carbon Dashboard.</p>
       </div>
-      <div class="status" id="status" data-state="idle" role="status"><i></i><span id="statusText">Connecting</span></div>
+      <div class="head-tools">
+        <label class="sitepick" id="sitePickWrap" hidden><span>Site</span><select id="sitePick" aria-label="Choose a site"></select></label>
+        <div class="status" id="status" data-state="idle" role="status"><i></i><span id="statusText">Connecting</span></div>
+      </div>
     </div>
 
     <div class="notice warn" id="demoBanner" hidden>Sample data. This page is not reading from the M-Carbon Dashboard, so none of these figures are real. Set MONITOR_MODE=live on the server to use real readings.</div>
@@ -1027,12 +1153,19 @@ html[data-theme="dark"] .ww *::-webkit-scrollbar-thumb { background: #2f5546; bo
     <div id="overviewView" hidden>
       <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-bolt" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e4f4e6"/><path d="M36 12 20 36h11l-3 16 16-24H33Z" fill="#2f9457"/></symbol><symbol id="i-today" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fff4d6"/><rect x="17" y="19" width="30" height="28" rx="5" fill="#fff" stroke="#d9962b" stroke-width="2.500"/><path d="M17 24a5 5 0 0 1 5-5h20a5 5 0 0 1 5 5v4H17Z" fill="#f4b740"/><path d="M25 38l5 5 9-10" fill="none" stroke="#2f9457" stroke-width="3.200" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-co2" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e8f1fb"/><path d="M19 42a8 8 0 0 1-.6-16A11 11 0 0 1 40 23a9.500 9.500 0 0 1 3 19Z" fill="#7d9fd0"/><text x="31" y="36" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.500" font-weight="700" fill="#fff">CO&#8322;</text><circle cx="46" cy="46" r="9" fill="#1f9d6b" stroke="#fff" stroke-width="2"/><path d="M46 41.500v8m-3.500-3.300 3.500 3.500 3.500-3.500" fill="none" stroke="#fff" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-co2d" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e8f1fb"/><path d="M19 42a8 8 0 0 1-.6-16A11 11 0 0 1 40 23a9.500 9.500 0 0 1 3 19Z" fill="#7d9fd0"/><text x="31" y="36" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.500" font-weight="700" fill="#fff">CO&#8322;</text><circle cx="46" cy="46" r="9" fill="#f4b740" stroke="#fff" stroke-width="2"/><path d="M46 41.500v5l3.500 2" fill="none" stroke="#fff" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-building" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#efe7fb"/><rect x="18" y="14" width="20" height="36" rx="2.500" fill="#8b6fd1"/><rect x="38" y="28" width="9" height="22" rx="2" fill="#a893e0"/><path d="M23 20h4m4 0h2M23 27h4m4 0h2M23 34h4m4 0h2" stroke="#fff" stroke-width="3" stroke-linecap="round"/><rect x="25" y="41" width="6" height="9" rx="1" fill="#fff"/></symbol><symbol id="i-pin" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e4f4e6"/><path d="M32 13c-8.500 0-14 6.500-14 14 0 10.500 14 24 14 24s14-13.500 14-24c0-7.500-5.500-14-14-14Z" fill="#2f9457"/><circle cx="32" cy="27" r="5.500" fill="#fff"/></symbol><symbol id="i-chart" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e8f1fb"/><rect x="18" y="34" width="7" height="13" rx="1.500" fill="#a8c1e6"/><rect x="28.500" y="25" width="7" height="22" rx="1.500" fill="#7d9fd0"/><rect x="39" y="16" width="7" height="31" rx="1.500" fill="#4f7fc0"/></symbol><symbol id="i-gauge" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fff4d6"/><path d="M15 41a17 17 0 0 1 34 0" fill="none" stroke="#e7b556" stroke-width="5.500" stroke-linecap="round"/><path d="M15 41a17 17 0 0 1 9-15" fill="none" stroke="#2f9457" stroke-width="5.500" stroke-linecap="round"/><path d="M32 41l7-11" stroke="#7a4b00" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="41" r="3.500" fill="#7a4b00"/></symbol><symbol id="i-clock" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e8f1fb"/><circle cx="32" cy="32" r="16" fill="#fff" stroke="#4f7fc0" stroke-width="3.500"/><path d="M32 23v10l7 4" fill="none" stroke="#4f7fc0" stroke-width="3.500" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-layers" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e4f4e6"/><path d="M32 15 49 24 32 33 15 24Z" fill="#7fd29b"/><path d="M15 32l17 9 17-9" fill="none" stroke="#3fa564" stroke-width="4.500" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 40l17 9 17-9" fill="none" stroke="#2f9457" stroke-width="4.500" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-bulb" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fff4d6"/><path d="M32 14a12.500 12.500 0 0 0-6.500 23.200V42h13v-4.800A12.500 12.500 0 0 0 32 14Z" fill="#f4b740"/><rect x="27" y="44" width="10" height="4.500" rx="2" fill="#b98318"/><path d="M28 28l4 5 4-5" fill="none" stroke="#fff" stroke-width="2.500" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-down" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#e4f4e6"/><path d="M32 17v26m-10-10 10 10 10-10" fill="none" stroke="#2f9457" stroke-width="5.500" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-plug" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fff4d6"/><path d="M26 15v10m12-10v10" stroke="#b98318" stroke-width="4" stroke-linecap="round"/><path d="M21 25h22v6a11 11 0 0 1-22 0Z" fill="#f4b740" stroke="#d9962b" stroke-width="2"/><path d="M32 42v8" stroke="#b98318" stroke-width="4" stroke-linecap="round"/></symbol></defs></svg>
       <div class="ticker" aria-hidden="true"><div class="tk-track"><span class="tk-item"><i></i>Energy saved<b data-tk="saved">-</b></span><span class="tk-item"><i></i>Saved today<b data-tk="today">-</b></span><span class="tk-item"><i></i>CO&#8322; avoided<b data-tk="co2">-</b></span><span class="tk-item"><i></i>Saving rate<b data-tk="rate">-</b></span><span class="tk-item"><i></i>Sites monitored<b data-tk="sites">-</b></span><span class="tk-item"><i></i>Energy saved<b data-tk="saved">-</b></span><span class="tk-item"><i></i>Saved today<b data-tk="today">-</b></span><span class="tk-item"><i></i>CO&#8322; avoided<b data-tk="co2">-</b></span><span class="tk-item"><i></i>Saving rate<b data-tk="rate">-</b></span><span class="tk-item"><i></i>Sites monitored<b data-tk="sites">-</b></span><span class="tk-item"><i></i>Energy saved<b data-tk="saved">-</b></span><span class="tk-item"><i></i>Saved today<b data-tk="today">-</b></span><span class="tk-item"><i></i>CO&#8322; avoided<b data-tk="co2">-</b></span><span class="tk-item"><i></i>Saving rate<b data-tk="rate">-</b></span><span class="tk-item"><i></i>Sites monitored<b data-tk="sites">-</b></span><span class="tk-item"><i></i>Energy saved<b data-tk="saved">-</b></span><span class="tk-item"><i></i>Saved today<b data-tk="today">-</b></span><span class="tk-item"><i></i>CO&#8322; avoided<b data-tk="co2">-</b></span><span class="tk-item"><i></i>Saving rate<b data-tk="rate">-</b></span><span class="tk-item"><i></i>Sites monitored<b data-tk="sites">-</b></span></div></div>
-      <section class="dash-sum">
-        <div class="sc"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><div class="readout"><div class="register big" id="regTotal" role="img" aria-label="Total energy saved"></div><span class="unit">kWh saved</span></div><div class="l">South Korea, all monitored sites, since go-live</div></div>
-        <div class="sc"><svg class="ic" aria-hidden="true"><use href="#i-today"/></svg><div class="v" id="oToday">-</div><div class="l">Saved today</div></div>
-        <div class="sc"><svg class="ic" aria-hidden="true"><use href="#i-co2"/></svg><div class="v" id="oCo2">-</div><div class="l">CO&#8322; avoided, all time</div></div>
-        <div class="sc"><svg class="ic" aria-hidden="true"><use href="#i-co2d"/></svg><div class="v" id="oCo2Today">-</div><div class="l">CO&#8322; avoided today</div></div>
-        <div class="sc"><svg class="ic" aria-hidden="true"><use href="#i-building"/></svg><div class="v" id="oSites">-</div><div class="l">Projects and equipments</div></div>
+      <section class="dash-sum kpi">
+        <div class="sc sc-main">
+          <div class="sch"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span class="t">Total energy saved</span></div>
+          <div class="mainread">
+            <div class="readout"><div class="register big" id="regTotal" role="img" aria-label="Total energy saved"></div><span class="unit">kWh</span></div>
+            <div class="avg"><span class="t">Average saving rate</span><div class="v fit" id="oAvg">-</div></div>
+          </div>
+          <div class="l">South Korea, all monitored sites, since go-live</div>
+        </div>
+        <div class="sc"><div class="sch"><svg class="ic" aria-hidden="true"><use href="#i-today"/></svg><span class="t">Saved today</span></div><div class="v fit" id="oToday">-</div><div class="l" id="oTodayNote">&nbsp;</div></div>
+        <div class="sc"><div class="sch"><svg class="ic" aria-hidden="true"><use href="#i-co2"/></svg><span class="t">CO&#8322; avoided, all time</span></div><div class="v fit" id="oCo2">-</div><div class="l" id="oCo2Note">&nbsp;</div></div>
+        <div class="sc"><div class="sch"><svg class="ic" aria-hidden="true"><use href="#i-co2d"/></svg><span class="t">CO&#8322; avoided today</span></div><div class="v fit" id="oCo2Today">-</div><div class="l">&nbsp;</div></div>
+        <div class="sc"><div class="sch"><svg class="ic" aria-hidden="true"><use href="#i-building"/></svg><span class="t">Projects and equipments</span></div><div class="v fit" id="oSites">-</div><div class="l" id="oSitesNote">&nbsp;</div></div>
       </section>
 
       <div class="main-row">
@@ -1059,33 +1192,32 @@ html[data-theme="dark"] .ww *::-webkit-scrollbar-thumb { background: #2f5546; bo
               <div class="plot"><canvas id="ppChart"></canvas></div>
             </section>
             <section class="block gcard">
-              <div class="head hi" style="margin:0"><div class="ht"><svg class="hic" aria-hidden="true"><use href="#i-gauge"/></svg><h2>Savings rate</h2></div></div>
-              <div><div class="gwrap"><svg class="gauge" id="gRate" viewBox="0 0 200 110" aria-hidden="true"></svg><div class="gtxt" id="oRate">-</div></div><p class="gcap">All time</p></div>
-              <div><div class="gwrap"><svg class="gauge" id="gToday" viewBox="0 0 200 110" aria-hidden="true"></svg><div class="gtxt" id="oRateToday">-</div></div><p class="gcap">Today</p></div>
+              <div class="head hi"><div class="ht"><svg class="hic" aria-hidden="true"><use href="#i-gauge"/></svg><h2>Savings rate</h2></div></div>
+              <div class="gpair">
+                <div><div class="gwrap"><svg class="gauge" id="gRate" viewBox="0 0 200 110" aria-hidden="true"></svg><div class="gtxt" id="oRate">-</div></div><p class="gcap">All time</p></div>
+                <div><div class="gwrap"><svg class="gauge" id="gToday" viewBox="0 0 200 110" aria-hidden="true"></svg><div class="gtxt" id="oRateToday">-</div></div><p class="gcap">Today</p></div>
+              </div>
             </section>
           </div>
-          <div class="cmp" id="cmp"></div>
+          <div class="row2">
+            <section class="block regrank" id="regRank">
+              <div class="head hi"><div class="ht"><svg class="hic" aria-hidden="true"><use href="#i-pin"/></svg><div><h2>Savings ranking by region</h2><p>Click a region to open it on the map</p></div></div>
+                <div class="seg" id="rrSeg" role="group" aria-label="Rank regions by"><button type="button" data-k="rate" aria-pressed="true">Savings rate</button><button type="button" data-k="kwh" aria-pressed="false">Saved energy</button></div></div>
+              <div class="rrgrid" id="rrGrid"><p class="empty">Loading…</p></div>
+            </section>
+            <div class="cmp" id="cmp"></div>
+          </div>
         </div>
       </div>
 
-      <div class="trio">
-        <section class="block" id="rkSaved"><div class="head hi"><div class="ht"><svg class="hic" aria-hidden="true"><use href="#i-layers"/></svg><h2>Energy saved by area</h2></div><p>Since go-live</p></div><div class="rank-wrap"><div class="rank"></div><svg class="donut" viewBox="0 0 42 42" aria-hidden="true"></svg></div></section>
-        <section class="block" id="rkSites"><div class="head hi"><div class="ht"><svg class="hic" aria-hidden="true"><use href="#i-building"/></svg><h2>Sites by area</h2></div><p>Projects monitored</p></div><div class="rank-wrap"><div class="rank"></div><svg class="donut" viewBox="0 0 42 42" aria-hidden="true"></svg></div></section>
-      </div>
-
-      <div class="duo">
-        <aside class="carbon" aria-labelledby="cbTitle">
-          <div class="cb-head"><svg class="cb-ico" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#e8f1fb" stroke="#c9dcf3" stroke-width="3"/><path d="M20 41a8 8 0 0 1-.6-16A11 11 0 0 1 40.500 22.500 9.500 9.500 0 0 1 43 41Z" fill="#7d9fd0"/><path d="M20 41a8 8 0 0 1-.6-16A11 11 0 0 1 32 17" fill="none" stroke="#a8c1e6" stroke-width="2" stroke-linecap="round"/><text x="31.500" y="35" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.500" font-weight="700" fill="#fff">CO&#8322;</text><circle cx="46" cy="46" r="9" fill="#1f9d6b" stroke="#fff" stroke-width="2"/><path d="M46 41.500v8m-3.500-3.300 3.500 3.500 3.500-3.500" fill="none" stroke="#fff" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"/></svg><div><h2 id="cbTitle">Carbon emission</h2>
-          <p class="cb-sub">CO&#8322; avoided each day, last 7 days (kg)</p></div></div>
-          <div class="cb-bars" id="cbBars" role="img" aria-label="CO2 avoided each day for the last 7 days"></div>
-          <dl class="cb-facts">
-            <div class="cb-f"><svg class="cb-ico" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#e8f1fb" stroke="#c9dcf3" stroke-width="3"/><path d="M20 41a8 8 0 0 1-.6-16A11 11 0 0 1 40.500 22.500 9.500 9.500 0 0 1 43 41Z" fill="#7d9fd0"/><path d="M20 41a8 8 0 0 1-.6-16A11 11 0 0 1 32 17" fill="none" stroke="#a8c1e6" stroke-width="2" stroke-linecap="round"/><text x="31.500" y="35" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.500" font-weight="700" fill="#fff">CO&#8322;</text><circle cx="46" cy="46" r="9" fill="#1f9d6b" stroke="#fff" stroke-width="2"/><path d="M46 41.500v8m-3.500-3.300 3.500 3.500 3.500-3.500" fill="none" stroke="#fff" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"/></svg><div><dt>Avoided, last 7 days</dt><dd id="cbWeek">-</dd></div></div>
-            <div class="cb-f"><svg class="cb-ico" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#e4f4e6"/><circle cx="47" cy="17" r="5" fill="#f4b740"/><rect x="29.500" y="38" width="5" height="16" rx="2" fill="#a0603a"/><path d="M32 46l-8-6M32 43l7-5" stroke="#a0603a" stroke-width="2.500" stroke-linecap="round"/><circle cx="32" cy="27" r="13" fill="#3fa564"/><circle cx="23.500" cy="34" r="8.500" fill="#4fb673"/><circle cx="41" cy="34" r="8.500" fill="#2f9457"/><circle cx="28" cy="24" r="3" fill="#7fd29b" opacity=".8"/><circle cx="37" cy="30" r="2" fill="#7fd29b" opacity=".7"/></svg><div><dt>Trees growing for a year</dt><dd id="cbTrees">-</dd></div></div>
-            <div><dt>Emission factor</dt><dd id="cbFactor">-</dd></div>
-          </dl>
-        </aside>
-        <section class="block"><div class="head hi"><div class="ht"><svg class="hic" aria-hidden="true"><use href="#i-clock"/></svg><h2>Last 24 hours</h2></div><p id="peak"></p></div><div class="plot" title="Hover to see each hour, click to pin one"><canvas id="h24Chart"></canvas></div><div class="head sub hi"><div class="ht"><svg class="hic" aria-hidden="true"><use href="#i-bulb"/></svg><h2>Power used after improvement</h2></div><p>Since go-live</p></div><div id="cats"></div></section>
-      </div>
+      <section class="block siterank" id="siteRank">
+        <div class="head hi"><div class="ht"><svg class="hic" aria-hidden="true"><use href="#i-layers"/></svg><div><h2>Savings ranking by site <span class="badge" id="srSample" hidden>Sample data</span></h2><p id="srNote">All monitored sites · this month so far · change is against last month</p></div></div>
+          <div class="seg" id="srSeg" role="group" aria-label="Rank sites by"><button type="button" data-k="rate" aria-pressed="true">Savings rate</button><button type="button" data-k="kwh" aria-pressed="false">Saved energy</button><button type="button" data-k="won" aria-pressed="false">Amount saved</button></div></div>
+        <div class="srscroll"><table>
+          <thead><tr><th class="c-rank">Rank</th><th class="c-chg">Change</th><th>Site</th><th>Region</th><th class="c-bar">Comparison</th><th class="num">Savings rate</th><th class="num">Saved this month</th><th class="num">Amount saved</th></tr></thead>
+          <tbody id="srRows"><tr><td colspan="8" class="empty">Loading…</td></tr></tbody>
+        </table></div>
+      </section>
     </div>
 
     
@@ -1144,7 +1276,7 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 const nf = (n, d = 0) => Number(n).toLocaleString(LOCALE(), { minimumFractionDigits: d, maximumFractionDigits: d });
 
 const state = { baselineDaily: null, histRows: [], histLabels: [], view: null, pid: null, projects: [], meters: [], es: null, live: [], lastTs: 0, range: 'day', rate: 11.5, regDigits: 0, overview: null };
-let liveChart, histChart, h24Chart, ppChart;
+let liveChart, histChart, ppChart;
 
 /* Baseline = the average daily usage before the improvement, drawn as a red "Pre" bar at the start of
    the chart (as on the M-Carbon Dashboard). It is the median of used + saved over this month's days. */
@@ -1370,14 +1502,17 @@ setInterval(() => { if (state.view === 'overview') loadOverview().catch(() => {}
 
 /* ---------- views ---------- */
 function showFault(err) { setStatus('fault', 'Data source problem'); $('#notice').textContent = err.message; $('#notice').hidden = false; }
-function markTabs(id) { document.querySelectorAll('.tab').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.id === id))); }
+function markTabs(id) {
+  document.querySelectorAll('.tab').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.id === id)));
+  const pick = $('#sitePick'); if (pick && [...pick.options].some((o) => o.value === String(id))) pick.value = String(id);
+}
 function setView(v) {
   state.view = v;
   $('#overviewView').hidden = v !== 'overview';
   $('#projectView').hidden = v !== 'project' || !!state.client;
   $('#clientView').hidden = v !== 'project' || !state.client;
   if (v === 'project' && liveChart) { liveChart.resize(); histChart.resize(); }
-  if (v === 'overview' && h24Chart) { h24Chart.resize(); ppChart.resize(); }
+  if (v === 'overview' && ppChart) ppChart.resize();
   hideTip();
   $('#notice').hidden = true;
 }
@@ -1393,6 +1528,7 @@ async function openOverview() {
   setView('overview');
   setStatus('ok', 'Live, refreshes every 2 s');
   try { await loadOverview(); } catch (err) { showFault(err); }
+  loadRanking().catch((err) => { $('#srRows').innerHTML = `<tr><td colspan="8" class="empty">${esc(err.message)}</td></tr>`; $('#rrGrid').innerHTML = `<p class="empty">${esc(err.message)}</p>`; });
 }
 
 async function loadOverview() {
@@ -1402,55 +1538,8 @@ async function loadOverview() {
   renderOverview(o);
 }
 
-/* Last-24-hours chart: hover for the readout, click an hour to pin it. */
-let h24Hover = null, h24PinT = null, h24PeakText = '';
-const h24PinIdx = () => (state.overview && h24PinT != null ? state.overview.hourly.findIndex((h) => h.t === h24PinT) : -1);
-function h24Readout() {
-  const o = state.overview, el = $('#peak');
-  const i = h24Hover != null ? h24Hover : h24PinIdx();
-  const h = o && i >= 0 ? o.hourly[i] : null;
-  el.classList.toggle('live', !!h);
-  el.textContent = h ? `${hhmm(h.t)} - ${hhmm(h.t + 3600e3)}: ${nf(h.kwh, 2)} kWh${h24Hover == null ? ' (pinned)' : ''}` : h24PeakText;
-}
-const h24Cross = { id: 'h24Cross', afterDatasetsDraw(chart) {
-  const meta = chart.getDatasetMeta(0), { top, bottom } = chart.chartArea, ctx = chart.ctx;
-  const mark = (i, pinned) => {
-    const pt = meta.data[i]; if (!pt) return;
-    ctx.save();
-    ctx.strokeStyle = pinned ? '#3f7421' : 'rgba(63,116,33,.45)'; ctx.lineWidth = pinned ? 1.5 : 1; ctx.setLineDash(pinned ? [] : [4, 4]);
-    ctx.beginPath(); ctx.moveTo(pt.x, top); ctx.lineTo(pt.x, bottom); ctx.stroke();
-    if (pinned) { ctx.setLineDash([]); ctx.fillStyle = '#3f7421'; ctx.beginPath(); ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); }
-    ctx.restore();
-  };
-  if (h24Hover != null) mark(h24Hover, false);
-  const p = h24PinIdx(); if (p >= 0) mark(p, true);
-} };
-
 function makeOverviewCharts() {
   const grid = { color: Theme.chart().grid };
-  h24Chart = new Chart($('#h24Chart'), {
-    type: 'line',
-    plugins: [h24Cross],
-    data: { labels: [], datasets: [{ data: [], borderColor: '#3f7421', backgroundColor: 'rgba(91,154,46,.18)', fill: true, borderWidth: 2, pointRadius: 0, pointHoverRadius: 5, pointHoverBackgroundColor: '#fff', pointHoverBorderColor: '#3f7421', pointHoverBorderWidth: 2, tension: .3 }] },
-    options: {
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },   // follow the cursor along the time axis, no need to hit a point
-      onHover: (e, els, chart) => { const i = els.length ? els[0].index : null; if (i !== h24Hover) { h24Hover = i; h24Readout(); chart.draw(); } },
-      onClick: (e, els, chart) => {
-        const o = state.overview, i = els.length ? els[0].index : null;
-        const t = i == null || !o ? null : o.hourly[i].t;
-        h24PinT = t === h24PinT ? null : t;                // click an hour to pin it, click it again to clear
-        h24Readout(); chart.draw();
-      },
-      plugins: { legend: { display: false }, tooltip: {
-        displayColors: false, padding: 10,
-        callbacks: {
-          title: (c) => { const h = state.overview && state.overview.hourly[c[0].dataIndex]; return h ? `${new Date(h.t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })}, ${hhmm(h.t)} - ${hhmm(h.t + 3600e3)}` : c[0].label; },
-          label: (c) => `${nf(c.parsed.y, 2)} kWh`,
-          afterLabel: (c) => { const mx = Math.max(...c.dataset.data, 0); return mx > 0 ? (window.T || ((x) => x))(`${nf(c.parsed.y / mx * 100)}% of the day's peak`) : ''; },
-        } } },
-      scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: window.innerWidth < 600 ? 4 : 6, maxRotation: 0 } }, y: { beginAtZero: true, grid, title: { display: true, text: 'kWh per hour' } } } },
-  });
   ppChart = new Chart($('#ppChart'), {
     type: 'bar',
     data: { labels: [], datasets: [
@@ -1485,81 +1574,139 @@ function gauge(sel, pct, col) {
   const v = Math.max(0, Math.min(100, Number(pct) || 0)), d = 'M10 100 A90 90 0 0 1 190 100';
   $(sel).innerHTML = `<path class="g-bg" d="${d}" pathLength="100"/><path class="g-fg" d="${d}" pathLength="100" style="stroke:${col};stroke-dasharray:${v} 100"/>`;
 }
-function ranked(sel, rows, fmt, emptyMsg) {
-  const top = rows.slice(0, 5), rest = rows.slice(5).reduce((a, r) => a + r.v, 0);
-  const list = rest > 0 ? [...top, { name: 'Other', v: rest }] : top, tot = list.reduce((a, r) => a + r.v, 0) || 1;
-  const el = $(sel); let off = 0;
-  const mx = Math.max(...list.map((r) => r.v), 0);
-  const rankEl = el.querySelector('.rank'), rankHtml = mx <= 0 ? `<p class="empty">${esc(emptyMsg || 'No data yet.')}</p>` : list.map((r, i) => `<div class="rk" title="${esc(r.name)}"><span class="n"><i style="background:${PAL[i]}"></i><span>${esc(r.name)}</span></span><span class="v"><b>${fmt(r.v)}</b></span><span class="bar"><i style="width:${(r.v / mx * 100).toFixed(1)}%;background:${PAL[i]}"></i></span></div>`).join('');
-  if (rankEl.dataset.k !== rankHtml) { rankEl.innerHTML = rankHtml; rankEl.dataset.k = rankHtml; }
-  const donutEl = el.querySelector('.donut'), donutHtml = '<g transform="rotate(-90 21 21)">' + list.map((r, i) => {
-    const p = r.v / tot * 100, len = Math.max(0, p - 0.6);
-    const c = `<circle cx="21" cy="21" r="15.915" pathLength="100" fill="none" stroke="${PAL[i]}" stroke-width="5" stroke-dasharray="${len} ${100 - len}" stroke-dashoffset="${-off}"/>`;
-    off += p; return c;
-  }).join('') + '</g>';
-  if (donutEl.dataset.k !== donutHtml) { donutEl.innerHTML = donutHtml; donutEl.dataset.k = donutHtml; }
-}
 function renderCmp(o) {
   const pp = o.prePost || [], n = pp.length, t = pp[n - 1] || { before: 0, after: 0 }, y = pp[n - 2] || t;
   const sv = (r) => r.before - r.after, avg = (f) => pp.slice(0, -1).reduce((a, r) => a + f(r), 0) / Math.max(1, n - 1);
-  const tiles = [['Saved vs yesterday', 'Today', sv(t), 'Yesterday', sv(y)], ['Used vs yesterday', 'Today', t.after, 'Yesterday', y.after],
-    ['Saved vs 6-day average', 'Today', sv(t), 'Average', avg(sv)], ['Used vs 6-day average', 'Today', t.after, 'Average', avg((r) => r.after)]];
+  const tiles = [['Saved vs yesterday', 'Today', sv(t), 'Yesterday', sv(y)], ['Saved vs 6-day average', 'Today', sv(t), 'Average', avg(sv)]];
   $('#cmp').innerHTML = tiles.map(([h, a, av, b, bv]) => { const m = Math.max(av, bv, 1);
     return `<div class="tile"><div class="th"><svg class="hic" aria-hidden="true"><use href="#${/^Saved/.test(h) ? 'i-down' : 'i-plug'}"/></svg><h3>${h}</h3></div><strong>${bv > 0 ? nf(av / bv * 100) : '-'}<small>%</small></strong><div class="tr"><span>${a}</span><span class="bar"><i style="width:${av / m * 100}%"></i></span><b>${nf(av)} kWh</b></div><div class="tr"><span>${b}</span><span class="bar alt"><i style="width:${bv / m * 100}%"></i></span><b>${nf(bv)} kWh</b></div></div>`; }).join('');
 }
-const KG_CO2_PER_TREE_YEAR = 21;
-function renderCarbon(o) {
-  const t = o.totals;
-  const factor = t.savedKwh > 0 ? t.co2Kg / t.savedKwh : null;
-  const week = (o.prePost || []).map((r) => ({ t: r.t, kg: factor == null ? 0 : Math.max(0, r.before - r.after) * factor }));
-  const max = Math.max(1, ...week.map((w) => w.kg));
-  const html = week.map((w) => `<div class="cb-col"><span class="cb-v">${nf(w.kg)}</span><span class="cb-bar"><i style="height:${(w.kg / max * 100).toFixed(1)}%"></i></span><span class="cb-d">${esc(new Date(w.t).toLocaleDateString(LOCALE(), { weekday: 'short' }))}</span></div>`).join('');
-  if ($('#cbBars').dataset.k !== html) { $('#cbBars').innerHTML = html; $('#cbBars').dataset.k = html; }
-  $('#cbWeek').innerHTML = `${nf(week.reduce((a, w) => a + w.kg, 0))}<small>kg</small>`;
-  $('#cbTrees').innerHTML = `${nf(t.co2Kg / KG_CO2_PER_TREE_YEAR)}<small>trees</small>`;
-  $('#cbFactor').innerHTML = factor == null ? '-' : `${nf(factor, 3)}<small>kg/kWh</small>`;
+// Big totals switch to a larger unit so every summary figure fits at the same size as the headline counter.
+const kwhU = (v) => (Math.abs(v) >= 1e5 ? [v / 1000, 1, 'MWh'] : [v, 2, 'kWh']);
+const kgU = (v) => (Math.abs(v) >= 1e4 ? [v / 1000, 1, 't'] : [v, 2, 'kg']);
+const withUnit = ([v, d, u]) => `${nf(v, d)}<small>${u}</small>`;
+// Shrink a summary figure only when it would not fit its cell (long totals on a narrow screen).
+function fitFigures() {
+  document.querySelectorAll('.ww .dash-sum.kpi .fit').forEach((el) => {
+    el.style.fontSize = '';
+    let fs = parseFloat(getComputedStyle(el).fontSize), n = 0;
+    while (el.scrollWidth > el.clientWidth + 1 && fs > 14 && n++ < 40) { fs -= 1; el.style.fontSize = fs + 'px'; }
+  });
 }
+window.addEventListener('resize', () => { if (state.view === 'overview') fitFigures(); });
 
 function renderOverview(o) {
   const t = o.totals;
-  if (!h24Chart) makeOverviewCharts();
+  if (!ppChart) makeOverviewCharts();
 
   const digits = String(Math.floor(t.savedKwh)).length;
   if (state.regDigits !== digits) { buildRegister($('#regTotal'), digits, 2); state.regDigits = digits; delete roll.total; }
   rollTo('total', t.savedKwh, (v) => setRegister($('#regTotal'), v, `Total energy saved ${nf(v, 2)} kilowatt-hours`));
 
+  $('#oAvg').innerHTML = `${nf(t.savingRate, 1)}<small>%</small>`;
   $('#oRate').innerHTML = `${nf(t.savingRate, 1)}<small>%</small>`;
   $('#oRateToday').innerHTML = `${nf(t.todaySavingRate, 1)}<small>%</small>`;
-  rollTo('today', t.todaySavedKwh, (v) => { $('#oToday').innerHTML = `${nf(v, 2)}<small>kWh</small>`; });
-  rollTo('co2', t.co2Kg, (v) => { $('#oCo2').innerHTML = `${nf(v, 2)}<small>kg</small>`; });
-  rollTo('co2t', t.todayCo2Kg, (v) => { $('#oCo2Today').innerHTML = `${nf(v, 2)}<small>kg</small>`; });
-  $('#oSites').innerHTML = `${nf(t.projects)}<small>${nf(t.equipments || t.meters)} equipments</small>`;
+  rollTo('today', t.todaySavedKwh, (v) => { $('#oToday').innerHTML = withUnit(kwhU(v)); fitFigures(); });
+  rollTo('co2', t.co2Kg, (v) => { $('#oCo2').innerHTML = withUnit(kgU(v)); fitFigures(); });
+  rollTo('co2t', t.todayCo2Kg, (v) => { $('#oCo2Today').innerHTML = withUnit(kgU(v)); fitFigures(); });
+  $('#oTodayNote').textContent = t.todaySavingRate ? `${nf(t.todaySavingRate, 1)}% saved today` : ' ';
+  $('#oCo2Note').textContent = t.co2Kg > 0 && t.savedKwh > 0 ? `${nf(t.co2Kg / t.savedKwh, 3)} kg CO₂ per kWh` : ' ';
+  $('#oSites').innerHTML = `${nf(t.projects)}<small>sites</small>`;
+  $('#oSitesNote').textContent = `${nf(t.equipments || t.meters)} equipments`;
   tickerSet({ saved: nf(t.savedKwh, 2) + ' kWh', today: nf(t.todaySavedKwh, 2) + ' kWh', co2: nf(t.co2Kg, 2) + ' kg', rate: nf(t.savingRate, 1) + '%', sites: nf(t.projects) });
-  renderCarbon(o);
+  fitFigures();
 
-  const A = o.areas || [];
-  ranked('#rkSaved', A.map((a) => ({ name: a.area, v: a.savedKwh })), (v) => nf(v) + ' kWh');
-  ranked('#rkSites', A.map((a) => ({ name: a.area, v: a.projects })).sort((a, b) => b.v - a.v), (v) => nf(v));
   gauge('#gRate', t.savingRate, '#5b9a2e'); gauge('#gToday', t.todaySavingRate, '#2f9a8c'); renderCmp(o);
-
-  h24Chart.data.labels = o.hourly.map((h) => hhmm(h.t));
-  h24Chart.data.datasets[0].data = o.hourly.map((h) => h.kwh);
-  h24Chart.update();
-  const peak = o.hourly.reduce((a, b) => (b.kwh > a.kwh ? b : a));
-  h24PeakText = `Peak ${nf(o.maxHourly || peak.kwh, 2)} kWh`;
-  h24Readout();
 
   ppChart.data.labels = o.prePost.map((r) => new Date(r.t).toLocaleDateString(LOCALE(), { month: 'short', day: 'numeric' }));
   ppChart.data.datasets[0].data = o.prePost.map((r) => r.before);
   ppChart.data.datasets[1].data = o.prePost.map((r) => r.after);
   ppChart.update();
 
-  const c = o.categories, total = c.lighting || 1;
-  $('#cats').innerHTML = [['Lighting', c.lighting]].map(([name, v]) =>
-    `<div class="cat"><span class="name">${name}</span><span class="share"><span><i style="width:${(v / total * 100).toFixed(1)}%"></i></span></span><span class="amt">${nf(v)} <small>kWh</small></span></div>`).join('');
-
-  try { drawMap(o); } catch (err) { console.error('map', err); const n = $('#mapNote'); if (n) n.textContent = ' \u00b7 map error: ' + err.message; }
+  try { drawMap(o); } catch (err) { console.error('map', err); const n = $('#mapNote'); if (n) n.textContent = ' · map error: ' + err.message; }
+  if (state.ranking) renderRegions();
 }
+
+/* ---------- overview rankings: by region (cards) and by site (table) ---------- */
+// Data: GET /api/monitor/ranking, per site { month, last, total } (see lib/monitor/live.js buildRanking).
+const RK = { region: 'rate', site: 'rate' };
+async function loadRanking() {
+  const r = await get('/ranking');
+  state.ranking = r;
+  state.rankingAt = Date.now();
+  renderRegions(); renderSites();
+}
+setInterval(() => { if (state.view === 'overview' && Date.now() - (state.rankingAt || 0) > 5 * 60e3) loadRanking().catch(() => {}); }, 30e3);
+
+// The province a site belongs to, matched to the map's own provinces so a card can open that province.
+function regionOf(site) {
+  const C = window.KR_REGIONS && window.KR_REGIONS.country;
+  const i = C ? C.items.findIndex((it) => sameName(it, site.region) || sameName(it, site.city)) : -1;
+  if (i < 0) return { key: 'x:' + (site.region || '-'), name: site.region || '-', drill: null };
+  const it = C.items[i], d = DRILL[it.id];
+  return { key: 'p:' + i, name: isKo() && it.ko ? it.ko : it.name, drill: d ? d.key : null };
+}
+function renderRegions() {
+  const sites = (state.ranking && state.ranking.sites) || [], el = $('#rrGrid');
+  const by = new Map();
+  for (const s of sites) {
+    const g = regionOf(s);
+    const a = by.get(g.key) || { ...g, saved: 0, used: 0, n: 0 };
+    a.saved += s.total.savedKwh; a.used += s.total.usedKwh; a.n += 1;
+    by.set(g.key, a);
+  }
+  const rows = [...by.values()].map((a) => ({ ...a, rate: a.saved + a.used > 0 ? a.saved / (a.saved + a.used) * 100 : 0 }))
+    .sort((a, b) => (RK.region === 'kwh' ? b.saved - a.saved : b.rate - a.rate)).slice(0, 4);
+  const html = rows.length ? rows.map((r, i) => {
+    const big = RK.region === 'kwh' ? withUnit(kwhU(r.saved)) : `${nf(r.rate, 1)}<small>%</small>`;
+    const sub = RK.region === 'kwh' ? `${nf(r.rate, 1)}% saved · ${nf(r.n)} sites` : `${withUnit(kwhU(r.saved)).replace(/<\/?small>/g, ' ').trim()} since go-live`;
+    const on = r.drill && MAP.level === r.drill;
+    return `<button type="button" class="rr${on ? ' on' : ''}" ${r.drill ? `data-drill="${esc(r.drill)}"` : 'disabled'} title="${esc(r.name)}"><span class="rrh"><b class="no">${i + 1}</b><span class="nm">${esc(r.name)}</span></span><strong>${big}</strong><span class="sub">${esc(sub)}</span></button>`;
+  }).join('') : '<p class="empty">No savings figures yet.</p>';
+  if (el.dataset.k !== html) { el.innerHTML = html; el.dataset.k = html; }
+}
+$('#rrGrid').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-drill]'); if (!b) return;
+  mapLevel(MAP.level === b.dataset.drill ? 'country' : b.dataset.drill);
+  renderRegions();
+  $('#mapWrap').scrollIntoView({ block: 'nearest', behavior: STILL ? 'auto' : 'smooth' });
+});
+$('#rrSeg').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-k]'); if (!b) return;
+  RK.region = b.dataset.k;
+  $('#rrSeg').querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  renderRegions();
+});
+
+const SR_METRIC = { rate: (m) => m.rate, kwh: (m) => m.savedKwh, won: (m) => m.savedWon };
+function renderSites() {
+  const r = state.ranking || {}, sites = (r.sites || []).filter((s) => s.month), k = RK.site, f = SR_METRIC[k];
+  $('#srSample').hidden = state.mode !== 'mock';
+  const order = [...sites].sort((a, b) => f(b.month) - f(a.month));
+  const last = sites.filter((s) => s.last).sort((a, b) => f(b.last) - f(a.last));
+  const lastRank = new Map(last.map((s, i) => [s.id, i + 1]));
+  const mx = Math.max(0, ...order.map((s) => f(s.month)));
+  const fmt = { rate: (m) => `${nf(m.rate, 1)}%`, kwh: (m) => withUnit(kwhU(m.savedKwh)), won: (m) => `${nf(m.savedWon)}<small>won</small>` };
+  const open = new Set((state.projects || []).map((p) => String(p.id)));
+  const html = order.length ? order.map((s, i) => {
+    const was = lastRank.get(s.id), d = was ? was - (i + 1) : null;
+    const chg = d == null ? '<span class="chg new">new</span>' : d > 0 ? `<span class="chg up" title="Up ${d}">&#9650; ${d}</span>` : d < 0 ? `<span class="chg dn" title="Down ${-d}">&#9660; ${-d}</span>` : '<span class="chg">&ndash;</span>';
+    const g = regionOf(s), w = mx > 0 ? Math.max(0, f(s.month)) / mx * 100 : 0;
+    const can = open.has(String(s.id));
+    return `<tr${can ? ` class="go" data-open="${esc(s.id)}" tabindex="0" title="Open ${esc(s.name)}"` : ''}><td class="c-rank"><b class="no${i < 3 ? ' top' : ''}">${i + 1}</b></td><td class="c-chg">${chg}</td><td class="nm">${esc(s.name)}</td><td class="rg">${esc(g.name)}${s.city && s.city !== s.region ? `<small>${esc(s.city)}</small>` : ''}</td>`
+      + `<td class="c-bar"><span class="sbar"><i style="width:${w.toFixed(1)}%"></i></span></td><td class="num${k === 'rate' ? ' key' : ''}">${fmt.rate(s.month)}</td><td class="num${k === 'kwh' ? ' key' : ''}">${fmt.kwh(s.month)}</td><td class="num${k === 'won' ? ' key' : ''}">${fmt.won(s.month)}</td></tr>`;
+  }).join('') : '<tr><td colspan="8" class="empty">No savings figures yet.</td></tr>';
+  if ($('#srRows').dataset.k !== html) { $('#srRows').innerHTML = html; $('#srRows').dataset.k = html; }
+}
+$('#srSeg').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-k]'); if (!b) return;
+  RK.site = b.dataset.k;
+  $('#srSeg').querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  renderSites();
+});
+const openFromRank = (id) => { window.scrollTo({ top: 0, behavior: 'auto' }); select(id); };
+$('#srRows').addEventListener('click', (e) => { const tr = e.target.closest('tr[data-open]'); if (tr) openFromRank(tr.dataset.open); });
+$('#srRows').addEventListener('keydown', (e) => { if (e.key !== 'Enter' && e.key !== ' ') return; const tr = e.target.closest('tr[data-open]'); if (tr) { e.preventDefault(); openFromRank(tr.dataset.open); } });
 
 /* ---------- overview map: South Korea by province; click a province to open its districts ---------- */
 // Every province that has more than one district opens its own district map (public/js/kr-regions.js).
@@ -2626,6 +2773,7 @@ async function boot(me) {
   try {
     const cfg = await get('/config');
     state.rate = cfg.rate;
+    state.mode = cfg.mode;
     $('#demoBanner').hidden = cfg.mode !== 'mock';
     state.projects = await get('/projects');
     state.client = me.role === 'viewer';
@@ -2640,6 +2788,14 @@ async function boot(me) {
       + state.projects.map((p) => `<button class="tab" role="tab" data-id="${esc(p.id)}" data-q="${esc([p.name, p.location, p.client].filter(Boolean).join(' ').toLowerCase())}" aria-selected="false">${esc(p.name)}</button>`).join('')
       + '<span class="nomatch" id="noMatch" hidden>No site or client matches.</span>';
     document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => select(t.dataset.id)));
+    // Staff: a compact site picker in the header replaces the search box and the tab strip, leaving room for the figures.
+    if (staff) {
+      document.body.classList.add('ov-pick');
+      $('#sitePick').innerHTML = '<option value="overview">Overview (all sites)</option>'
+        + state.projects.map((p) => `<option value="${esc(p.id)}">${esc(p.name)}${p.client ? ` · ${esc(p.client)}` : ''}</option>`).join('');
+      $('#sitePickWrap').hidden = false;
+      $('#sitePick').addEventListener('change', (e) => select(e.target.value));
+    }
     applyFilter();
     if (staff) select('overview');
     else if (state.projects.length) select(state.projects[0].id);

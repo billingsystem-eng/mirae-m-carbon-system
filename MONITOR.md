@@ -54,3 +54,15 @@ meters, live kW, and today's hourly chart.
 2. Send back the files in `probe-output/`, or the exact request body from the browser's Network tab
    for `getMeterList`, `getMeterInfo`, `getBreakerPowerUsed` and the map page's calls.
 3. Each `todo()` in `lib/monitor/live.js` is then replaced with a real mapping.
+
+## Overview layout (Nov 2026, "Live dash board 수정" slides)
+
+- Staff see a **site picker** in the header instead of the search box and tab strip; the ranking table rows and the map also open a site.
+- Summary bar: bigger icons, titles and figures (all at the headline's size; large totals switch to MWh / t), with the **average saving rate** beside the total.
+- Before/after chart is narrower; the two savings-rate gauges sit side by side in a wider card.
+- **Savings ranking by region** (rate / energy saved, since go-live) replaces the "saved" tiles' old spot; clicking a region opens it on the map. The "used" tiles are gone, the "saved" tiles moved right.
+- Under the first screen there is only the **savings ranking by site** table (rate / kWh / won this month, rank change vs last month).
+  The energy-by-area, sites-by-area, carbon and 24-hour panels were removed from the overview.
+- Data: `GET /api/monitor/ranking` (staff only). Live mode reads each site's `statisticsBigScreen` for this month and last month
+  (`powerSave`, `powerSaveRatio`, `saveFee`, `totalData`), cached 5 minutes.
+- The first screen is sized for a Full HD monitor (1920×1080); smaller laptop screens scroll a little.
