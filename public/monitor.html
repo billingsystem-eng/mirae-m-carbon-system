@@ -1035,6 +1035,10 @@ body.ov-pick .ww .ticker .tk-track { padding: 7px 0; }
 /* The average saving rate matches the total counter: same digit size, same dark digit window (size copied from the counter in fitFigures). */
 .ww .dash-sum.kpi .avg .avgv { display: inline-flex; align-items: baseline; padding: 10px 14px; border-radius: 8px; background: #070f0e; box-shadow: inset 0 2px 8px rgba(0,0,0,.7), 0 0 0 1px #28403b; font-family: var(--digits); font-weight: 600; line-height: 1.25; color: var(--leaf-hi); }
 .ww .dash-sum.kpi .avg { width: min-content; }
+/* Level with the total: the digit windows line up top and bottom, and "%" sits like "kWh" beside its window. */
+.ww .dash-sum.kpi .mainread:not(.stack) { align-items: flex-end; }
+.ww .dash-sum.kpi .avgrow { display: flex; align-items: center; gap: 10px; }
+.ww .dash-sum.kpi .avgrow .unit { font-size: 16px; font-weight: 600; color: var(--leaf-hi); align-self: flex-end; margin-bottom: 6px; }
 .ww .dash-sum.kpi .avg .t { line-height: 1.25; margin-bottom: 4px; }
 .ww .dash-sum.kpi .avg .avgv { white-space: nowrap; }
 .ww .dash-sum.kpi .avg .avgv small { font-family: var(--sans); font-size: .4em; color: #9db3ac; margin-left: 6px; }
@@ -1173,7 +1177,7 @@ html[data-theme="dark"] .ww .siterank .badge { background: rgba(227,184,102,.12)
           <div class="sch"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span class="t">Total energy saved</span></div>
           <div class="mainread">
             <div class="readout"><div class="register big" id="regTotal" role="img" aria-label="Total energy saved"></div><span class="unit">kWh</span></div>
-            <div class="avg"><span class="t">Average saving rate</span><div class="v avgv" id="oAvg">-</div></div>
+            <div class="avg"><span class="t">Average saving rate</span><div class="avgrow"><div class="v avgv" id="oAvg">-</div><span class="unit">%</span></div></div>
           </div>
           <div class="l">South Korea, all monitored sites, since go-live</div>
         </div>
@@ -1644,7 +1648,7 @@ function renderOverview(o) {
   if (state.regDigits !== digits) { buildRegister($('#regTotal'), digits, 2); state.regDigits = digits; delete roll.total; }
   rollTo('total', t.savedKwh, (v) => setRegister($('#regTotal'), v, `Total energy saved ${nf(v, 2)} kilowatt-hours`));
 
-  $('#oAvg').innerHTML = `${nf(t.savingRate, 1)}<small>%</small>`;
+  $('#oAvg').textContent = nf(t.savingRate, 1);
   $('#oRate').innerHTML = `${nf(t.savingRate, 1)}<small>%</small>`;
   $('#oRateToday').innerHTML = `${nf(t.todaySavingRate, 1)}<small>%</small>`;
   rollTo('today', t.todaySavedKwh, (v) => { $('#oToday').innerHTML = withUnit(kwhU(v)); fitFigures(); });
