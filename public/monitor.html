@@ -1031,7 +1031,13 @@ body.ov-pick .ww .ticker .tk-track { padding: 7px 0; }
 .ww .dash-sum.kpi .avg .v { color: var(--leaf-hi); margin: 0; }
 .ww .dash-sum.kpi .mainread.stack { flex-direction: column; align-items: flex-start; gap: 8px; }
 .ww .dash-sum.kpi .mainread.stack .avg { flex-direction: row; align-items: baseline; gap: 10px; padding-left: 0; border-left: 0; }
-.ww .dash-sum.kpi .mainread.stack .avg .v { font-size: 26px !important; }
+.ww .dash-sum.kpi .mainread.stack .avg { flex-direction: column; align-items: flex-start; gap: 2px; }
+/* The average saving rate matches the total counter: same digit size, same dark digit window (size copied from the counter in fitFigures). */
+.ww .dash-sum.kpi .avg .avgv { display: inline-flex; align-items: baseline; padding: 10px 14px; border-radius: 8px; background: #070f0e; box-shadow: inset 0 2px 8px rgba(0,0,0,.7), 0 0 0 1px #28403b; font-family: var(--digits); font-weight: 600; line-height: 1.25; color: var(--leaf-hi); }
+.ww .dash-sum.kpi .avg { width: min-content; }
+.ww .dash-sum.kpi .avg .t { line-height: 1.25; margin-bottom: 4px; }
+.ww .dash-sum.kpi .avg .avgv { white-space: nowrap; }
+.ww .dash-sum.kpi .avg .avgv small { font-family: var(--sans); font-size: .4em; color: #9db3ac; margin-left: 6px; }
 html[data-theme="dark"] .ww .dash-sum.kpi .avg { border-left-color: rgba(159,211,106,.18); }
 
 /* right column: chart narrower, gauges wider and side by side */
@@ -1110,7 +1116,7 @@ html[data-theme="dark"] .ww .siterank .badge { background: rgba(227,184,102,.12)
   .ww .mapblock .head { margin-bottom: 10px; }
 }
 @media (max-width: 1750px) and (min-width: 1101px) {
-  .ww .dash-sum.kpi { grid-template-columns: minmax(0, 1.9fr) repeat(5, minmax(0, 1fr)); }
+  .ww .dash-sum.kpi { grid-template-columns: minmax(0, 2.4fr) repeat(5, minmax(0, 1fr)); }
   .ww .dash-sum.kpi .sc { padding: 14px 14px; }
   .ww .dash-sum.kpi .sch { gap: 8px; }
   .ww .dash-sum.kpi .sch .t { font-size: 14px; }
@@ -1167,7 +1173,7 @@ html[data-theme="dark"] .ww .siterank .badge { background: rgba(227,184,102,.12)
           <div class="sch"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span class="t">Total energy saved</span></div>
           <div class="mainread">
             <div class="readout"><div class="register big" id="regTotal" role="img" aria-label="Total energy saved"></div><span class="unit">kWh</span></div>
-            <div class="avg"><span class="t">Average saving rate</span><div class="v fit" id="oAvg">-</div></div>
+            <div class="avg"><span class="t">Average saving rate</span><div class="v avgv" id="oAvg">-</div></div>
           </div>
           <div class="l">South Korea, all monitored sites, since go-live</div>
         </div>
@@ -1617,8 +1623,15 @@ function fitFigures() {
   // The average saving rate sits beside the total when there is room; otherwise it becomes one compact line under it.
   const mr = document.querySelector('.ww .dash-sum.kpi .mainread'), reg = $('#regTotal'), avg = mr && mr.querySelector('.avg');
   if (mr && reg && avg) {
+    const av = avg.querySelector('.avgv');
+    const size = (fs) => { reg.style.fontSize = fs ? fs + 'px' : ''; if (av) { av.style.fontSize = getComputedStyle(reg).fontSize; av.style.minHeight = ''; av.style.minHeight = reg.offsetHeight + 'px'; } };
+    const wraps = () => avg.offsetTop > reg.offsetTop + 10;
     mr.classList.remove('stack');
-    if (avg.offsetTop > reg.offsetTop + 10) mr.classList.add('stack');
+    size(0);
+    // Both shrink together (never below 30px) to stay side by side; only if that is not enough does the rate go under the counter.
+    let fs = parseFloat(getComputedStyle(reg).fontSize), n = 0;
+    while (wraps() && fs > 28 && n++ < 30) size(--fs);
+    if (wraps()) { size(0); mr.classList.add('stack'); }
   }
 }
 window.addEventListener('resize', () => { if (state.view === 'overview') fitFigures(); });
