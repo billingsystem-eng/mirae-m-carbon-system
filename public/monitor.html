@@ -1019,7 +1019,8 @@ body.ov-pick .ww .ticker .tk-track { padding: 7px 0; }
 .ww .dash-sum.kpi .sch .t { font-size: 15px; font-weight: 600; color: #e3efe6; line-height: 1.25; }
 .ww .dash-sum.kpi .ic { width: 42px; height: 42px; flex: none; margin: 0; }
 .ww .dash-sum.kpi .register.big { font-size: clamp(24px, 2.2vw, 42px); }
-.ww .dash-sum.kpi .v { font-size: clamp(24px, 2.2vw, 42px); line-height: 1.15; white-space: nowrap; margin-top: auto; }
+.ww .dash-sum.kpi .v { font-size: clamp(24px, 2.2vw, 42px); line-height: 1.15; white-space: nowrap; margin: auto 0; }
+.ww .dash-sum.kpi .mainread .v { margin: 0; }
 .ww .dash-sum.kpi .v small { font-size: 14px; margin-left: 5px; }
 .ww .dash-sum.kpi .l { font-size: 13px; margin-top: 0; }
 .ww .dash-sum.kpi .mainread { display: flex; align-items: center; gap: 10px 20px; flex-wrap: wrap; margin-top: auto; }
@@ -1028,6 +1029,9 @@ body.ov-pick .ww .ticker .tk-track { padding: 7px 0; }
 .ww .dash-sum.kpi .avg { display: flex; flex-direction: column; padding-left: 22px; border-left: 1px solid #28403b; min-width: 0; }
 .ww .dash-sum.kpi .avg .t { font-size: 14px; font-weight: 600; color: #cfe3d4; }
 .ww .dash-sum.kpi .avg .v { color: var(--leaf-hi); margin: 0; }
+.ww .dash-sum.kpi .mainread.stack { flex-direction: column; align-items: flex-start; gap: 8px; }
+.ww .dash-sum.kpi .mainread.stack .avg { flex-direction: row; align-items: baseline; gap: 10px; padding-left: 0; border-left: 0; }
+.ww .dash-sum.kpi .mainread.stack .avg .v { font-size: 26px !important; }
 html[data-theme="dark"] .ww .dash-sum.kpi .avg { border-left-color: rgba(159,211,106,.18); }
 
 /* right column: chart narrower, gauges wider and side by side */
@@ -1112,7 +1116,7 @@ html[data-theme="dark"] .ww .siterank .badge { background: rgba(227,184,102,.12)
   .ww .dash-sum.kpi .sch .t { font-size: 14px; }
   .ww .dash-sum.kpi .ic { width: 34px; height: 34px; }
 }
-.ww .dash-sum.kpi .sch .t { min-width: 0; overflow-wrap: anywhere; }
+.ww .dash-sum.kpi .sch .t { min-width: 0; word-break: keep-all; overflow-wrap: break-word; }
 @media (max-width: 1100px) {
   .ww .dash-sum.kpi { grid-template-columns: 1fr 1fr; }
   .ww .chartrow, .ww .row2 { grid-template-columns: 1fr; }
@@ -1610,12 +1614,11 @@ function fitFigures() {
     let fs = parseFloat(getComputedStyle(el).fontSize), n = 0;
     while (el.scrollWidth > el.clientWidth + 1 && fs > 14 && n++ < 40) { fs -= 1; el.style.fontSize = fs + 'px'; }
   });
-  // Keep the average saving rate beside the total: shrink the counter a little when the two would wrap onto two lines.
-  const reg = $('#regTotal'), avg = document.querySelector('.ww .dash-sum.kpi .avg');
-  if (reg && avg && window.innerWidth > 600) {
-    reg.style.fontSize = '';
-    let fs = parseFloat(getComputedStyle(reg).fontSize), n = 0;
-    while (avg.offsetTop > reg.offsetTop + 10 && fs > 22 && n++ < 30) { fs -= 1; reg.style.fontSize = fs + 'px'; }
+  // The average saving rate sits beside the total when there is room; otherwise it becomes one compact line under it.
+  const mr = document.querySelector('.ww .dash-sum.kpi .mainread'), reg = $('#regTotal'), avg = mr && mr.querySelector('.avg');
+  if (mr && reg && avg) {
+    mr.classList.remove('stack');
+    if (avg.offsetTop > reg.offsetTop + 10) mr.classList.add('stack');
   }
 }
 window.addEventListener('resize', () => { if (state.view === 'overview') fitFigures(); });
