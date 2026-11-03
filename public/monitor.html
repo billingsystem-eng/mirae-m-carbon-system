@@ -1005,7 +1005,7 @@ html[data-theme="dark"] .ww *::-webkit-scrollbar-thumb { background: #2f5546; bo
 html[data-theme="dark"] .ww .sitepick { background: rgba(255,255,255,.04); border-color: rgba(159,211,106,.25); }
 html[data-theme="dark"] .ww .sitepick select { background: #1a312b; color: var(--ink); }
 body.ov-pick .ww .finder, body.ov-pick .ww .tabbar { display: none; }
-body.ov-pick .ww .page-head { margin-bottom: 10px; }
+body.ov-pick .ww .page-head { margin-bottom: 22px; }
 body.ov-pick .ww .page-head p { margin: 0; }
 body.ov-pick main.ww .back-btn { margin-bottom: 6px; }
 body.ov-pick .ww .page-head h1 { margin-bottom: 2px; }
@@ -1105,12 +1105,14 @@ html[data-theme="dark"] .ww .siterank .badge { background: rgba(227,184,102,.12)
   .ww .mapblock { padding: 16px 18px; }
   .ww .mapblock .head { margin-bottom: 10px; }
 }
-@media (max-width: 1500px) and (min-width: 1101px) {
+@media (max-width: 1750px) and (min-width: 1101px) {
   .ww .dash-sum.kpi { grid-template-columns: minmax(0, 1.9fr) repeat(5, minmax(0, 1fr)); }
-  .ww .dash-sum.kpi .sc { padding: 14px 16px; }
+  .ww .dash-sum.kpi .sc { padding: 14px 14px; }
+  .ww .dash-sum.kpi .sch { gap: 8px; }
   .ww .dash-sum.kpi .sch .t { font-size: 14px; }
-  .ww .dash-sum.kpi .ic { width: 36px; height: 36px; }
+  .ww .dash-sum.kpi .ic { width: 34px; height: 34px; }
 }
+.ww .dash-sum.kpi .sch .t { min-width: 0; overflow-wrap: anywhere; }
 @media (max-width: 1100px) {
   .ww .dash-sum.kpi { grid-template-columns: 1fr 1fr; }
   .ww .chartrow, .ww .row2 { grid-template-columns: 1fr; }
